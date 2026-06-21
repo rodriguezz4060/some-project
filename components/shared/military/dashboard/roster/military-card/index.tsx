@@ -6,7 +6,7 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
-import type { MilitaryPersonnel } from "../../types";
+import type { MilitaryPersonnel } from "../../../types";
 import { MilitaryStatusBar } from "./status-bar";
 import { MilitaryAvatarBlock } from "./avatar-block";
 import { MilitaryMissionCount } from "./mission-count";
@@ -15,6 +15,7 @@ import { MilitaryContactBlock } from "./contact-block";
 import { MilitaryDetailsButton } from "./details-button";
 
 export function MilitaryCard({
+  id,
   fullName,
   rank,
   position,
@@ -55,7 +56,7 @@ export function MilitaryCard({
       </CardContent>
 
       <CardFooter className="pt-2 pb-4">
-        <MilitaryDetailsButton fullName={fullName} />
+        <MilitaryDetailsButton id={id} />
       </CardFooter>
     </Card>
   );

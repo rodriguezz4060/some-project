@@ -1,5 +1,5 @@
-import { MilitaryFilterBar } from "@/components/shared/military/dashboard/military-filter-bar";
-import { MilitaryCardGrid } from "@/components/shared/military/dashboard/military-card-grid";
+import { MilitaryFilterBar } from "@/components/shared/military/dashboard/roster/military-filter-bar";
+import { MilitaryCardGrid } from "@/components/shared/military/dashboard/roster/military-card-grid";
 import {
   MOCK_PERSONNEL,
   MOCK_TOTAL_DB_COUNT,

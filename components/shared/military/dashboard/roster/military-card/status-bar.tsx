@@ -1,5 +1,5 @@
 import { cn } from "@root/lib/utils";
-import type { StatusType } from "../../types";
+import type { StatusType } from "../../../types";
 
 const statusBarColors: Record<StatusType, string> = {
   active: "bg-emerald-500",

@@ -11,8 +11,8 @@ import {
   IconBuildingFortress,
 } from "@tabler/icons-react";
 
-import { NavMain } from "@/components/shared/military/dashboard/nav-main";
-import { NavSecondary } from "@/components/shared/military/dashboard/nav-secondary";
+import { NavMain } from "@/components/shared/military/dashboard/layout/nav-main";
+import { NavSecondary } from "@/components/shared/military/dashboard/layout/nav-secondary";
 import {
   Sidebar,
   SidebarContent,

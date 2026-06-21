@@ -1,4 +1,4 @@
-import type { MilitaryPersonnel } from "../types";
+import type { MilitaryPersonnel } from "../../types";
 import { MilitaryCard } from "./military-card";
 
 interface Props {

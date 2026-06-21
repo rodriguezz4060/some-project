@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { AppSidebar } from "@/components/shared/military/dashboard/app-sidebar";
-import { SiteHeader } from "@/components/shared/military/dashboard/site-header";
+import { AppSidebar } from "@/components/shared/military/dashboard/layout/app-sidebar";
+import { SiteHeader } from "@/components/shared/military/dashboard/layout/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 export const metadata: Metadata = {

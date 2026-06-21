@@ -1,11 +1,9 @@
 import type { StatusType } from "@/components/shared/military/types";
-import {
-  MOCK_PERSONNEL,
-  MOCK_TOTAL_DB_COUNT,
-} from "@/components/shared/military/personnel-mock";
-import { ReportStatCards } from "@/components/shared/military/dashboard/report-stat-cards";
-import { ReportStatusBreakdown } from "@/components/shared/military/dashboard/report-status-breakdown";
-import { ReportLeaderboard } from "@/components/shared/military/dashboard/report-leaderboard";
+import { MOCK_PERSONNEL } from "@/components/shared/military/personnel-mock";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ReportRadar } from "@/components/shared/military/dashboard/reports/report-radar";
+import { ReportRotationTable } from "@/components/shared/military/dashboard/reports/report-rotation-table";
+import { ReportQuickCards } from "@/components/shared/military/dashboard/reports/report-quick-cards";
 
 const ALL_STATUSES: StatusType[] = [
   "active",
@@ -15,17 +13,15 @@ const ALL_STATUSES: StatusType[] = [
   "reserve",
 ];
 
-export default async function ReportsPage() {
-  const activeCount = MOCK_PERSONNEL.filter(
-    (p) => p.status === "active",
-  ).length;
-  const onMissionCount = MOCK_PERSONNEL.filter(
-    (p) => p.status === "on-mission",
-  ).length;
-  const woundedCount = MOCK_PERSONNEL.filter(
-    (p) => p.status === "wounded",
-  ).length;
+const STATUS_LABELS: Record<StatusType, string> = {
+  active: "Активні",
+  "on-mission": "На завданні",
+  wounded: "Поранені",
+  vacation: "Відпустка",
+  reserve: "Резерв",
+};
 
+export default async function ReportsPage() {
   const distribution = Object.fromEntries(
     ALL_STATUSES.map((status) => [
       status,
@@ -33,84 +29,60 @@ export default async function ReportsPage() {
     ]),
   ) as Record<StatusType, number>;
 
-  const contactCount = MOCK_PERSONNEL.filter((p) => p.phone).length;
-  const emailCount = MOCK_PERSONNEL.filter((p) => p.email).length;
+  const radarData = ALL_STATUSES.map((status) => ({
+    status: STATUS_LABELS[status],
+    value: distribution[status],
+  }));
+
+  const readyCount = MOCK_PERSONNEL.filter(
+    (p) => p.status === "active",
+  ).length;
+
+  const replacementCount = MOCK_PERSONNEL.filter(
+    (p) => (p.lastActiveDays ?? 0) > 14,
+  ).length;
+
+  const woundedCount = MOCK_PERSONNEL.filter(
+    (p) => p.status === "wounded",
+  ).length;
 
   return (
     <div className="space-y-6 p-6">
       <div>
         <h1 className="text-xl font-semibold">Звіти та аналітика</h1>
         <p className="text-sm text-muted-foreground">
-          Статистика та аналіз особового складу
+          Ротація та резерв особового складу
         </p>
       </div>
 
-      <ReportStatCards
-        totalCount={MOCK_TOTAL_DB_COUNT}
-        activeCount={activeCount}
-        onMissionCount={onMissionCount}
+      <ReportQuickCards
+        totalCount={MOCK_PERSONNEL.length}
+        readyCount={readyCount}
+        replacementCount={replacementCount}
         woundedCount={woundedCount}
       />
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <ReportStatusBreakdown
-          distribution={distribution}
-          totalCount={MOCK_TOTAL_DB_COUNT}
-        />
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[2fr_3fr]">
+        <Card>
+          <CardHeader>
+            <CardTitle>Розподіл за статусами</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ReportRadar
+              data={radarData}
+              maxValue={MOCK_PERSONNEL.length}
+            />
+          </CardContent>
+        </Card>
 
-        <ReportLeaderboard personnel={MOCK_PERSONNEL} />
-      </div>
-
-      <div className="rounded-lg border border-border bg-card p-4">
-        <h3 className="mb-3 text-sm font-medium text-muted-foreground">
-          Повнота контактних даних
-        </h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="flex items-center gap-2">
-            <div className="flex h-2 flex-1 overflow-hidden rounded-full bg-muted">
-              <div
-                className="bg-emerald-500"
-                style={{
-                  width: `${Math.round((contactCount / MOCK_PERSONNEL.length) * 100)}%`,
-                }}
-              />
-            </div>
-            <span className="text-sm tabular-nums">
-              {contactCount}/{MOCK_PERSONNEL.length}
-            </span>
-            <span className="text-xs text-muted-foreground">тел.</span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <div className="flex h-2 flex-1 overflow-hidden rounded-full bg-muted">
-              <div
-                className="bg-sky-500"
-                style={{
-                  width: `${Math.round((emailCount / MOCK_PERSONNEL.length) * 100)}%`,
-                }}
-              />
-            </div>
-            <span className="text-sm tabular-nums">
-              {emailCount}/{MOCK_PERSONNEL.length}
-            </span>
-            <span className="text-xs text-muted-foreground">email</span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <div className="flex h-2 flex-1 overflow-hidden rounded-full bg-muted">
-              <div
-                className="bg-rose-500"
-                style={{
-                  width: `${Math.round(((MOCK_PERSONNEL.length - contactCount) / MOCK_PERSONNEL.length) * 100)}%`,
-                }}
-              />
-            </div>
-            <span className="text-sm tabular-nums">
-              {MOCK_PERSONNEL.length - contactCount}/{MOCK_PERSONNEL.length}
-            </span>
-            <span className="text-xs text-muted-foreground">без зв&apos;язку</span>
-          </div>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Ротація — хто потребує заміни</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ReportRotationTable personnel={MOCK_PERSONNEL} />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

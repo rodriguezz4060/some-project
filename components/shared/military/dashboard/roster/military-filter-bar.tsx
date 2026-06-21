@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { cn } from "@root/lib/utils";
-import { statusConfig } from "../constants";
-import type { StatusType } from "../types";
+import { statusConfig } from "../../constants";
+import type { StatusType } from "../../types";
 
 const ALL_STATUSES: StatusType[] = [
   "active",

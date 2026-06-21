@@ -1,10 +1,10 @@
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@root/lib/utils";
-import { getInitials } from "../../utils";
-import { rankColors, statusConfig } from "../../constants";
+import { getInitials } from "../../../utils";
+import { rankColors, statusConfig } from "../../../constants";
 import { Activity, Shield, Calendar, type LucideIcon } from "lucide-react";
-import type { RankType, StatusType } from "../../types";
+import type { RankType, StatusType } from "../../../types";
 
 const statusIconMap: Record<string, LucideIcon> = {
   Activity,
