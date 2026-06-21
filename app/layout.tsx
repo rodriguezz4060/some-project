@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 import { Header } from "@/components/shared/header/header";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "sonner";
 
 const nunito = Nunito({
   subsets: ["cyrillic"],
@@ -26,7 +27,10 @@ export default function RootLayout({
       <body className={nunito.className}>
         <Header />
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-          <TooltipProvider>{children}</TooltipProvider>
+          <TooltipProvider>
+            {children}
+            <Toaster richColors closeButton />
+          </TooltipProvider>
         </ThemeProvider>
       </body>
     </html>
