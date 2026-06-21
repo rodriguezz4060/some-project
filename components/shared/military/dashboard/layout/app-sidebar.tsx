@@ -9,6 +9,7 @@ import {
   IconSettings,
   IconUsers,
   IconBuildingFortress,
+  IconTargetArrow,
 } from "@tabler/icons-react";
 
 import { NavMain } from "@/components/shared/military/dashboard/layout/nav-main";
@@ -46,6 +47,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       url: "/military",
       icon: IconUsers,
       isActive: pathname === "/military",
+    },
+    {
+      title: "БЗВП",
+      url: "/bzvp",
+      icon: IconTargetArrow,
+      isActive: pathname.startsWith("/bzvp"),
     },
     {
       title: "Підрозділи",

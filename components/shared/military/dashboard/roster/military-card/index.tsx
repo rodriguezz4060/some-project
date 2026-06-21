@@ -29,7 +29,7 @@ export function MilitaryCard({
   email,
 }: MilitaryPersonnel) {
   return (
-    <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-2 hover:border-primary/20">
+    <Card className="group relative flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-2 hover:border-primary/20">
       <MilitaryStatusBar status={status} />
 
       <CardHeader className="pt-6 pb-2">
@@ -44,7 +44,7 @@ export function MilitaryCard({
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4 pt-2">
+      <CardContent className="flex-1 space-y-4 pt-2">
         <MilitaryInfoGrid
           position={position}
           unit={unit}

@@ -4,11 +4,11 @@ import { SiteHeader } from "@/components/shared/military/dashboard/layout/site-h
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 export const metadata: Metadata = {
-  title: "Військові | 23 ОМБр",
-  description: "База Військових",
+  title: "БЗВП | 23 ОМБр",
+  description: "Бойова зброя вогнева підготовка",
 };
 
-export default function MilitaryLayout({
+export default function BzvpLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -24,7 +24,7 @@ export default function MilitaryLayout({
     >
       <AppSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader title="Особовий склад" />
+        <SiteHeader title="БЗВП" />
         <main className="flex-1">{children}</main>
       </SidebarInset>
     </SidebarProvider>
