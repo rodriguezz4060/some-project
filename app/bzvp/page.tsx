@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { BzvpFilterBar } from "@/components/shared/military/dashboard/bzvp/bzvp-filter-bar";
-import { BzvpCardGrid } from "@/components/shared/military/dashboard/bzvp/bzvp-card-grid";
-import { BZVP_MOCK } from "@/components/shared/military/bzvp-mock";
-import type { BzvpStatus } from "@/components/shared/military/types";
+import { BzvpFilterBar } from "@/components/shared/bzvp/bzvp-filter-bar";
+import { BzvpCardGrid } from "@/components/shared/bzvp/bzvp-card-grid";
+import { BZVP_MOCK } from "@/components/shared/bzvp/mock";
+import type { BzvpStatus } from "@/components/shared/bzvp/types";
 
 const ALLOWED_STATUSES: BzvpStatus[] = [
   "training",

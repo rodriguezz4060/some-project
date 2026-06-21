@@ -12,8 +12,8 @@ import { cn } from "@root/lib/utils";
 import { Calendar, MapPin, Tag, Timer, Phone } from "lucide-react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { BZVP_STATUS_CONFIG, statusIconMap } from "./bzvp-constants";
-import type { BzvpPersonnel } from "../../types";
+import { BZVP_STATUS_CONFIG, statusIconMap } from "./constants";
+import type { BzvpPersonnel } from "./types";
 
 function getInitials(name: string) {
   return name

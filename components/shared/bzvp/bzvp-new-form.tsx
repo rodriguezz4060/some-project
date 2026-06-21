@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import type { BzvpPersonnel, BzvpStatus } from "../../types";
+import type { BzvpPersonnel, BzvpStatus } from "./types";
 
 interface FormData {
   rank: string;
@@ -44,7 +44,6 @@ interface FormData {
   bloodType: string;
   shoeSize: string;
   notes: string;
-  trainingPeriod: string;
 }
 
 const emptyForm: FormData = {
@@ -80,7 +79,6 @@ const emptyForm: FormData = {
   bloodType: "",
   shoeSize: "",
   notes: "",
-  trainingPeriod: "",
 };
 
 interface FieldProps {
@@ -162,16 +160,15 @@ export function BzvpNewForm() {
         status: "training" as BzvpStatus,
         arrivalDate: today,
         specialization: "",
+        trainingPeriod: "",
       };
 
-      // Save to localStorage
       const existing = JSON.parse(
         localStorage.getItem("bzvp_personnel") || "[]",
       ) as BzvpPersonnel[];
       existing.push(newPerson);
       localStorage.setItem("bzvp_personnel", JSON.stringify(existing));
 
-      // Simulate network delay
       await new Promise((r) => setTimeout(r, 500));
 
       setIsLoading(false);
@@ -185,7 +182,6 @@ export function BzvpNewForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Card 1: Основна інформація + Документи */}
       <Card>
         <CardHeader>
           <CardTitle>Основна інформація та документи</CardTitle>
@@ -252,7 +248,6 @@ export function BzvpNewForm() {
             placeholder="15.06.2018, Житомирським РТЦК"
           />
 
-          {/* UBD */}
           <div className="space-y-3">
             <div className="flex items-center gap-2 pt-1">
               <Checkbox
@@ -276,7 +271,6 @@ export function BzvpNewForm() {
         </CardContent>
       </Card>
 
-      {/* Card 2: Служба, адреси, правовий статус, сім'я */}
       <Card>
         <CardHeader>
           <CardTitle>Служба, адреси, правовий статус та сім&apos;я</CardTitle>
@@ -360,7 +354,6 @@ export function BzvpNewForm() {
         </CardContent>
       </Card>
 
-      {/* Card 3: Додатково */}
       <Card>
         <CardHeader>
           <CardTitle>Додатково</CardTitle>
@@ -411,12 +404,6 @@ export function BzvpNewForm() {
             placeholder="43"
           />
           <FormField
-            label="Період навчання"
-            value={form.trainingPeriod}
-            onChange={(v) => updateField("trainingPeriod", v)}
-            placeholder="01.03.2025 — 01.06.2025"
-          />
-          <FormField
             label="Особливі примітки"
             value={form.notes}
             onChange={(v) => updateField("notes", v)}
@@ -426,7 +413,6 @@ export function BzvpNewForm() {
         </CardContent>
       </Card>
 
-      {/* Submit */}
       <div className="flex items-center gap-3 pt-2">
         <Button type="submit" size="lg" disabled={isLoading} className="gap-2">
           {isLoading ? (

@@ -3,8 +3,8 @@
 import { useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@root/lib/utils";
-import { BZVP_STATUS_CONFIG, BZVP_STATUSES } from "./bzvp-constants";
-import type { BzvpStatus } from "../../types";
+import { BZVP_STATUS_CONFIG, BZVP_STATUSES } from "./constants";
+import type { BzvpStatus } from "./types";
 
 interface Props {
   selectedStatuses: BzvpStatus[];
@@ -42,7 +42,7 @@ export function BzvpFilterBar({ selectedStatuses, shownCount }: Props) {
   const isAllMode = selectedStatuses.length === 0;
 
   return (
-    <div className="mb-4 flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <span className="text-sm text-muted-foreground mr-1">Статус:</span>
       <button
         type="button"

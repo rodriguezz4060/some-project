@@ -5,11 +5,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { BzvpPdfWrapper } from "@/components/shared/military/dashboard/bzvp/bzvp-pdf-wrapper";
-import { BZVP_MOCK } from "@/components/shared/military/bzvp-mock";
-import { BZVP_STATUS_CONFIG } from "@/components/shared/military/dashboard/bzvp/bzvp-constants";
+import { BzvpPdfWrapper } from "@/components/shared/bzvp/bzvp-pdf-wrapper";
+import { BZVP_MOCK } from "@/components/shared/bzvp/mock";
+import { BZVP_STATUS_CONFIG } from "@/components/shared/bzvp/constants";
 import { cn } from "@root/lib/utils";
-import type { BzvpPersonnel } from "@/components/shared/military/types";
+import type { BzvpPersonnel } from "@/components/shared/bzvp/types";
 
 function getInitials(name: string) {
   return name.split(" ").map((p) => p[0]).join("");

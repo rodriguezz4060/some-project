@@ -1,4 +1,4 @@
-import type { BzvpPersonnel } from "../../types";
+import type { BzvpPersonnel } from "./types";
 import { BzvpCard } from "./bzvp-card";
 
 interface Props {

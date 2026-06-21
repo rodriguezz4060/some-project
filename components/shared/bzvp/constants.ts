@@ -1,5 +1,5 @@
 import { Activity, GraduationCap, UserCheck, XCircle, type LucideIcon } from "lucide-react";
-import type { BzvpStatus } from "../../types";
+import type { BzvpStatus } from "./types";
 
 export const statusIconMap: Record<string, LucideIcon> = {
   Activity,
@@ -10,8 +10,8 @@ export const statusIconMap: Record<string, LucideIcon> = {
 
 export const BZVP_STATUS_CONFIG: Record<BzvpStatus, {
   label: string;
-  color: string;       // status bar
-  badge: string;       // badge styling
+  color: string;
+  badge: string;
   iconName: string;
 }> = {
   training: {

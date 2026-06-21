@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import type { BzvpPersonnel } from "../../types";
+import type { BzvpPersonnel } from "./types";
 
 const PdfButton = dynamic(
   () => import("./bzvp-pdf-button").then((m) => m.BzvpPdfButton),

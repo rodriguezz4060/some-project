@@ -5,7 +5,7 @@ import { pdf } from "@react-pdf/renderer";
 import { FileDown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BzvpPdfDocument } from "./bzvp-pdf-document";
-import type { BzvpPersonnel } from "../../types";
+import type { BzvpPersonnel } from "./types";
 
 interface Props {
   personnel: BzvpPersonnel;
