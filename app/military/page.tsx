@@ -1,19 +1,45 @@
 import { AppSidebar } from "@/components/shared/military/dashboard/app-sidebar";
 import { SiteHeader } from "@/components/shared/military/dashboard/site-header";
-import { MilitaryPageHeader } from "@/components/shared/military/dashboard/military-page-header";
+import { MilitaryFilterBar } from "@/components/shared/military/dashboard/military-filter-bar";
 import { MilitaryCardGrid } from "@/components/shared/military/dashboard/military-card-grid";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import {
   MOCK_PERSONNEL,
   MOCK_TOTAL_DB_COUNT,
 } from "@/components/shared/military/personnel-mock";
+import type { StatusType, StatusFilterValue } from "@/components/shared/military/types";
 
-const activeCount = MOCK_PERSONNEL.filter(
-  (p) => p.status === "active",
-).length;
-const shownCount = MOCK_PERSONNEL.length;
+const ALLOWED_STATUSES: StatusType[] = [
+  "active",
+  "on-mission",
+  "wounded",
+  "vacation",
+  "reserve",
+];
 
-export default async function MilitaryMain() {
+function parseStatus(value: string | undefined): StatusFilterValue {
+  if (value && ALLOWED_STATUSES.includes(value as StatusType)) {
+    return value as StatusType;
+  }
+  return "all";
+}
+
+export default async function MilitaryMain({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>;
+}) {
+  const { status } = await searchParams;
+  const filterValue = parseStatus(status);
+
+  const filtered =
+    filterValue === "all"
+      ? MOCK_PERSONNEL
+      : MOCK_PERSONNEL.filter((p) => p.status === filterValue);
+
+  const activeCount = filtered.filter((p) => p.status === "active").length;
+  const shownCount = filtered.length;
+
   return (
     <SidebarProvider
       style={
@@ -30,13 +56,14 @@ export default async function MilitaryMain() {
 
         <main className="flex-1">
           <div className="p-6">
-            <MilitaryPageHeader
+            <MilitaryFilterBar
+              currentFilter={filterValue}
               activeCount={activeCount}
               shownCount={shownCount}
               totalDbCount={MOCK_TOTAL_DB_COUNT}
             />
 
-            <MilitaryCardGrid personnel={MOCK_PERSONNEL} />
+            <MilitaryCardGrid personnel={filtered} />
           </div>
         </main>
       </SidebarInset>

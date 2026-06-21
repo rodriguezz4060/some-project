@@ -1,5 +1,7 @@
 export type StatusType = "active" | "on-mission" | "wounded" | "vacation" | "reserve";
 
+export type StatusFilterValue = StatusType | "all";
+
 export type RankType =
   | "старший лейтенант"
   | "капітан"
