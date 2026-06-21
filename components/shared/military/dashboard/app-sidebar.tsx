@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import {
   IconCalendarClock,
   IconHelp,
@@ -17,29 +18,6 @@ import {
   SidebarContent,
   SidebarHeader,
 } from "@/components/ui/sidebar";
-
-const navMain = [
-  {
-    title: "Особовий склад",
-    url: "/military",
-    icon: IconUsers,
-  },
-  {
-    title: "Підрозділи",
-    url: "/military/units",
-    icon: IconBuildingFortress,
-  },
-  {
-    title: "Графік чергувань",
-    url: "/military/schedule",
-    icon: IconCalendarClock,
-  },
-  {
-    title: "Звіти",
-    url: "/military/reports",
-    icon: IconReportAnalytics,
-  },
-];
 
 const navSecondary = [
   {
@@ -60,8 +38,43 @@ const navSecondary = [
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const pathname = usePathname();
+
+  const navMain = [
+    {
+      title: "Особовий склад",
+      url: "/military",
+      icon: IconUsers,
+      isActive: pathname === "/military",
+    },
+    {
+      title: "Підрозділи",
+      url: "/military/units",
+      icon: IconBuildingFortress,
+      isActive: pathname.startsWith("/military/units"),
+    },
+    {
+      title: "Графік чергувань",
+      url: "/military/schedule",
+      icon: IconCalendarClock,
+      isActive: pathname.startsWith("/military/schedule"),
+    },
+    {
+      title: "Звіти",
+      url: "/military/reports",
+      icon: IconReportAnalytics,
+      isActive: pathname.startsWith("/military/reports"),
+    },
+  ];
   return (
-    <Sidebar collapsible="offcanvas" {...props}>
+    <Sidebar
+      collapsible="offcanvas"
+      {...props}
+      style={{
+        top: "var(--header-height)",
+        height: "calc(100svh - var(--header-height))",
+      }}
+    >
       <SidebarHeader />
       <SidebarContent>
         <NavMain items={navMain} />
