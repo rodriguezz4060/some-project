@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
 import type { MilitaryPersonnel } from "../../types";
 import {
   Table,
@@ -7,8 +11,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { statusConfig } from "../../constants";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@root/lib/utils";
+
+const REPLACEMENT_DAYS = 14;
 
 interface Props {
   personnel: MilitaryPersonnel[];
@@ -16,9 +24,9 @@ interface Props {
 
 function getRowClass(days?: number): string {
   if (days === undefined || days === null) return "";
-  if (days > 30) return "bg-red-50 dark:bg-red-950/20";
-  if (days > 14) return "bg-amber-50 dark:bg-amber-950/20";
-  if (days > 7) return "bg-yellow-50/50 dark:bg-yellow-950/10";
+  if (days > 30) return "bg-red-500/5 dark:bg-red-950/20";
+  if (days > 14) return "bg-amber-500/5 dark:bg-amber-950/20";
+  if (days > 7) return "bg-yellow-500/5 dark:bg-yellow-950/10";
   return "";
 }
 
@@ -46,9 +54,14 @@ function getDaysColor(days?: number): string {
 }
 
 export function ReportRotationTable({ personnel }: Props) {
-  const sorted = [...personnel].sort(
-    (a, b) => (b.lastActiveDays ?? 0) - (a.lastActiveDays ?? 0),
-  );
+  const [filterMode, setFilterMode] = useState<"all" | "replacement">("all");
+
+  const sorted = [...personnel]
+    .sort((a, b) => (b.lastActiveDays ?? 0) - (a.lastActiveDays ?? 0));
+
+  const filtered = filterMode === "replacement"
+    ? sorted.filter((p) => (p.lastActiveDays ?? 0) > REPLACEMENT_DAYS)
+    : sorted;
 
   if (sorted.length === 0) {
     return (
@@ -59,58 +72,88 @@ export function ReportRotationTable({ personnel }: Props) {
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <Button
+          variant={filterMode === "all" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setFilterMode("all")}
+        >
+          Усі
+        </Button>
+        <Button
+          variant={filterMode === "replacement" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setFilterMode("replacement")}
+        >
+          Потребують заміни
+        </Button>
+      </div>
+
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
               <TableHead className="w-8 text-xs text-muted-foreground">#</TableHead>
               <TableHead className="text-xs">ПІБ</TableHead>
-              <TableHead className="text-xs text-muted-foreground">Звання</TableHead>
+              <TableHead className="text-xs text-muted-foreground hidden sm:table-cell">Звання</TableHead>
               <TableHead className="text-xs">Статус</TableHead>
-              <TableHead className="text-xs text-muted-foreground">Місії</TableHead>
-              <TableHead className="text-right text-xs">
-                Останнє завдання
-              </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {sorted.map((person, i) => {
-          const status = statusConfig[person.status];
-          return (
-            <TableRow
-              key={person.id}
-              className={getRowClass(person.lastActiveDays)}
-            >
-              <TableCell className="text-xs text-muted-foreground">
-                {i + 1}
-              </TableCell>
-              <TableCell className="text-sm font-medium">
-                {person.fullName}
-              </TableCell>
-              <TableCell className="text-sm text-muted-foreground">
-                {person.rank}
-              </TableCell>
-              <TableCell>
-                <Badge variant="outline" className={status.color}>
-                  {status.label}
-                </Badge>
-              </TableCell>
-              <TableCell className="text-sm tabular-nums">
-                {person.missions ?? "—"}
-              </TableCell>
-              <TableCell
-                className={`text-right text-sm tabular-nums ${getDaysColor(person.lastActiveDays)}`}
-              >
-                <span className="inline-flex items-center gap-1.5">
-                  <span
-                    className={`inline-block size-2 rounded-full ${getUrgencyDot(person.lastActiveDays)}`}
-                  />
-                  {getDaysLabel(person.lastActiveDays)}
-                </span>
-              </TableCell>
+              <TableHead className="text-xs text-muted-foreground hidden md:table-cell">Місії</TableHead>
+              <TableHead className="text-right text-xs">Останнє завдання</TableHead>
             </TableRow>
-          );
-        })}
-      </TableBody>
-    </Table>
+          </TableHeader>
+          <TableBody>
+            {filtered.map((person, i) => {
+              const status = statusConfig[person.status];
+              return (
+                <TableRow
+                  key={person.id}
+                  className={cn(getRowClass(person.lastActiveDays), "group cursor-pointer")}
+                >
+                  <TableCell className="text-xs text-muted-foreground">
+                    {i + 1}
+                  </TableCell>
+                  <TableCell className="text-sm font-medium">
+                    <Link
+                      href={`/military/${person.id}`}
+                      className="hover:text-primary transition-colors"
+                    >
+                      {person.fullName}
+                    </Link>
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground hidden sm:table-cell">
+                    {person.rank}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className={status.color}>
+                      {status.label}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-sm tabular-nums hidden md:table-cell">
+                    {person.missions ?? "—"}
+                  </TableCell>
+                  <TableCell
+                    className={`text-right text-sm tabular-nums ${getDaysColor(person.lastActiveDays)}`}
+                  >
+                    <span className="inline-flex items-center gap-1.5">
+                      <span
+                        className={`inline-block size-2 rounded-full ${getUrgencyDot(person.lastActiveDays)}`}
+                      />
+                      {getDaysLabel(person.lastActiveDays)}
+                    </span>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
+
+      {filterMode === "replacement" && filtered.length > 0 && (
+        <p className="text-xs text-muted-foreground/60 text-center">
+          Показано {filtered.length} з {sorted.length} записів
+        </p>
+      )}
+    </div>
   );
 }

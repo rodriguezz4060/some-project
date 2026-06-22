@@ -37,7 +37,7 @@ export function ReportQuickCards({
   return (
     <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
       {items.map((item) => (
-        <Card key={item.label} size="sm" className="py-3">
+        <Card key={item.label} size="sm" className="py-3 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
           <div className="space-y-0.5 text-center">
             <div className={`text-2xl font-bold tabular-nums ${item.color}`}>
               {item.value}
