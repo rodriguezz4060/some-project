@@ -1,6 +1,6 @@
+import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@root/lib/utils";
 import { getInitials } from "../../utils";
 import { rankColors, statusConfig } from "../../constants";
@@ -60,19 +60,21 @@ export function ProfileHero({
   return (
     <div className="flex flex-col gap-5 sm:flex-row sm:items-stretch">
       <div className="flex items-center gap-5 sm:flex-1">
-        <Avatar className="size-32 sm:size-44 rounded-none ring-2 ring-primary/10 ring-offset-2 overflow-hidden shrink-0">
+        <div className="size-32 sm:size-44 rounded-xl ring-2 ring-primary/10 ring-offset-2 overflow-hidden shrink-0 bg-linear-to-br from-primary/20 to-primary/5 flex items-center justify-center relative">
           {photo ? (
-            <AvatarImage
+            <Image
               src={photo}
               alt={fullName}
-              className="rounded-none object-cover"
+              fill
+              className="object-cover"
+              unoptimized
             />
           ) : (
-            <AvatarFallback className="rounded-none bg-linear-to-br from-primary/20 to-primary/5 text-primary font-bold text-4xl sm:text-6xl">
+            <span className="text-primary font-bold text-4xl sm:text-6xl">
               {initials}
-            </AvatarFallback>
+            </span>
           )}
-        </Avatar>
+        </div>
 
         <div className="space-y-2">
           <h1 className="text-2xl font-bold leading-tight">{fullName}</h1>

@@ -28,15 +28,15 @@ export function MilitaryAvatarBlock({ fullName, rank, status, photo }: Props) {
   return (
     <div className="flex items-start justify-between">
       <div className="flex items-center gap-4">
-        <Avatar className="h-16 w-16 rounded-none ring-1 ring-primary/10 ring-offset-1 overflow-hidden">
+        <Avatar className="h-16 w-16 ring-1 ring-primary/10 ring-offset-1 overflow-hidden">
           {photo ? (
             <AvatarImage
               src={photo}
               alt={fullName}
-              className="rounded-none object-cover"
+              className="object-cover"
             />
           ) : (
-            <AvatarFallback className="rounded-none bg-linear-to-br from-primary/20 to-primary/5 text-primary font-semibold text-lg">
+            <AvatarFallback className="bg-linear-to-br from-primary/20 to-primary/5 text-primary font-semibold text-lg">
               {initials}
             </AvatarFallback>
           )}

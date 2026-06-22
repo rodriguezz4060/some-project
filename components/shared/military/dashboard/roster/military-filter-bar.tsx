@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { cn } from "@root/lib/utils";
-import { statusConfig } from "../../constants";
+import { statusConfig, STATUS_SELECTED_CLASSES } from "../../constants";
 import type { StatusType } from "../../types";
 
 const ALL_STATUSES: StatusType[] = [
@@ -98,12 +98,15 @@ export function MilitaryFilterBar({
                 className={cn(
                   "inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors",
                   isActive
-                    ? "bg-primary text-primary-foreground border-primary"
+                    ? STATUS_SELECTED_CLASSES[status]
                     : "bg-muted/50 text-muted-foreground border-border hover:bg-muted hover:text-foreground",
                 )}
               >
                 <span
-                  className={cn("h-1.5 w-1.5 rounded-full", chipDotColor[status])}
+                  className={cn(
+                    "h-1.5 w-1.5 rounded-full",
+                    isActive ? `${chipDotColor[status]}/60` : chipDotColor[status],
+                  )}
                 />
                 {config.label}
               </button>
