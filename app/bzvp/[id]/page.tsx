@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -61,15 +61,21 @@ export default async function BzvpProfilePage({
       {/* Hero section: large photo + main data */}
       <div className="flex flex-col gap-6 sm:flex-row">
         <div className="shrink-0">
-          <Avatar className="size-44 rounded-xl ring-1 ring-primary/10 overflow-hidden">
+          <div className="size-44 rounded-xl ring-1 ring-primary/10 overflow-hidden bg-linear-to-br from-primary/20 to-primary/5 flex items-center justify-center relative">
             {person.photo ? (
-              <AvatarImage src={person.photo} alt={person.fullName} className="rounded-xl object-cover" />
+              <Image
+                src={person.photo}
+                alt={person.fullName}
+                fill
+                className="object-cover"
+                unoptimized
+              />
             ) : (
-              <AvatarFallback className="rounded-xl bg-linear-to-br from-primary/20 to-primary/5 text-primary font-semibold text-3xl">
+              <span className="text-primary font-semibold text-3xl">
                 {getInitials(person.fullName)}
-              </AvatarFallback>
+              </span>
             )}
-          </Avatar>
+          </div>
         </div>
 
         <div className="flex-1 space-y-2">

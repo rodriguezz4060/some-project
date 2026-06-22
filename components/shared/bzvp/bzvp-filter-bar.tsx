@@ -3,7 +3,11 @@
 import { useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@root/lib/utils";
-import { BZVP_STATUS_CONFIG, BZVP_STATUSES } from "./constants";
+import {
+  BZVP_STATUS_CONFIG,
+  BZVP_STATUSES,
+  STATUS_SELECTED_CLASSES,
+} from "./constants";
 import type { BzvpStatus } from "./types";
 
 interface Props {
@@ -69,11 +73,16 @@ export function BzvpFilterBar({ selectedStatuses, shownCount }: Props) {
             className={cn(
               "inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors",
               isSelected
-                ? "bg-primary text-primary-foreground border-primary"
+                ? STATUS_SELECTED_CLASSES[status]
                 : "bg-muted/50 text-muted-foreground border-border hover:bg-muted hover:text-foreground",
             )}
           >
-            <span className={cn("h-1.5 w-1.5 rounded-full", cfg.color)} />
+            <span
+              className={cn(
+                "h-1.5 w-1.5 rounded-full",
+                isSelected ? `${cfg.color}/60` : cfg.color,
+              )}
+            />
             {cfg.label}
           </button>
         );
