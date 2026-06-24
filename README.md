@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Personal Tracker / Персональний трекер
 
-## Getting Started
+## Технологічний стек
 
-First, run the development server:
+| Технологія | Версія |
+|---|---|
+| Next.js | 16 |
+| React | 19 |
+| TypeScript | 5 |
+| Tailwind CSS | 4 |
+| shadcn/ui | radix-nova |
+| Prisma | 7 |
+| PostgreSQL (через `@prisma/adapter-pg`) | — |
+| NextAuth | v5 (beta) |
+
+## Початок роботи
 
 ```bash
+# 1. Встановити залежності
+npm install
+
+# 2. Налаштувати .env
+cp .env.example .env  # або створити вручну:
+# AUTH_SECRET=генерувати через npx auth secret
+# DATABASE_URL=postgresql://user:pass@localhost:5432/tracker
+
+# 3. Ініціалізувати БД та залити seed-дані
+npx prisma migrate dev
+npx prisma db seed
+
+# 4. Запустити dev-сервер
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Скрипти
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run dev      # dev-сервер (http://localhost:3000)
+npm run build    # production build
+npm run start    # запуск production-збірки
+npm run lint     # ESLint (перед комітом)
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Seed-користувачі
 
-## Learn More
+| Роль | Email | Пароль |
+|---|---|---|
+| Адміністратор | `admin@tracker.local` | `admin123` |
+| Користувач | `user@tracker.local` | `user123` |
 
-To learn more about Next.js, take a look at the following resources:
+## Структура проєкту
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+app/                          # Next.js App Router сторінки
+  military/                   #   військовий облік
+  bzvp/                       #   БЗВП
+  api/auth/[...nextauth]/     #   NextAuth handler
+components/
+  ui/                         # shadcn/ui примітиви
+  shared/                     # компоненти застосунку
+    auth/                     #   аутентифікація (NextAuth)
+    military/                 #   військовий облік
+    bzvp/                     #   БЗВП
+prisma/
+  schema.prisma               # схема БД (7 моделей)
+  seed.ts                     # seed-дані
+src/
+  actions/                    # Server Actions
+  lib/                        # утиліти, auth config, prisma client
+middleware.ts                 # захист маршрутів
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Гіт-стратегія
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. `git checkout -b feature/nazva` — нова гілка для фічі
+2. Працювати, комітити, пушити в гілку
+3. `git checkout main && git pull`
+4. `git merge feature/nazva --no-ff`
+5. `git push origin main`
+6. Видалити гілку
