@@ -1,5 +1,5 @@
 import type { StatusType } from "@/components/shared/military/types";
-import { MOCK_PERSONNEL } from "@/components/shared/military/personnel-mock";
+import { getAllMilitary } from "@root/lib/data/military";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ReportRadar } from "@/components/shared/military/dashboard/reports/report-radar";
 import { ReportRotationTable } from "@/components/shared/military/dashboard/reports/report-rotation-table";
@@ -22,10 +22,12 @@ const STATUS_LABELS: Record<StatusType, string> = {
 };
 
 export default async function ReportsPage() {
+  const personnel = await getAllMilitary();
+
   const distribution = Object.fromEntries(
     ALL_STATUSES.map((status) => [
       status,
-      MOCK_PERSONNEL.filter((p) => p.status === status).length,
+      personnel.filter((p) => p.status === status).length,
     ]),
   ) as Record<StatusType, number>;
 
@@ -34,15 +36,15 @@ export default async function ReportsPage() {
     value: distribution[status],
   }));
 
-  const readyCount = MOCK_PERSONNEL.filter(
+  const readyCount = personnel.filter(
     (p) => p.status === "active",
   ).length;
 
-  const replacementCount = MOCK_PERSONNEL.filter(
+  const replacementCount = personnel.filter(
     (p) => (p.lastActiveDays ?? 0) > 14,
   ).length;
 
-  const woundedCount = MOCK_PERSONNEL.filter(
+  const woundedCount = personnel.filter(
     (p) => p.status === "wounded",
   ).length;
 
@@ -56,7 +58,7 @@ export default async function ReportsPage() {
       </div>
 
       <ReportQuickCards
-        totalCount={MOCK_PERSONNEL.length}
+        totalCount={personnel.length}
         readyCount={readyCount}
         replacementCount={replacementCount}
         woundedCount={woundedCount}
@@ -70,7 +72,7 @@ export default async function ReportsPage() {
           <CardContent>
             <ReportRadar
               data={radarData}
-              maxValue={MOCK_PERSONNEL.length}
+              maxValue={personnel.length}
             />
           </CardContent>
         </Card>
@@ -80,7 +82,7 @@ export default async function ReportsPage() {
             <CardTitle>Ротація — хто потребує заміни</CardTitle>
           </CardHeader>
           <CardContent>
-            <ReportRotationTable personnel={MOCK_PERSONNEL} />
+            <ReportRotationTable personnel={personnel} />
           </CardContent>
         </Card>
       </div>

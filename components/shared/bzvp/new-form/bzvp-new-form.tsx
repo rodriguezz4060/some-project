@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import type { BzvpPersonnel, BzvpStatus } from "../types";
+import { createBzvp } from "@root/actions/bzvp";
 
 interface FormData {
   rank: string;
@@ -152,27 +152,11 @@ export function BzvpNewForm() {
       e.preventDefault();
       setIsLoading(true);
 
-      const today = new Date().toISOString().split("T")[0];
-      const newPerson: BzvpPersonnel = {
-        ...form,
-        id: `bzvp-${Date.now()}`,
-        status: "training" as BzvpStatus,
-        arrivalDate: today,
-        specialization: "",
-        trainingPeriod: "",
-      };
-
-      const existing = JSON.parse(
-        localStorage.getItem("bzvp_personnel") || "[]",
-      ) as BzvpPersonnel[];
-      existing.push(newPerson);
-      localStorage.setItem("bzvp_personnel", JSON.stringify(existing));
-
-      await new Promise((r) => setTimeout(r, 500));
+      const result = await createBzvp(form);
 
       setIsLoading(false);
       toast.success("Анкету збережено", {
-        description: `${newPerson.fullName} додано до списку БЗВП`,
+        description: `${result.fullName} додано до списку БЗВП`,
       });
       router.push("/bzvp");
     },

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { BzvpPdfWrapper } from "@/components/shared/bzvp/pdf/bzvp-pdf-wrapper";
-import { BZVP_MOCK } from "@/components/shared/bzvp/mock";
+import { getBzvpPersonnelById } from "@root/lib/data/bzvp";
 import { BZVP_STATUS_CONFIG } from "@/components/shared/bzvp/constants";
 import { cn } from "@root/lib/utils";
 import type { Metadata } from "next";
@@ -18,7 +18,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const person = BZVP_MOCK.find((p) => p.id === id);
+  const person = await getBzvpPersonnelById(id);
   return { title: person?.fullName ?? "Профіль БЗВП" };
 }
 
@@ -69,7 +69,7 @@ export default async function BzvpProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const person = BZVP_MOCK.find((p) => p.id === id);
+  const person = await getBzvpPersonnelById(id);
 
   if (!person) {
     notFound();

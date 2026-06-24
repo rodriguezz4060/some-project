@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@root/lib/utils";
-import { MOCK_PERSONNEL } from "@/components/shared/military/personnel-mock";
+import { getMilitaryPersonnelById } from "@root/lib/data/military";
 import { MilitaryStatusBar } from "@/components/shared/military/dashboard/roster/military-card/status-bar";
 import { ProfileHero } from "@/components/shared/military/dashboard/profile/profile-hero";
 import { ProfileTabs } from "@/components/shared/military/dashboard/profile/profile-tabs";
@@ -17,7 +17,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const person = MOCK_PERSONNEL.find((p) => p.id === id);
+  const person = await getMilitaryPersonnelById(id);
   return { title: person?.fullName ?? "Профіль військовослужбовця" };
 }
 
@@ -27,7 +27,7 @@ export default async function PersonnelProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const person = MOCK_PERSONNEL.find((p) => p.id === id);
+  const person = await getMilitaryPersonnelById(id);
 
   if (!person) {
     notFound();

@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model BzvpPersonnel {
+  id                  String   @id @default(cuid())
+  fullName            String
+  rank                String
+  birthDate           String
+  birthPlace          String?
+  photo               String?
+  passport            String?
+  passportIssued      String?
+  tin                 String?
+  militaryId          String?
+  militaryIdIssued    String?
+  ubd                 String?
+  ubdDate             String?
+  serviceUnit         String?
+  serviceYears        String?
+  civilianJob         String?
+  education           String?
+  actualAddress       String?
+  registrationAddress String?
+  driverLicense       String?
+  criminalRecord      String?
+  policeRecords       String?
+  family              String?
+  phone               String?
+  relativePhones      String?
+  personalOrder       String?
+  conscription        String?
+  health              String?
+  healthComplaints    String?
+  moralState          String?
+  bloodType           String?
+  shoeSize            String?
+  notes               String?
+  status              String
+  arrivalDate         String
+  trainingPeriod      String
+  specialization      String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model MilitaryPersonnel {
+  id             String   @id @default(cuid())
+  fullName       String
+  rank           String
+  position       String
+  unit           String
+  status         String
+  birthDate      String
+  photo          String?
+  experience     Int?
+  missions       Int?
+  phone          String?
+  email          String?
+  lastActiveDays Int?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  medicalRecords  MedicalRecord[]
+  achievements    Achievement[]
+  equipment       Equipment[]
+  positionHistory PositionEntry[]
+  clothingSizes   ClothingSizes?
+}
+
+model MedicalRecord {
+  id            String  @id @default(cuid())
+  condition     String
+  diagnosisDate String
+  status        String
+  notes         String?
+  personnelId   String
+  personnel     MilitaryPersonnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
+}
+
+model Achievement {
+  id          String  @id @default(cuid())
+  name        String
+  date        String
+  type        String
+  description String?
+  personnelId String
+  personnel   MilitaryPersonnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
+}
+
+model Equipment {
+  id           String  @id @default(cuid())
+  name         String
+  type         String
+  serialNumber String?
+  issuedDate   String
+  personnelId  String
+  personnel    MilitaryPersonnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
+}
+
+model PositionEntry {
+  id          String  @id @default(cuid())
+  position    String
+  unit        String
+  startDate   String
+  endDate     String?
+  personnelId String
+  personnel   MilitaryPersonnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
+}
+
+model ClothingSizes {
+  id          String  @id @default(cuid())
+  height      String?
+  chest       String?
+  waist       String?
+  shoes       String?
+  headgear    String?
+  uniform     String?
+  personnelId String  @unique
+  personnel   MilitaryPersonnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
+}
