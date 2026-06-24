@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { BzvpPdfWrapper } from "@/components/shared/bzvp/bzvp-pdf-wrapper";
+import { BzvpPdfWrapper } from "@/components/shared/bzvp/pdf/bzvp-pdf-wrapper";
 import { BZVP_MOCK } from "@/components/shared/bzvp/mock";
 import { BZVP_STATUS_CONFIG } from "@/components/shared/bzvp/constants";
 import { cn } from "@root/lib/utils";
@@ -28,7 +28,7 @@ function Field({ label, value }: FieldProps) {
       <span className="block text-xs uppercase tracking-widest text-muted-foreground/80">
         {label}
       </span>
-      <span className="block text-sm font-medium mt-1 leading-snug">
+      <span className="block text-base font-medium mt-1 leading-snug">
         {value}
       </span>
     </div>
@@ -73,14 +73,14 @@ export default async function BzvpProfilePage({
         <div className="px-6 py-3 flex items-center justify-between">
           <Link
             href="/bzvp"
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="inline-flex items-center gap-1.5 text-base text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="size-4" />
             До списку БЗВП
           </Link>
 
           <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-foreground/80 hidden sm:inline">
+            <span className="text-base font-medium text-foreground/80 hidden sm:inline">
               {person.fullName}
             </span>
             <Badge

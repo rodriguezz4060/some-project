@@ -79,17 +79,17 @@ export function ProfileHero({
         <div className="space-y-2">
           <h1 className="text-2xl font-bold leading-tight">{fullName}</h1>
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant="outline" className={cn("font-medium text-sm", rankColor)}>
+            <Badge variant="outline" className={cn("font-medium text-base", rankColor)}>
               {rank}
             </Badge>
-            <Badge variant="outline" className={cn("font-medium text-sm", statusInfo.color)}>
+            <Badge variant="outline" className={cn("font-medium text-base", statusInfo.color)}>
               <span className="flex items-center gap-1">
                 <StatusIcon className="size-3.5" />
                 {statusInfo.label}
               </span>
             </Badge>
           </div>
-          <p className="text-sm text-muted-foreground">{unit}</p>
+          <p className="text-base text-muted-foreground">{unit}</p>
         </div>
       </div>
 

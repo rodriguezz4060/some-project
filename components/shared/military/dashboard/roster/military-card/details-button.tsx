@@ -9,7 +9,7 @@ export function MilitaryDetailsButton({ id }: Props) {
   return (
     <Link
       href={`/military/${id}`}
-      className="w-full group/btn flex items-center justify-between px-3 py-2 rounded-lg bg-secondary/50 hover:bg-primary/10 transition-colors text-sm"
+      className="w-full group/btn flex items-center justify-between px-3 py-2 rounded-lg bg-secondary/50 hover:bg-primary/10 transition-colors text-base"
     >
       <span className="font-medium text-muted-foreground group-hover/btn:text-primary transition-colors">
         Детальніше

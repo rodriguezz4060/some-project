@@ -39,7 +39,7 @@ function InfoLine({
 }) {
   if (!value) return null;
   return (
-    <div className="flex items-center gap-2 text-sm">
+    <div className="flex items-center gap-2 text-base">
       <span className="size-4 shrink-0 text-muted-foreground">{icon}</span>
       <span className="min-w-28 text-muted-foreground">{label}</span>
       <span className="font-medium">{value}</span>
@@ -62,7 +62,7 @@ const equipmentIcon: Record<Equipment["type"], React.ReactNode> = {
 function MedicalTab({ records }: { records?: MedicalRecord[] }) {
   if (!records || records.length === 0) {
     return (
-      <p className="py-8 text-center text-sm text-muted-foreground">
+      <p className="py-8 text-center text-base text-muted-foreground">
         Медичних записів немає
       </p>
     );
@@ -79,7 +79,7 @@ function MedicalTab({ records }: { records?: MedicalRecord[] }) {
               <CheckCheck className="size-5 shrink-0 text-emerald-500" />
             )}
             <div>
-              <p className="text-sm font-medium">{record.condition}</p>
+              <p className="text-base font-medium">{record.condition}</p>
               <p className="text-xs text-muted-foreground">
                 {record.diagnosisDate}
                 {record.notes ? ` — ${record.notes}` : ""}
@@ -106,7 +106,7 @@ function MedicalTab({ records }: { records?: MedicalRecord[] }) {
 function AchievementsTab({ achievements }: { achievements?: Achievement[] }) {
   if (!achievements || achievements.length === 0) {
     return (
-      <p className="py-8 text-center text-sm text-muted-foreground">
+      <p className="py-8 text-center text-base text-muted-foreground">
         Нагород немає
       </p>
     );
@@ -120,7 +120,7 @@ function AchievementsTab({ achievements }: { achievements?: Achievement[] }) {
             {achievementIcon[item.type]}
           </span>
           <div className="flex-1">
-            <p className="text-sm font-medium">{item.name}</p>
+            <p className="text-base font-medium">{item.name}</p>
             {item.description && (
               <p className="text-xs text-muted-foreground">{item.description}</p>
             )}
@@ -137,7 +137,7 @@ function AchievementsTab({ achievements }: { achievements?: Achievement[] }) {
 function EquipmentTab({ equipment }: { equipment?: Equipment[] }) {
   if (!equipment || equipment.length === 0) {
     return (
-      <p className="py-8 text-center text-sm text-muted-foreground">
+      <p className="py-8 text-center text-base text-muted-foreground">
         Майно не обліковується
       </p>
     );
@@ -151,7 +151,7 @@ function EquipmentTab({ equipment }: { equipment?: Equipment[] }) {
             {equipmentIcon[item.type]}
           </span>
           <div className="flex-1">
-            <p className="text-sm font-medium">{item.name}</p>
+            <p className="text-base font-medium">{item.name}</p>
             {item.serialNumber && (
               <p className="text-xs text-muted-foreground">
                 № {item.serialNumber}

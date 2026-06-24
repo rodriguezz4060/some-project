@@ -1,6 +1,6 @@
 import { Document, Page, View, Text, StyleSheet, Image, Font } from "@react-pdf/renderer";
-import type { BzvpPersonnel } from "./types";
-import { font400, font500, font700 } from "../military/dashboard/profile/profile-pdf-fonts";
+import type { BzvpPersonnel } from "../types";
+import { font400, font500, font700 } from "../../military/dashboard/profile/profile-pdf-fonts";
 
 Font.register({
   family: "Noto Sans",

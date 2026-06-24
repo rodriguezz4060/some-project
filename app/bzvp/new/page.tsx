@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { BzvpNewForm } from "@/components/shared/bzvp/bzvp-new-form";
+import { BzvpNewForm } from "@/components/shared/bzvp/new-form/bzvp-new-form";
 
 export default function NewBzvpPage() {
   return (

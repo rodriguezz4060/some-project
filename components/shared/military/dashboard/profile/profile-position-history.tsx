@@ -31,7 +31,7 @@ export function ProfilePositionHistory({ history }: Props) {
 
             {/* Контент */}
             <div className="flex-1 pb-2">
-              <p className="text-sm font-medium">{entry.position}</p>
+              <p className="text-base font-medium">{entry.position}</p>
               <p className="text-xs text-muted-foreground">{entry.unit}</p>
               <p className="text-xs text-muted-foreground/60 tabular-nums">
                 {entry.startDate}

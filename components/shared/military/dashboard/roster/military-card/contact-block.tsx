@@ -12,7 +12,7 @@ export function MilitaryContactBlock({ phone, email }: Props) {
 
   return (
     <div className="pt-3 border-t border-border/50">
-      <div className="flex flex-wrap gap-3 text-sm">
+      <div className="flex flex-wrap gap-3 text-base">
         {phone && (
           <div className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer">
             <Phone className="h-3.5 w-3.5" />

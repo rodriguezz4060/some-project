@@ -7,7 +7,7 @@ interface Props {
 export function ProfileClothingVisual({ sizes }: Props) {
   if (!sizes) {
     return (
-      <p className="py-8 text-center text-sm text-muted-foreground">
+      <p className="py-8 text-center text-base text-muted-foreground">
         Розміри не вказано
       </p>
     );
@@ -17,7 +17,7 @@ export function ProfileClothingVisual({ sizes }: Props) {
 
   if (!hasAny) {
     return (
-      <p className="py-8 text-center text-sm text-muted-foreground">
+      <p className="py-8 text-center text-base text-muted-foreground">
         Розміри не вказано
       </p>
     );
@@ -117,7 +117,7 @@ export function ProfileClothingVisual({ sizes }: Props) {
       </svg>
 
       {/* Додатковий текстовий список */}
-      <div className="space-y-1.5 text-sm">
+      <div className="space-y-1.5 text-base">
         {sizes.height && (
           <div className="flex items-center gap-2">
             <span className="text-muted-foreground min-w-28">Зріст</span>

@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import type { BzvpPersonnel, BzvpStatus } from "./types";
+import type { BzvpPersonnel, BzvpStatus } from "../types";
 
 interface FormData {
   rank: string;
@@ -394,7 +394,7 @@ export function BzvpNewForm() {
             label="Група крові"
             value={form.bloodType}
             onChange={(v) => updateField("bloodType", v)}
-            placeholder='A(II) Rh+'
+            placeholder="A(II) Rh+"
           />
           <FormField
             label="Розмір взуття"

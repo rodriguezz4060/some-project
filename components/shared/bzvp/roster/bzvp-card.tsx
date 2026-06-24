@@ -12,8 +12,8 @@ import { cn } from "@root/lib/utils";
 import { Calendar, MapPin, Tag, Timer, Phone } from "lucide-react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { BZVP_STATUS_CONFIG, statusIconMap } from "./constants";
-import type { BzvpPersonnel } from "./types";
+import { BZVP_STATUS_CONFIG, statusIconMap } from "../constants";
+import type { BzvpPersonnel } from "../types";
 
 function getInitials(name: string) {
   return name
@@ -77,7 +77,7 @@ export function BzvpCard({
           </div>
 
           <div className="text-right shrink-0">
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1 text-base text-muted-foreground">
               <Timer className="h-4 w-4 text-primary/60" />
               <span className="font-semibold text-foreground">{trainingPeriod}</span>
             </div>
@@ -87,23 +87,23 @@ export function BzvpCard({
 
       <CardContent className="flex-1 space-y-4 pt-2">
         <div className="grid grid-cols-1 gap-2">
-          <div className="flex items-center gap-2 text-sm">
+          <div className="flex items-center gap-2 text-base">
             <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
             <span className="text-muted-foreground">Прибув з:</span>
             <span className="font-medium">{serviceUnit}</span>
           </div>
-          <div className="flex items-center gap-2 text-sm">
+          <div className="flex items-center gap-2 text-base">
             <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
             <span className="text-muted-foreground">Дата прибуття:</span>
             <span className="font-medium">{arrivalDate}</span>
           </div>
-          <div className="flex items-center gap-2 text-sm">
+          <div className="flex items-center gap-2 text-base">
             <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span className="text-muted-foreground">Дата народження:</span>
+            <span className="text-muted-foreground">Дата нар.:</span>
             <span className="font-medium">{birthDate}</span>
           </div>
           {specialization && (
-            <div className="flex items-center gap-2 text-sm">
+            <div className="flex items-center gap-2 text-base">
               <Tag className="h-4 w-4 text-muted-foreground shrink-0" />
               <span className="text-muted-foreground">Спеціалізація:</span>
               <span className="font-medium">{specialization}</span>
@@ -113,7 +113,7 @@ export function BzvpCard({
 
         {phone && (
           <div className="pt-3 border-t border-border/50">
-            <div className="flex flex-wrap gap-3 text-sm">
+            <div className="flex flex-wrap gap-3 text-base">
               <div className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer">
                 <Phone className="h-3.5 w-3.5" />
                 <span>{phone}</span>
@@ -126,7 +126,7 @@ export function BzvpCard({
       <CardFooter className="pt-2 pb-4">
         <Link
           href={`/bzvp/${id}`}
-          className="w-full group/btn flex items-center justify-between px-3 py-2 rounded-lg bg-secondary/50 hover:bg-primary/10 transition-colors text-sm"
+          className="w-full group/btn flex items-center justify-between px-3 py-2 rounded-lg bg-secondary/50 hover:bg-primary/10 transition-colors text-base"
         >
           <span className="font-medium text-muted-foreground group-hover/btn:text-primary transition-colors">
             Детальніше

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import type { BzvpPersonnel } from "./types";
+import type { BzvpPersonnel } from "../types";
 import { BzvpCard } from "./bzvp-card";
 
 const ITEMS_PER_PAGE = 8;
@@ -21,7 +21,7 @@ export function BzvpCardGrid({ personnel }: Props) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
         <p className="text-lg font-medium">Немає даних</p>
-        <p className="text-sm">За вказаними фільтрами нічого не знайдено</p>
+        <p className="text-base">За вказаними фільтрами нічого не знайдено</p>
       </div>
     );
   }
@@ -41,7 +41,7 @@ export function BzvpCardGrid({ personnel }: Props) {
             onClick={() =>
               setVisibleCount((prev) => prev + ITEMS_PER_PAGE)
             }
-            className="inline-flex items-center gap-2 rounded-xl border border-border bg-muted/50 px-6 py-3 text-sm font-medium text-muted-foreground transition-all hover:border-primary/30 hover:text-foreground hover:bg-muted"
+            className="inline-flex items-center gap-2 rounded-xl border border-border bg-muted/50 px-6 py-3 text-base font-medium text-muted-foreground transition-all hover:border-primary/30 hover:text-foreground hover:bg-muted"
           >
             <ChevronDown className="size-4" />
             Завантажити ще
