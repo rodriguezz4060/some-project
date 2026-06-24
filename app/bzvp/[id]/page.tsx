@@ -10,6 +10,8 @@ import { BzvpPdfWrapper } from "@/components/shared/bzvp/pdf/bzvp-pdf-wrapper";
 import { getBzvpPersonnelById } from "@root/lib/data/bzvp";
 import { BZVP_STATUS_CONFIG } from "@/components/shared/bzvp/constants";
 import { cn } from "@root/lib/utils";
+import { DeletePersonnelDialog } from "@/components/shared/delete-personnel-dialog";
+import { deleteBzvp } from "@root/actions/bzvp";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -102,6 +104,12 @@ export default async function BzvpProfilePage({
             <Button variant="outline" size="sm" asChild className="gap-1.5">
               <Link href={`/bzvp/${person.id}/edit`}>Редагувати</Link>
             </Button>
+            <DeletePersonnelDialog
+              personnelId={person.id}
+              fullName={person.fullName}
+              deleteAction={deleteBzvp}
+              listPath="/bzvp"
+            />
           </div>
         </div>
       </div>

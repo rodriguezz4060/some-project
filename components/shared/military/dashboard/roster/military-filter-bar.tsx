@@ -1,13 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useCallback } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Plus } from "lucide-react";
 import { cn } from "@root/lib/utils";
 import { useCollapsed } from "@/hooks/use-collapsed";
 import { statusConfig, STATUS_SELECTED_CLASSES } from "../../constants";
 import type { StatusType } from "../../types";
 import { MilitarySearchInput } from "./military-search-input";
+import { Button } from "@/components/ui/button";
 
 const ALL_STATUSES: StatusType[] = [
   "active",
@@ -110,7 +112,15 @@ export function MilitaryFilterBar({
         </div>
       </div>
 
-      <MilitarySearchInput key={initialQuery} initialQuery={initialQuery} />
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <MilitarySearchInput key={initialQuery} initialQuery={initialQuery} />
+        <Button asChild size="sm" className="gap-1.5">
+          <Link href="/military/new">
+            <Plus className="size-4" />
+            Нова анкета
+          </Link>
+        </Button>
+      </div>
 
       <div>
         <button

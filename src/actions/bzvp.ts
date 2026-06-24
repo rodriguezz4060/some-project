@@ -139,3 +139,10 @@ export async function updateBzvp(id: number, data: UpdateBzvpData) {
   revalidatePath("/bzvp");
   return { id: person.id, fullName: person.fullName };
 }
+
+export async function deleteBzvp(id: number) {
+  const person = await prisma.bzvpPersonnel.delete({ where: { id } });
+
+  revalidatePath("/bzvp");
+  return { id: person.id, fullName: person.fullName };
+}

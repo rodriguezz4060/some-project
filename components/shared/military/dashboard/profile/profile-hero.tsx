@@ -14,7 +14,7 @@ const statusIconMap: Record<string, LucideIcon> = {
 };
 
 function getDaysLabel(days?: number): string {
-  if (days === undefined) return "—";
+  if (days == null) return "—";
   if (days === 0) return "сьогодні";
   if (days === 1) return "вчора";
   return `${days} дн. тому`;
@@ -53,7 +53,7 @@ export function ProfileHero({
     {
       label: "Останнє завдання",
       value: getDaysLabel(lastActiveDays),
-      color: lastActiveDays !== undefined && lastActiveDays > 14 ? "text-amber-500" : undefined,
+      color: lastActiveDays != null && lastActiveDays > 14 ? "text-amber-500" : undefined,
     },
   ];
 

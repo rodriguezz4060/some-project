@@ -313,7 +313,7 @@ export function ProfilePdfDocument({ personnel, sections = ALL_SECTIONS }: Props
               <InfoLine
                 label="Останнє завдання"
                 value={
-                  personnel.lastActiveDays === undefined
+                  personnel.lastActiveDays == null
                     ? undefined
                     : personnel.lastActiveDays === 0
                       ? "сьогодні"

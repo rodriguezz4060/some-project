@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { cn } from "@root/lib/utils";
 import { getMilitaryPersonnelById } from "@root/lib/data/military";
 import { MilitaryStatusBar } from "@/components/shared/military/dashboard/roster/military-card/status-bar";
@@ -9,6 +10,8 @@ import { ProfileHero } from "@/components/shared/military/dashboard/profile/prof
 import { ProfileTabs } from "@/components/shared/military/dashboard/profile/profile-tabs";
 import { ProfilePdfWrapper } from "@/components/shared/military/dashboard/profile/profile-pdf-wrapper";
 import { statusConfig } from "@/components/shared/military/constants";
+import { DeletePersonnelDialog } from "@/components/shared/delete-personnel-dialog";
+import { deleteMilitary } from "@root/actions/military";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -57,6 +60,15 @@ export default async function PersonnelProfilePage({
             >
               {statusInfo.label}
             </Badge>
+            <Button variant="outline" size="sm" asChild className="gap-1.5">
+              <Link href={`/military/${person.id}/edit`}>Редагувати</Link>
+            </Button>
+            <DeletePersonnelDialog
+              personnelId={person.id}
+              fullName={person.fullName}
+              deleteAction={deleteMilitary}
+              listPath="/military"
+            />
             <ProfilePdfWrapper personnel={person} />
           </div>
         </div>
