@@ -131,7 +131,7 @@ export function HomeContent() {
               <div>
                 <h2 className="text-2xl font-bold text-white">БЗВП</h2>
                 <p className="text-sm text-zinc-400 mt-1">
-                  Бойова зброя та вогнева підготовка
+                  Базова загальновійськова підготовка
                 </p>
               </div>
               <div className="flex flex-wrap gap-2 justify-center">
