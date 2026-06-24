@@ -20,7 +20,7 @@ interface Props {
   position: string;
   unit: string;
   birthDate: string;
-  experience: number;
+  experience?: number | null;
 }
 
 export function MilitaryInfoGrid({ position, unit, birthDate, experience }: Props) {
@@ -29,7 +29,7 @@ export function MilitaryInfoGrid({ position, unit, birthDate, experience }: Prop
       <InfoRow icon={<Shield className="h-4 w-4" />} label="Посада:" value={position} />
       <InfoRow icon={<MapPin className="h-4 w-4" />} label="Підрозділ:" value={unit} />
       <InfoRow icon={<Calendar className="h-4 w-4" />} label="Дата нар.:" value={birthDate} />
-      <InfoRow icon={<Activity className="h-4 w-4" />} label="Досвід:" value={`${experience} років`} />
+      <InfoRow icon={<Activity className="h-4 w-4" />} label="Досвід:" value={experience != null ? `${experience} років` : "—"} />
     </div>
   );
 }

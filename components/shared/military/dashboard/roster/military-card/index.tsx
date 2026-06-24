@@ -23,7 +23,7 @@ export function MilitaryCard({
   status,
   birthDate,
   photo,
-  experience = 5,
+  experience,
   missions = 12,
   phone,
   email,

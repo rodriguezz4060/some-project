@@ -60,6 +60,17 @@ interface CreateMilitaryData {
   clothingSizes?: ClothingSizesData;
 }
 
+async function replaceRelation(
+  delegate: { deleteMany: (args: any) => Promise<any>; createMany: (args: any) => Promise<any> },
+  personnelId: number,
+  items: unknown[],
+) {
+  await delegate.deleteMany({ where: { personnelId } });
+  if (items.length > 0) {
+    await delegate.createMany({ data: items });
+  }
+}
+
 export async function createMilitary(data: CreateMilitaryData) {
   const person = await prisma.militaryPersonnel.create({
     data: {
@@ -117,63 +128,59 @@ export async function updateMilitary(id: number, data: CreateMilitaryData) {
   });
 
   if (data.medicalRecords) {
-    await prisma.medicalRecord.deleteMany({ where: { personnelId: id } });
-    if (data.medicalRecords.length > 0) {
-      await prisma.medicalRecord.createMany({
-        data: data.medicalRecords.map((r) => ({
-          personnelId: id,
-          condition: r.condition,
-          diagnosisDate: r.diagnosisDate,
-          status: r.status,
-          notes: r.notes || null,
-        })),
-      });
-    }
+    await replaceRelation(
+      prisma.medicalRecord,
+      id,
+      data.medicalRecords.map((r) => ({
+        personnelId: id,
+        condition: r.condition,
+        diagnosisDate: r.diagnosisDate,
+        status: r.status,
+        notes: r.notes || null,
+      })),
+    );
   }
 
   if (data.achievements) {
-    await prisma.achievement.deleteMany({ where: { personnelId: id } });
-    if (data.achievements.length > 0) {
-      await prisma.achievement.createMany({
-        data: data.achievements.map((a) => ({
-          personnelId: id,
-          name: a.name,
-          date: a.date,
-          type: a.type,
-          description: a.description || null,
-        })),
-      });
-    }
+    await replaceRelation(
+      prisma.achievement,
+      id,
+      data.achievements.map((a) => ({
+        personnelId: id,
+        name: a.name,
+        date: a.date,
+        type: a.type,
+        description: a.description || null,
+      })),
+    );
   }
 
   if (data.equipment) {
-    await prisma.equipment.deleteMany({ where: { personnelId: id } });
-    if (data.equipment.length > 0) {
-      await prisma.equipment.createMany({
-        data: data.equipment.map((e) => ({
-          personnelId: id,
-          name: e.name,
-          type: e.type,
-          serialNumber: e.serialNumber || null,
-          issuedDate: e.issuedDate,
-        })),
-      });
-    }
+    await replaceRelation(
+      prisma.equipment,
+      id,
+      data.equipment.map((e) => ({
+        personnelId: id,
+        name: e.name,
+        type: e.type,
+        serialNumber: e.serialNumber || null,
+        issuedDate: e.issuedDate,
+      })),
+    );
   }
 
   if (data.positionHistory) {
-    await prisma.positionEntry.deleteMany({ where: { personnelId: id } });
-    if (data.positionHistory.length > 0) {
-      await prisma.positionEntry.createMany({
-        data: data.positionHistory.map((p) => ({
-          personnelId: id,
-          position: p.position,
-          unit: p.unit,
-          startDate: p.startDate,
-          endDate: p.endDate || null,
-        })),
-      });
-    }
+    await replaceRelation(
+      prisma.positionEntry,
+      id,
+      data.positionHistory.map((p) => ({
+        personnelId: id,
+        position: p.position,
+        unit: p.unit,
+        startDate: p.startDate,
+        endDate: p.endDate || null,
+      })),
+    );
   }
 
   if (data.clothingSizes) {

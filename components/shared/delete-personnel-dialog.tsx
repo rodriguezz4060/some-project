@@ -25,7 +25,12 @@ interface Props {
   listPath: string;
 }
 
-export function DeletePersonnelDialog({ personnelId, fullName, deleteAction, listPath }: Props) {
+export function DeletePersonnelDialog({
+  personnelId,
+  fullName,
+  deleteAction,
+  listPath,
+}: Props) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -49,7 +54,11 @@ export function DeletePersonnelDialog({ personnelId, fullName, deleteAction, lis
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" size="sm" className="gap-1.5">
+        <Button
+          variant="destructive"
+          size="sm"
+          className="gap-1.5 cursor-pointer"
+        >
           <Trash2 className="size-4" />
         </Button>
       </AlertDialogTrigger>
@@ -60,7 +69,8 @@ export function DeletePersonnelDialog({ personnelId, fullName, deleteAction, lis
           </AlertDialogMedia>
           <AlertDialogTitle>Видалити анкету</AlertDialogTitle>
           <AlertDialogDescription>
-            Ви впевнені, що хочете видалити анкету <strong>{fullName}</strong>?<br />
+            Ви впевнені, що хочете видалити анкету <strong>{fullName}</strong>?
+            <br />
             Цю дію не можна скасувати.
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -70,7 +80,7 @@ export function DeletePersonnelDialog({ personnelId, fullName, deleteAction, lis
             variant="destructive"
             disabled={isLoading}
             onClick={handleDelete}
-            className="gap-2"
+            className="gap-2 cursor-pointer"
           >
             {isLoading ? (
               <Loader2 className="size-4 animate-spin" />

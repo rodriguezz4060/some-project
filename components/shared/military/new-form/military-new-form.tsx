@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Save, Loader2, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -106,19 +106,20 @@ const emptyForm: FormData = {
 
 interface FormFieldProps {
   label: string;
+  id?: string;
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
   type?: string;
 }
 
-function FormField({ label, value, onChange, placeholder, type = "text" }: FormFieldProps) {
-  const id = label.replace(/\s+/g, "-").toLowerCase();
+function FormField({ label, id, value, onChange, placeholder, type = "text" }: FormFieldProps) {
+  const fieldId = id ?? label.replace(/\s+/g, "-").toLowerCase();
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={id}>{label}</Label>
+      <Label htmlFor={fieldId}>{label}</Label>
       <Input
-        id={id}
+        id={fieldId}
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -142,13 +143,8 @@ function ArraySection<T>({
   renderItem: (item: T, index: number, onChange: (item: T) => void) => React.ReactNode;
   createEmpty: () => T;
 }) {
-  const addItem = useCallback(() => {
-    onItemsChange([...items, createEmpty()]);
-  }, [items, onItemsChange, createEmpty]);
-
-  const removeItem = useCallback((index: number) => {
-    onItemsChange(items.filter((_, i) => i !== index));
-  }, [items, onItemsChange]);
+  const addItem = () => onItemsChange([...items, createEmpty()]);
+  const removeItem = (index: number) => onItemsChange(items.filter((_, i) => i !== index));
 
   return (
     <div className="space-y-4">
@@ -178,6 +174,94 @@ function ArraySection<T>({
   );
 }
 
+function renderPositionItem(item: PositionEntry, index: number, onChange: (item: PositionEntry) => void) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+      <FormField label="Посада" value={item.position} onChange={(v) => onChange({ ...item, position: v })} placeholder="Командир взводу" />
+      <FormField label="Підрозділ" value={item.unit} onChange={(v) => onChange({ ...item, unit: v })} placeholder="72 ОМБр" />
+      <FormField label="Дата початку" value={item.startDate} onChange={(v) => onChange({ ...item, startDate: v })} type="date" />
+      <FormField label="Дата закінчення" value={item.endDate ?? ""} onChange={(v) => onChange({ ...item, endDate: v })} type="date" />
+    </div>
+  );
+}
+
+function renderMedicalItem(item: MedicalRecord, index: number, onChange: (item: MedicalRecord) => void) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+      <FormField label="Діагноз" value={item.condition} onChange={(v) => onChange({ ...item, condition: v })} placeholder="Захворювання / травма" />
+      <div className="space-y-1.5">
+        <Label htmlFor={`med-status-${index}`}>Статус</Label>
+        <Select
+          value={item.status}
+          onValueChange={(v) => onChange({ ...item, status: v as "active" | "resolved" })}
+        >
+          <SelectTrigger id={`med-status-${index}`}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="active">Активний</SelectItem>
+            <SelectItem value="resolved">Вирішено</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <FormField label="Дата діагнозу" value={item.diagnosisDate} onChange={(v) => onChange({ ...item, diagnosisDate: v })} type="date" />
+      <FormField label="Нотатки" value={item.notes ?? ""} onChange={(v) => onChange({ ...item, notes: v })} placeholder="..." />
+    </div>
+  );
+}
+
+function renderAchievementItem(item: Achievement, index: number, onChange: (item: Achievement) => void) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+      <FormField label="Назва" value={item.name} onChange={(v) => onChange({ ...item, name: v })} placeholder="Орден «За мужність»" />
+      <div className="space-y-1.5">
+        <Label htmlFor={`ach-type-${index}`}>Тип</Label>
+        <Select
+          value={item.type}
+          onValueChange={(v) => onChange({ ...item, type: v as "medal" | "commendation" | "certificate" })}
+        >
+          <SelectTrigger id={`ach-type-${index}`}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="medal">Медаль</SelectItem>
+            <SelectItem value="commendation">Відзнака</SelectItem>
+            <SelectItem value="certificate">Грамота</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <FormField label="Дата" value={item.date} onChange={(v) => onChange({ ...item, date: v })} type="date" />
+      <FormField label="Опис" value={item.description ?? ""} onChange={(v) => onChange({ ...item, description: v })} placeholder="..." />
+    </div>
+  );
+}
+
+function renderEquipmentItem(item: Equipment, index: number, onChange: (item: Equipment) => void) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+      <FormField label="Назва" value={item.name} onChange={(v) => onChange({ ...item, name: v })} placeholder="M4A1" />
+      <div className="space-y-1.5">
+        <Label htmlFor={`eq-type-${index}`}>Тип</Label>
+        <Select
+          value={item.type}
+          onValueChange={(v) => onChange({ ...item, type: v as "weapon" | "armor" | "gear" })}
+        >
+          <SelectTrigger id={`eq-type-${index}`}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="weapon">Зброя</SelectItem>
+            <SelectItem value="armor">Броня</SelectItem>
+            <SelectItem value="gear">Спорядження</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <FormField label="Серійний номер" value={item.serialNumber ?? ""} onChange={(v) => onChange({ ...item, serialNumber: v })} placeholder="SN-123456" />
+      <FormField label="Дата видачі" value={item.issuedDate} onChange={(v) => onChange({ ...item, issuedDate: v })} type="date" />
+    </div>
+  );
+}
+
 interface Props {
   initialData?: MilitaryPersonnel;
 }
@@ -190,72 +274,73 @@ export function MilitaryForm({ initialData }: Props) {
     initialData ? formDataFromPerson(initialData) : { ...emptyForm },
   );
 
-  const updateField = useCallback((key: keyof FormData, value: string) => {
+  const updateField = (key: keyof FormData, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
-  }, []);
+  };
 
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      setIsLoading(true);
+  const updateClothingSize = (key: keyof ClothingSizes, value: string) => {
+    setForm((prev) => ({ ...prev, clothingSizes: { ...prev.clothingSizes, [key]: value } }));
+  };
 
-      const payload = {
-        fullName: form.fullName,
-        rank: form.rank,
-        position: form.position,
-        unit: form.unit,
-        status: form.status,
-        birthDate: form.birthDate,
-        photo: form.photo || undefined,
-        experience: form.experience ? Number(form.experience) : undefined,
-        missions: form.missions ? Number(form.missions) : undefined,
-        phone: form.phone || undefined,
-        email: form.email || undefined,
-        lastActiveDays: form.lastActiveDays ? Number(form.lastActiveDays) : undefined,
-        medicalRecords: form.medicalRecords.filter((r) => r.condition).map((r) => ({
-          ...r,
-          notes: r.notes || undefined,
-        })),
-        achievements: form.achievements.filter((a) => a.name).map((a) => ({
-          ...a,
-          description: a.description || undefined,
-        })),
-        equipment: form.equipment.filter((e) => e.name).map((e) => ({
-          ...e,
-          serialNumber: e.serialNumber || undefined,
-        })),
-        positionHistory: form.positionHistory.filter((p) => p.position).map((p) => ({
-          ...p,
-          endDate: p.endDate || undefined,
-        })),
-        clothingSizes: Object.values(form.clothingSizes).some((v) => v)
-          ? form.clothingSizes
-          : undefined,
-      };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
 
-      try {
-        if (isEdit) {
-          await updateMilitary(initialData.id!, payload);
-          setIsLoading(false);
-          toast.success("Профіль оновлено", {
-            description: `${form.fullName} — зміни збережено`,
-          });
-          router.push(`/military/${initialData.id!}`);
-        } else {
-          const result = await createMilitary(payload);
-          setIsLoading(false);
-          toast.success("Анкету збережено", {
-            description: `${result.fullName} додано до списку`,
-          });
-          router.push("/military");
-        }
-      } catch {
+    const payload = {
+      fullName: form.fullName,
+      rank: form.rank,
+      position: form.position,
+      unit: form.unit,
+      status: form.status,
+      birthDate: form.birthDate,
+      photo: form.photo || undefined,
+      experience: form.experience ? Number(form.experience) : undefined,
+      missions: form.missions ? Number(form.missions) : undefined,
+      phone: form.phone || undefined,
+      email: form.email || undefined,
+      lastActiveDays: form.lastActiveDays ? Number(form.lastActiveDays) : undefined,
+      medicalRecords: form.medicalRecords.filter((r) => r.condition).map((r) => ({
+        ...r,
+        notes: r.notes || undefined,
+      })),
+      achievements: form.achievements.filter((a) => a.name).map((a) => ({
+        ...a,
+        description: a.description || undefined,
+      })),
+      equipment: form.equipment.filter((e) => e.name).map((e) => ({
+        ...e,
+        serialNumber: e.serialNumber || undefined,
+      })),
+      positionHistory: form.positionHistory.filter((p) => p.position).map((p) => ({
+        ...p,
+        endDate: p.endDate || undefined,
+      })),
+      clothingSizes: Object.values(form.clothingSizes).some((v) => v)
+        ? form.clothingSizes
+        : undefined,
+    };
+
+    try {
+      if (isEdit) {
+        await updateMilitary(initialData.id!, payload);
         setIsLoading(false);
-        toast.error("Помилка при збереженні");
+        toast.success("Профіль оновлено", {
+          description: `${form.fullName} — зміни збережено`,
+        });
+        router.push(`/military/${initialData.id!}`);
+      } else {
+        const result = await createMilitary(payload);
+        setIsLoading(false);
+        toast.success("Анкету збережено", {
+          description: `${result.fullName} додано до списку`,
+        });
+        router.push("/military");
       }
-    },
-    [form, isEdit, initialData, router],
-  );
+    } catch {
+      setIsLoading(false);
+      toast.error("Помилка при збереженні");
+    }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -373,14 +458,7 @@ export function MilitaryForm({ initialData }: Props) {
             items={form.positionHistory}
             onItemsChange={(items) => setForm((prev) => ({ ...prev, positionHistory: items }))}
             createEmpty={emptyPositionEntry}
-            renderItem={(item, index, onChange) => (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-                <FormField label="Посада" value={item.position} onChange={(v) => onChange({ ...item, position: v })} placeholder="Командир взводу" />
-                <FormField label="Підрозділ" value={item.unit} onChange={(v) => onChange({ ...item, unit: v })} placeholder="72 ОМБр" />
-                <FormField label="Дата початку" value={item.startDate} onChange={(v) => onChange({ ...item, startDate: v })} type="date" />
-                <FormField label="Дата закінчення" value={item.endDate ?? ""} onChange={(v) => onChange({ ...item, endDate: v })} type="date" />
-              </div>
-            )}
+            renderItem={renderPositionItem}
           />
         </CardContent>
       </Card>
@@ -395,28 +473,7 @@ export function MilitaryForm({ initialData }: Props) {
             items={form.medicalRecords}
             onItemsChange={(items) => setForm((prev) => ({ ...prev, medicalRecords: items }))}
             createEmpty={emptyMedicalRecord}
-            renderItem={(item, index, onChange) => (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-                <FormField label="Діагноз" value={item.condition} onChange={(v) => onChange({ ...item, condition: v })} placeholder="Захворювання / травма" />
-                <div className="space-y-1.5">
-                  <Label htmlFor={`med-status-${index}`}>Статус</Label>
-                  <Select
-                    value={item.status}
-                    onValueChange={(v) => onChange({ ...item, status: v as "active" | "resolved" })}
-                  >
-                    <SelectTrigger id={`med-status-${index}`}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Активний</SelectItem>
-                      <SelectItem value="resolved">Вирішено</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <FormField label="Дата діагнозу" value={item.diagnosisDate} onChange={(v) => onChange({ ...item, diagnosisDate: v })} type="date" />
-                <FormField label="Нотатки" value={item.notes ?? ""} onChange={(v) => onChange({ ...item, notes: v })} placeholder="..." />
-              </div>
-            )}
+            renderItem={renderMedicalItem}
           />
         </CardContent>
       </Card>
@@ -431,29 +488,7 @@ export function MilitaryForm({ initialData }: Props) {
             items={form.achievements}
             onItemsChange={(items) => setForm((prev) => ({ ...prev, achievements: items }))}
             createEmpty={emptyAchievement}
-            renderItem={(item, index, onChange) => (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-                <FormField label="Назва" value={item.name} onChange={(v) => onChange({ ...item, name: v })} placeholder="Орден «За мужність»" />
-                <div className="space-y-1.5">
-                  <Label htmlFor={`ach-type-${index}`}>Тип</Label>
-                  <Select
-                    value={item.type}
-                    onValueChange={(v) => onChange({ ...item, type: v as "medal" | "commendation" | "certificate" })}
-                  >
-                    <SelectTrigger id={`ach-type-${index}`}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="medal">Медаль</SelectItem>
-                      <SelectItem value="commendation">Відзнака</SelectItem>
-                      <SelectItem value="certificate">Грамота</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <FormField label="Дата" value={item.date} onChange={(v) => onChange({ ...item, date: v })} type="date" />
-                <FormField label="Опис" value={item.description ?? ""} onChange={(v) => onChange({ ...item, description: v })} placeholder="..." />
-              </div>
-            )}
+            renderItem={renderAchievementItem}
           />
         </CardContent>
       </Card>
@@ -468,29 +503,7 @@ export function MilitaryForm({ initialData }: Props) {
             items={form.equipment}
             onItemsChange={(items) => setForm((prev) => ({ ...prev, equipment: items }))}
             createEmpty={emptyEquipment}
-            renderItem={(item, index, onChange) => (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-                <FormField label="Назва" value={item.name} onChange={(v) => onChange({ ...item, name: v })} placeholder="M4A1" />
-                <div className="space-y-1.5">
-                  <Label htmlFor={`eq-type-${index}`}>Тип</Label>
-                  <Select
-                    value={item.type}
-                    onValueChange={(v) => onChange({ ...item, type: v as "weapon" | "armor" | "gear" })}
-                  >
-                    <SelectTrigger id={`eq-type-${index}`}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="weapon">Зброя</SelectItem>
-                      <SelectItem value="armor">Броня</SelectItem>
-                      <SelectItem value="gear">Спорядження</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <FormField label="Серійний номер" value={item.serialNumber ?? ""} onChange={(v) => onChange({ ...item, serialNumber: v })} placeholder="SN-123456" />
-                <FormField label="Дата видачі" value={item.issuedDate} onChange={(v) => onChange({ ...item, issuedDate: v })} type="date" />
-              </div>
-            )}
+            renderItem={renderEquipmentItem}
           />
         </CardContent>
       </Card>
@@ -500,12 +513,12 @@ export function MilitaryForm({ initialData }: Props) {
           <CardTitle>Розміри</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4">
-          <FormField label="Зріст (см)" value={form.clothingSizes.height ?? ""} onChange={(v) => setForm((prev) => ({ ...prev, clothingSizes: { ...prev.clothingSizes, height: v } }))} placeholder="180" />
-          <FormField label="Обхват грудей (см)" value={form.clothingSizes.chest ?? ""} onChange={(v) => setForm((prev) => ({ ...prev, clothingSizes: { ...prev.clothingSizes, chest: v } }))} placeholder="96" />
-          <FormField label="Обхват талії (см)" value={form.clothingSizes.waist ?? ""} onChange={(v) => setForm((prev) => ({ ...prev, clothingSizes: { ...prev.clothingSizes, waist: v } }))} placeholder="80" />
-          <FormField label="Розмір взуття" value={form.clothingSizes.shoes ?? ""} onChange={(v) => setForm((prev) => ({ ...prev, clothingSizes: { ...prev.clothingSizes, shoes: v } }))} placeholder="43" />
-          <FormField label="Головний убір" value={form.clothingSizes.headgear ?? ""} onChange={(v) => setForm((prev) => ({ ...prev, clothingSizes: { ...prev.clothingSizes, headgear: v } }))} placeholder="56" />
-          <FormField label="Форма одягу" value={form.clothingSizes.uniform ?? ""} onChange={(v) => setForm((prev) => ({ ...prev, clothingSizes: { ...prev.clothingSizes, uniform: v } }))} placeholder="48/4" />
+          <FormField label="Зріст (см)" value={form.clothingSizes.height ?? ""} onChange={(v) => updateClothingSize("height", v)} placeholder="180" />
+          <FormField label="Обхват грудей (см)" value={form.clothingSizes.chest ?? ""} onChange={(v) => updateClothingSize("chest", v)} placeholder="96" />
+          <FormField label="Обхват талії (см)" value={form.clothingSizes.waist ?? ""} onChange={(v) => updateClothingSize("waist", v)} placeholder="80" />
+          <FormField label="Розмір взуття" value={form.clothingSizes.shoes ?? ""} onChange={(v) => updateClothingSize("shoes", v)} placeholder="43" />
+          <FormField label="Головний убір" value={form.clothingSizes.headgear ?? ""} onChange={(v) => updateClothingSize("headgear", v)} placeholder="56" />
+          <FormField label="Форма одягу" value={form.clothingSizes.uniform ?? ""} onChange={(v) => updateClothingSize("uniform", v)} placeholder="48/4" />
         </CardContent>
       </Card>
 
