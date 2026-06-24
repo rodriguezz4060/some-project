@@ -142,6 +142,34 @@ async function seedBzvp() {
   console.log(`Seeded ${BZVP_MOCK.length} bzvp personnel`);
 }
 
+async function seedUsers() {
+  const bcrypt = await import("bcryptjs");
+
+  await prisma.user.upsert({
+    where: { email: "admin@tracker.local" },
+    update: {},
+    create: {
+      email: "admin@tracker.local",
+      password: bcrypt.hashSync("admin123", 10),
+      name: "Адмін",
+      role: "admin",
+    },
+  });
+
+  await prisma.user.upsert({
+    where: { email: "user@tracker.local" },
+    update: {},
+    create: {
+      email: "user@tracker.local",
+      password: bcrypt.hashSync("user123", 10),
+      name: "Користувач",
+      role: "user",
+    },
+  });
+
+  console.log("Seeded users");
+}
+
 async function main() {
   console.log("Clearing existing data...");
   await prisma.clothingSizes.deleteMany();
@@ -151,7 +179,9 @@ async function main() {
   await prisma.medicalRecord.deleteMany();
   await prisma.militaryPersonnel.deleteMany();
   await prisma.bzvpPersonnel.deleteMany();
+  await prisma.user.deleteMany();
 
+  await seedUsers();
   await seedMilitary();
   await seedBzvp();
 }

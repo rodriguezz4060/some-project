@@ -80,7 +80,22 @@ model MedicalRecord {
   status        String
   notes         String?
   personnelId   Int
-  personnel     MilitaryPersonnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
+  personnel   MilitaryPersonnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  admin
+  user
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String?
+  role      Role     @default(user)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Achievement {
