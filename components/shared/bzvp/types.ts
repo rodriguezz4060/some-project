@@ -1,0 +1,41 @@
+export type BzvpStatus = "training" | "graduated" | "transferred" | "failed";
+
+export interface BzvpPersonnel {
+  id: number;
+  rank: string;
+  fullName: string;
+  birthDate: string;
+  birthPlace?: string;
+  photo?: string;
+  passport?: string;
+  passportIssued?: string;
+  tin?: string;
+  militaryId?: string;
+  militaryIdIssued?: string;
+  ubd?: string;
+  ubdDate?: string;
+  serviceUnit?: string;
+  serviceYears?: string;
+  civilianJob?: string;
+  education?: string;
+  actualAddress?: string;
+  registrationAddress?: string;
+  driverLicense?: string;
+  criminalRecord?: string;
+  policeRecords?: string;
+  family?: string;
+  phone?: string;
+  relativePhones?: string;
+  personalOrder?: string;
+  conscription?: string;
+  health?: string;
+  healthComplaints?: string;
+  moralState?: string;
+  bloodType?: string;
+  shoeSize?: string;
+  notes?: string;
+  status: BzvpStatus;
+  arrivalDate: string;
+  trainingPeriod: string;
+  specialization?: string;
+}
