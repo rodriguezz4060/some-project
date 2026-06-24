@@ -67,7 +67,6 @@ export function ProfileHero({
               alt={fullName}
               fill
               className="object-cover"
-              unoptimized
             />
           ) : (
             <span className="text-primary font-bold text-4xl sm:text-6xl">

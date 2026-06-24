@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Plus, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@root/lib/utils";
+import { useCollapsed } from "@/hooks/use-collapsed";
 import {
   BZVP_STATUS_CONFIG,
   BZVP_STATUSES,
@@ -23,23 +24,6 @@ interface Props {
   initialArrivalFrom: string;
   initialArrivalTo: string;
   shownCount: number;
-}
-
-function useCollapsed(key: string) {
-  const [collapsed, setCollapsed] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem(key) === "true";
-  });
-
-  const toggle = useCallback(() => {
-    setCollapsed((prev) => {
-      const next = !prev;
-      localStorage.setItem(key, String(next));
-      return next;
-    });
-  }, [key]);
-
-  return [collapsed, toggle] as const;
 }
 
 export function BzvpFilterBar({
@@ -87,13 +71,13 @@ export function BzvpFilterBar({
   return (
     <div className="mb-6 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <BzvpSearchInput initialQuery={initialQuery} />
-        <Link href="/bzvp/new" className="cursor-pointer">
-          <Button size="sm" className="gap-1.5">
+        <BzvpSearchInput key={initialQuery} initialQuery={initialQuery} />
+        <Button asChild size="sm" className="gap-1.5">
+          <Link href="/bzvp/new">
             <Plus className="size-4" />
             Нова анкета
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
 
       <div>
@@ -108,7 +92,7 @@ export function BzvpFilterBar({
               collapsed && "-rotate-90",
             )}
           />
-          <p className="text-sm">Фільтри</p>
+          <span className="text-sm">Фільтри</span>
           {activeFiltersCount > 0 && (
             <span className="ml-1 rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
               {activeFiltersCount}

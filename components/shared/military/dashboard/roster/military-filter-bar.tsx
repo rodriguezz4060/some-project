@@ -1,9 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@root/lib/utils";
+import { useCollapsed } from "@/hooks/use-collapsed";
 import { statusConfig, STATUS_SELECTED_CLASSES } from "../../constants";
 import type { StatusType } from "../../types";
 import { MilitarySearchInput } from "./military-search-input";
@@ -32,23 +33,6 @@ interface Props {
   activeCount: number;
   shownCount: number;
   totalDbCount: number;
-}
-
-function useCollapsed(key: string) {
-  const [collapsed, setCollapsed] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem(key) === "true";
-  });
-
-  const toggle = useCallback(() => {
-    setCollapsed((prev) => {
-      const next = !prev;
-      localStorage.setItem(key, String(next));
-      return next;
-    });
-  }, [key]);
-
-  return [collapsed, toggle] as const;
 }
 
 export function MilitaryFilterBar({
@@ -126,7 +110,7 @@ export function MilitaryFilterBar({
         </div>
       </div>
 
-      <MilitarySearchInput initialQuery={initialQuery} />
+      <MilitarySearchInput key={initialQuery} initialQuery={initialQuery} />
 
       <div>
         <button
@@ -140,7 +124,7 @@ export function MilitaryFilterBar({
               collapsed && "-rotate-90",
             )}
           />
-          <p className="text-sm">Фільтри</p>
+          <span className="text-sm">Фільтри</span>
           {activeFiltersCount > 0 && (
             <span className="ml-1 rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
               {activeFiltersCount}

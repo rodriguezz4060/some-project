@@ -9,7 +9,17 @@ import { ProfileHero } from "@/components/shared/military/dashboard/profile/prof
 import { ProfileTabs } from "@/components/shared/military/dashboard/profile/profile-tabs";
 import { ProfilePdfWrapper } from "@/components/shared/military/dashboard/profile/profile-pdf-wrapper";
 import { statusConfig } from "@/components/shared/military/constants";
-import type { MilitaryPersonnel } from "@/components/shared/military/types";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const person = MOCK_PERSONNEL.find((p) => p.id === id);
+  return { title: person?.fullName ?? "Профіль військовослужбовця" };
+}
 
 export default async function PersonnelProfilePage({
   params,
@@ -17,9 +27,7 @@ export default async function PersonnelProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const person = MOCK_PERSONNEL.find((p) => p.id === id) as
-    | MilitaryPersonnel
-    | undefined;
+  const person = MOCK_PERSONNEL.find((p) => p.id === id);
 
   if (!person) {
     notFound();

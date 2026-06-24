@@ -10,7 +10,17 @@ import { BzvpPdfWrapper } from "@/components/shared/bzvp/pdf/bzvp-pdf-wrapper";
 import { BZVP_MOCK } from "@/components/shared/bzvp/mock";
 import { BZVP_STATUS_CONFIG } from "@/components/shared/bzvp/constants";
 import { cn } from "@root/lib/utils";
-import type { BzvpPersonnel } from "@/components/shared/bzvp/types";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const person = BZVP_MOCK.find((p) => p.id === id);
+  return { title: person?.fullName ?? "Профіль БЗВП" };
+}
 
 function getInitials(name: string) {
   return name.split(" ").map((p) => p[0]).join("");
@@ -43,9 +53,9 @@ interface SectionProps {
 function Section({ title, children }: SectionProps) {
   return (
     <div>
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/60 mb-4 pb-2 border-b border-border/40">
+      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/60 mb-4 pb-2 border-b border-border/40">
         {title}
-      </h3>
+      </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
         {children}
       </div>
@@ -59,7 +69,7 @@ export default async function BzvpProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const person = BZVP_MOCK.find((p) => p.id === id) as BzvpPersonnel | undefined;
+  const person = BZVP_MOCK.find((p) => p.id === id);
 
   if (!person) {
     notFound();
@@ -103,7 +113,6 @@ export default async function BzvpProfilePage({
                   alt={person.fullName}
                   fill
                   className="object-cover"
-                  unoptimized
                 />
               ) : (
                 <span className="text-primary font-semibold text-2xl sm:text-3xl md:text-4xl">
