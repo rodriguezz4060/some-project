@@ -8,7 +8,7 @@ datasource db {
 }
 
 model BzvpPersonnel {
-  id                  String   @id @default(cuid())
+  id                  Int      @id @default(autoincrement())
   fullName            String
   rank                String
   birthDate           String
@@ -50,7 +50,7 @@ model BzvpPersonnel {
 }
 
 model MilitaryPersonnel {
-  id             String   @id @default(cuid())
+  id             Int      @id @default(autoincrement())
   fullName       String
   rank           String
   position       String
@@ -74,53 +74,53 @@ model MilitaryPersonnel {
 }
 
 model MedicalRecord {
-  id            String  @id @default(cuid())
+  id            Int     @id @default(autoincrement())
   condition     String
   diagnosisDate String
   status        String
   notes         String?
-  personnelId   String
+  personnelId   Int
   personnel     MilitaryPersonnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
 }
 
 model Achievement {
-  id          String  @id @default(cuid())
+  id          Int     @id @default(autoincrement())
   name        String
   date        String
   type        String
   description String?
-  personnelId String
+  personnelId Int
   personnel   MilitaryPersonnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
 }
 
 model Equipment {
-  id           String  @id @default(cuid())
+  id           Int     @id @default(autoincrement())
   name         String
   type         String
   serialNumber String?
   issuedDate   String
-  personnelId  String
+  personnelId  Int
   personnel    MilitaryPersonnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
 }
 
 model PositionEntry {
-  id          String  @id @default(cuid())
+  id          Int     @id @default(autoincrement())
   position    String
   unit        String
   startDate   String
   endDate     String?
-  personnelId String
+  personnelId Int
   personnel   MilitaryPersonnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
 }
 
 model ClothingSizes {
-  id          String  @id @default(cuid())
+  id          Int     @id @default(autoincrement())
   height      String?
   chest       String?
   waist       String?
   shoes       String?
   headgear    String?
   uniform     String?
-  personnelId String  @unique
+  personnelId Int     @unique
   personnel   MilitaryPersonnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
 }

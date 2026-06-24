@@ -17,7 +17,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const person = await getMilitaryPersonnelById(id);
+  const person = await getMilitaryPersonnelById(Number(id));
   return { title: person?.fullName ?? "Профіль військовослужбовця" };
 }
 
@@ -27,7 +27,7 @@ export default async function PersonnelProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const person = await getMilitaryPersonnelById(id);
+  const person = await getMilitaryPersonnelById(Number(id));
 
   if (!person) {
     notFound();

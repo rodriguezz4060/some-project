@@ -1,8 +1,7 @@
 import type { BzvpPersonnel } from "./types";
 
-export const BZVP_MOCK: BzvpPersonnel[] = [
+export const BZVP_MOCK = [
   {
-    id: "bzvp-001",
     rank: "старший солдат",
     fullName: "Ковальчук Андрій Петрович",
     birthDate: "12.04.2000",
@@ -41,7 +40,6 @@ export const BZVP_MOCK: BzvpPersonnel[] = [
     specialization: "Стрілець",
   },
   {
-    id: "bzvp-002",
     rank: "молодший сержант",
     fullName: "Шевченко Олег Миколайович",
     birthDate: "25.08.1999",
@@ -80,7 +78,6 @@ export const BZVP_MOCK: BzvpPersonnel[] = [
     specialization: "Гранатометник",
   },
   {
-    id: "bzvp-003",
     rank: "сержант",
     fullName: "Бондаренко Дмитро Іванович",
     birthDate: "03.11.2001",
@@ -119,7 +116,6 @@ export const BZVP_MOCK: BzvpPersonnel[] = [
     specialization: "Кулеметник",
   },
   {
-    id: "bzvp-004",
     rank: "капітан",
     fullName: "Мельник Сергій Васильович",
     birthDate: "18.02.1998",
@@ -158,7 +154,6 @@ export const BZVP_MOCK: BzvpPersonnel[] = [
     specialization: "Снайпер",
   },
   {
-    id: "bzvp-005",
     rank: "солдат",
     fullName: "Ткаченко Роман Олександрович",
     birthDate: "30.06.2002",
@@ -197,7 +192,6 @@ export const BZVP_MOCK: BzvpPersonnel[] = [
     specialization: undefined,
   },
   {
-    id: "bzvp-006",
     rank: "старший солдат",
     fullName: "Кравченко Ігор Анатолійович",
     birthDate: "14.09.1997",
@@ -236,7 +230,6 @@ export const BZVP_MOCK: BzvpPersonnel[] = [
     specialization: "Радіотелефоніст",
   },
   {
-    id: "bzvp-007",
     rank: "солдат",
     fullName: "Олійник Віталій Володимирович",
     birthDate: "07.12.2000",
@@ -275,7 +268,6 @@ export const BZVP_MOCK: BzvpPersonnel[] = [
     specialization: "Стрілець",
   },
   {
-    id: "bzvp-008",
     rank: "молодший лейтенант",
     fullName: "Савченко Павло Юрійович",
     birthDate: "21.03.2003",
@@ -314,7 +306,6 @@ export const BZVP_MOCK: BzvpPersonnel[] = [
     specialization: undefined,
   },
   {
-    id: "bzvp-009",
     rank: "старший сержант",
     fullName: "Гриценко Максим Богданович",
     birthDate: "05.07.1996",
@@ -353,7 +344,6 @@ export const BZVP_MOCK: BzvpPersonnel[] = [
     specialization: "Командир відділення",
   },
   {
-    id: "bzvp-010",
     rank: "лейтенант",
     fullName: "Лисенко Артем Вікторович",
     birthDate: "28.10.2001",
@@ -391,4 +381,4 @@ export const BZVP_MOCK: BzvpPersonnel[] = [
     trainingPeriod: "1.5 міс.",
     specialization: "Розвідник",
   },
-];
+] as BzvpPersonnel[];

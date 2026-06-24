@@ -36,7 +36,9 @@ export async function getFilteredBzvp(
   arrivalFrom: string,
   arrivalTo: string,
 ): Promise<{ personnel: BzvpPersonnel[]; count: number }> {
-  const all = await prisma.bzvpPersonnel.findMany();
+  const all = await prisma.bzvpPersonnel.findMany({
+    orderBy: { createdAt: "desc" },
+  });
 
   let filtered = all.map((p) => ({
     ...p,
@@ -63,7 +65,7 @@ export async function getFilteredBzvp(
   return { personnel: filtered, count: filtered.length };
 }
 
-export async function getBzvpPersonnelById(id: string): Promise<BzvpPersonnel | null> {
+export async function getBzvpPersonnelById(id: number): Promise<BzvpPersonnel | null> {
   const p = await prisma.bzvpPersonnel.findUnique({ where: { id } });
   if (!p) return null;
   return { ...p, status: toBzvpStatus(p.status) } as unknown as BzvpPersonnel;

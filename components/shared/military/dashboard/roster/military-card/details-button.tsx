@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
 interface Props {
-  id: string;
+  id: number;
 }
 
 export function MilitaryDetailsButton({ id }: Props) {

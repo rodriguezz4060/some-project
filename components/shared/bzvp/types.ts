@@ -1,7 +1,7 @@
 export type BzvpStatus = "training" | "graduated" | "transferred" | "failed";
 
 export interface BzvpPersonnel {
-  id: string;
+  id: number;
   rank: string;
   fullName: string;
   birthDate: string;

@@ -9,10 +9,14 @@ async function seedMilitary() {
     "../components/shared/military/personnel-mock"
   );
 
-  for (const person of MOCK_PERSONNEL) {
+  for (let i = 0; i < MOCK_PERSONNEL.length; i++) {
+    const person = MOCK_PERSONNEL[i];
+    const createdAt = new Date();
+    createdAt.setDate(createdAt.getDate() - (MOCK_PERSONNEL.length - 1 - i));
+
     await prisma.militaryPersonnel.create({
       data: {
-        id: person.id,
+        createdAt,
         fullName: person.fullName,
         rank: person.rank,
         position: person.position,
@@ -87,10 +91,14 @@ async function seedMilitary() {
 async function seedBzvp() {
   const { BZVP_MOCK } = await import("../components/shared/bzvp/mock");
 
-  for (const person of BZVP_MOCK) {
+  for (let i = 0; i < BZVP_MOCK.length; i++) {
+    const person = BZVP_MOCK[i];
+    const createdAt = new Date();
+    createdAt.setMinutes(createdAt.getMinutes() - (BZVP_MOCK.length - 1 - i));
+
     await prisma.bzvpPersonnel.create({
       data: {
-        id: person.id,
+        createdAt,
         fullName: person.fullName,
         rank: person.rank,
         birthDate: person.birthDate,

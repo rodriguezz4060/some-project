@@ -2,9 +2,8 @@ import type { MilitaryPersonnel } from "./types";
 
 export const MOCK_TOTAL_DB_COUNT = 124;
 
-export const MOCK_PERSONNEL: MilitaryPersonnel[] = [
+export const MOCK_PERSONNEL = [
   {
-    id: "1",
     fullName: "Іванов Іван Іванович",
     rank: "старший лейтенант",
     position: "Командир взводу",
@@ -65,7 +64,6 @@ export const MOCK_PERSONNEL: MilitaryPersonnel[] = [
     ],
   },
   {
-    id: "2",
     fullName: "Петренко Сергій Олександрович",
     rank: "капітан",
     position: "Заступник командира роти",
@@ -138,7 +136,6 @@ export const MOCK_PERSONNEL: MilitaryPersonnel[] = [
     ],
   },
   {
-    id: "3",
     fullName: "Коваленко Дмитро Вікторович",
     rank: "сержант",
     position: "Старший оператор БПЛА",
@@ -193,7 +190,6 @@ export const MOCK_PERSONNEL: MilitaryPersonnel[] = [
     ],
   },
   {
-    id: "4",
     fullName: "Сидоренко Олександр Павлович",
     rank: "майор",
     position: "Начальник штабу батальйону",
@@ -246,7 +242,6 @@ export const MOCK_PERSONNEL: MilitaryPersonnel[] = [
     },
   },
   {
-    id: "5",
     fullName: "Мельник Андрій Васильович",
     rank: "лейтенант",
     position: "Командир відділення",
@@ -294,7 +289,6 @@ export const MOCK_PERSONNEL: MilitaryPersonnel[] = [
     ],
   },
   {
-    id: "6",
     fullName: "Ткаченко Олег Миколайович",
     rank: "капітан",
     position: "Командир роти",
@@ -384,7 +378,6 @@ export const MOCK_PERSONNEL: MilitaryPersonnel[] = [
     ],
   },
   {
-    id: "7",
     fullName: "Бондаренко Сергій Петрович",
     rank: "сержант",
     position: "Стрілець-санітар",
@@ -445,7 +438,6 @@ export const MOCK_PERSONNEL: MilitaryPersonnel[] = [
     ],
   },
   {
-    id: "8",
     fullName: "Романенко Віктор Ігорович",
     rank: "полковник",
     position: "Командир бригади",
@@ -539,7 +531,6 @@ export const MOCK_PERSONNEL: MilitaryPersonnel[] = [
     ],
   },
   {
-    id: "9",
     fullName: "Гриценко Павло Олегович",
     rank: "лейтенант",
     position: "Офіцер розвідки",
@@ -586,7 +577,6 @@ export const MOCK_PERSONNEL: MilitaryPersonnel[] = [
     ],
   },
   {
-    id: "10",
     fullName: "Шевченко Тарас Григорович",
     rank: "майор",
     position: "Начальник розвідки",
@@ -669,4 +659,4 @@ export const MOCK_PERSONNEL: MilitaryPersonnel[] = [
       },
     ],
   },
-];
+] as MilitaryPersonnel[];

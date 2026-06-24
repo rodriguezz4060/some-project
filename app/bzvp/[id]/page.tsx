@@ -18,7 +18,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const person = await getBzvpPersonnelById(id);
+  const person = await getBzvpPersonnelById(Number(id));
   return { title: person?.fullName ?? "Профіль БЗВП" };
 }
 
@@ -69,7 +69,7 @@ export default async function BzvpProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const person = await getBzvpPersonnelById(id);
+  const person = await getBzvpPersonnelById(Number(id));
 
   if (!person) {
     notFound();
@@ -99,6 +99,9 @@ export default async function BzvpProfilePage({
             >
               {statusInfo.label}
             </Badge>
+            <Button variant="outline" size="sm" asChild className="gap-1.5">
+              <Link href={`/bzvp/${person.id}/edit`}>Редагувати</Link>
+            </Button>
           </div>
         </div>
       </div>

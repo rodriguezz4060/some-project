@@ -9,8 +9,17 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
-import { createBzvp } from "@root/actions/bzvp";
+import { createBzvp, updateBzvp } from "@root/actions/bzvp";
+import { BZVP_STATUS_CONFIG, BZVP_STATUSES } from "@/components/shared/bzvp/constants";
+import type { BzvpPersonnel } from "@/components/shared/bzvp/types";
 
 interface FormData {
   rank: string;
@@ -45,6 +54,51 @@ interface FormData {
   bloodType: string;
   shoeSize: string;
   notes: string;
+  status: string;
+  arrivalDate: string;
+  trainingPeriod: string;
+  specialization: string;
+}
+
+function formDataFromPerson(person: BzvpPersonnel): FormData {
+  return {
+    rank: person.rank,
+    fullName: person.fullName,
+    birthDate: person.birthDate,
+    birthPlace: person.birthPlace ?? "",
+    photo: person.photo ?? "",
+    passport: person.passport ?? "",
+    passportIssued: person.passportIssued ?? "",
+    tin: person.tin ?? "",
+    militaryId: person.militaryId ?? "",
+    militaryIdIssued: person.militaryIdIssued ?? "",
+    ubd: person.ubd ?? "Немає",
+    ubdDate: person.ubdDate ?? "",
+    serviceUnit: person.serviceUnit ?? "",
+    serviceYears: person.serviceYears ?? "",
+    civilianJob: person.civilianJob ?? "",
+    education: person.education ?? "",
+    actualAddress: person.actualAddress ?? "",
+    registrationAddress: person.registrationAddress ?? "",
+    driverLicense: person.driverLicense ?? "",
+    criminalRecord: person.criminalRecord ?? "Немає",
+    policeRecords: person.policeRecords ?? "Немає",
+    family: person.family ?? "",
+    phone: person.phone ?? "",
+    relativePhones: person.relativePhones ?? "",
+    personalOrder: person.personalOrder ?? "Без розпоряджень",
+    conscription: person.conscription ?? "",
+    health: person.health ?? "",
+    healthComplaints: person.healthComplaints ?? "",
+    moralState: person.moralState ?? "",
+    bloodType: person.bloodType ?? "",
+    shoeSize: person.shoeSize ?? "",
+    notes: person.notes ?? "",
+    status: person.status,
+    arrivalDate: person.arrivalDate,
+    trainingPeriod: person.trainingPeriod,
+    specialization: person.specialization ?? "",
+  };
 }
 
 const emptyForm: FormData = {
@@ -80,6 +134,10 @@ const emptyForm: FormData = {
   bloodType: "",
   shoeSize: "",
   notes: "",
+  status: "training",
+  arrivalDate: "",
+  trainingPeriod: "",
+  specialization: "",
 };
 
 interface FieldProps {
@@ -125,11 +183,20 @@ function FormField({
   );
 }
 
-export function BzvpNewForm() {
+interface Props {
+  initialData?: BzvpPersonnel;
+}
+
+export function BzvpForm({ initialData }: Props) {
   const router = useRouter();
+  const isEdit = !!initialData;
   const [isLoading, setIsLoading] = useState(false);
-  const [form, setForm] = useState<FormData>({ ...emptyForm });
-  const [ubdChecked, setUbdChecked] = useState(false);
+  const [form, setForm] = useState<FormData>(
+    initialData ? formDataFromPerson(initialData) : { ...emptyForm },
+  );
+  const [ubdChecked, setUbdChecked] = useState(
+    initialData ? initialData.ubd === "Так" : false,
+  );
 
   const updateField = useCallback((key: keyof FormData, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -152,15 +219,23 @@ export function BzvpNewForm() {
       e.preventDefault();
       setIsLoading(true);
 
-      const result = await createBzvp(form);
-
-      setIsLoading(false);
-      toast.success("Анкету збережено", {
-        description: `${result.fullName} додано до списку БЗВП`,
-      });
-      router.push("/bzvp");
+      if (isEdit) {
+        const result = await updateBzvp(initialData.id!, form);
+        setIsLoading(false);
+        toast.success("Анкету оновлено", {
+          description: `${result.fullName} — зміни збережено`,
+        });
+        router.push(`/bzvp/${initialData.id!}`);
+      } else {
+        const result = await createBzvp(form);
+        setIsLoading(false);
+        toast.success("Анкету збережено", {
+          description: `${result.fullName} додано до списку БЗВП`,
+        });
+        router.push("/bzvp");
+      }
     },
-    [form, router],
+    [form, isEdit, initialData, router],
   );
 
   return (
@@ -170,6 +245,26 @@ export function BzvpNewForm() {
           <CardTitle>Основна інформація та документи</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+          {isEdit && (
+            <div className="space-y-1.5">
+              <Label htmlFor="status">Статус</Label>
+              <Select
+                value={form.status}
+                onValueChange={(v) => updateField("status", v)}
+              >
+                <SelectTrigger id="status">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {BZVP_STATUSES.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {BZVP_STATUS_CONFIG[s].label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <FormField
             label="Військове звання"
             value={form.rank}
@@ -259,6 +354,22 @@ export function BzvpNewForm() {
           <CardTitle>Служба, адреси, правовий статус та сім&apos;я</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+          {isEdit && (
+            <>
+              <FormField
+                label="Дата прибуття"
+                value={form.arrivalDate}
+                onChange={(v) => updateField("arrivalDate", v)}
+                placeholder="ДД.ММ.РРРР"
+              />
+              <FormField
+                label="Період навчання"
+                value={form.trainingPeriod}
+                onChange={(v) => updateField("trainingPeriod", v)}
+                placeholder="01.03.2025 – 01.06.2025"
+              />
+            </>
+          )}
           <FormField
             label="Воєнна частина (В/ч)"
             value={form.serviceUnit}
@@ -284,6 +395,14 @@ export function BzvpNewForm() {
             placeholder="Житомирський політехнічний коледж, 2021, електромонтажник"
             multiline
           />
+          {isEdit && (
+            <FormField
+              label="Спеціалізація"
+              value={form.specialization}
+              onChange={(v) => updateField("specialization", v)}
+              placeholder="Кулеметник, водій"
+            />
+          )}
           <FormField
             label="Фактичне місце проживання"
             value={form.actualAddress}
@@ -403,13 +522,13 @@ export function BzvpNewForm() {
           ) : (
             <Save className="size-4" />
           )}
-          {isLoading ? "Збереження..." : "Зберегти анкету"}
+          {isLoading ? "Збереження..." : (isEdit ? "Зберегти зміни" : "Зберегти анкету")}
         </Button>
         <Button
           type="button"
           variant="outline"
           size="lg"
-          onClick={() => router.push("/bzvp")}
+          onClick={() => router.push(isEdit ? `/bzvp/${initialData.id!}` : "/bzvp")}
           disabled={isLoading}
         >
           Скасувати

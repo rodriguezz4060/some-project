@@ -46,7 +46,7 @@ export interface PositionEntry {
 }
 
 export interface MilitaryPersonnel {
-  id: string;
+  id: number;
   fullName: string;
   rank: RankType;
   position: string;

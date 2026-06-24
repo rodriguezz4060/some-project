@@ -40,6 +40,7 @@ export async function getFilteredMilitary(
   query: string,
 ): Promise<{ personnel: MilitaryPersonnel[]; totalCount: number }> {
   const all = await prisma.militaryPersonnel.findMany({
+    orderBy: { createdAt: "desc" },
     include: {
       medicalRecords: true,
       achievements: true,
@@ -64,7 +65,7 @@ export async function getFilteredMilitary(
   return { personnel: filtered, totalCount };
 }
 
-export async function getMilitaryPersonnelById(id: string): Promise<MilitaryPersonnel | null> {
+export async function getMilitaryPersonnelById(id: number): Promise<MilitaryPersonnel | null> {
   const p = await prisma.militaryPersonnel.findUnique({
     where: { id },
     include: {
@@ -82,6 +83,7 @@ export async function getMilitaryPersonnelById(id: string): Promise<MilitaryPers
 
 export async function getAllMilitary(): Promise<MilitaryPersonnel[]> {
   const all = await prisma.militaryPersonnel.findMany({
+    orderBy: { createdAt: "desc" },
     include: {
       medicalRecords: true,
       achievements: true,
