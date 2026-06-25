@@ -70,6 +70,54 @@ src/
 middleware.ts                 # захист маршрутів
 ```
 
+## Детекція об'єктів (Python)
+
+Додаток має інтегрований детектор об'єктів на основі **YOLOv8n**, навчений на військових датасетах.
+
+### Класи, що детектуються
+
+| Клас | Об'єкти |
+|------|---------|
+| person | люди, солдати |
+| tank | танки |
+| vehicle | військова та цивільна техніка |
+| aircraft | літаки, гелікоптери |
+
+### Запуск Python-сервера
+
+```bash
+# 1. Активувати віртуальне середовище
+cd detector
+venv\Scripts\activate
+
+# 2. Встановити залежності (при першому запуску)
+pip install -r requirements.txt
+
+# 3. Запустити сервер
+python main.py
+```
+
+Сервер буде доступний на `http://localhost:8000`. Next.js звертається до нього через `/api/detect`.
+
+### Структура папки `detector/`
+
+```
+detector/
+  main.py                 # FastAPI сервер (SAHI + YOLO)
+  train.py                # скрипт тренування на CPU (Roboflow)
+  colab_train.ipynb       # Colab ноутбук для тренування на GPU
+  requirements.txt        # залежності
+  start-server.bat        # швидкий запуск (подвійний клік)
+  best.pt                 # готова модель
+  yolo26n.pt              # базова COCO-модель
+```
+
+### Тренування власної моделі
+
+1. Відкрити `detector/colab_train.ipynb` в [Google Colab](https://colab.research.google.com)
+2. Виконати клітинки по порядку — датасети завантажаться автоматично з Kaggle + Roboflow
+3. Після завершення завантажити `best.pt` і покласти в `detector/`
+
 ## Гіт-стратегія
 
 1. `git checkout -b feature/nazva` — нова гілка для фічі
