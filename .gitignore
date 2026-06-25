@@ -46,6 +46,8 @@ next-env.d.ts
 # python detector
 detector/venv/
 detector/*.pt
+detector/__pycache__/
+**/__pycache__/
 
 # uploaded photos
 public/uploads/detections/*.jpg
