@@ -42,3 +42,12 @@ next-env.d.ts
 
 # prisma generated client
 /generated/
+
+# python detector
+detector/venv/
+detector/*.pt
+
+# uploaded photos
+public/uploads/detections/*.jpg
+public/uploads/detections/*.png
+public/uploads/detections/*.webp

@@ -1,6 +1,18 @@
-import { Document, Page, View, Text, StyleSheet, Image, Font } from "@react-pdf/renderer";
+import {
+  Document,
+  Page,
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  Font,
+} from "@react-pdf/renderer";
 import type { BzvpPersonnel } from "../types";
-import { font400, font500, font700 } from "../../military/dashboard/profile/profile-pdf-fonts";
+import {
+  font400,
+  font500,
+  font700,
+} from "../../military/dashboard/profile/profile-pdf-fonts";
 
 Font.register({
   family: "Noto Sans",
@@ -118,7 +130,8 @@ export function BzvpPdfDocument({ personnel }: Props) {
 
         <View style={styles.heroRow}>
           {personnel.photo ? (
-            <Image style={styles.photo} src={personnel.photo} alt="" />
+            // eslint-disable-next-line jsx-a11y/alt-text
+            <Image style={styles.photo} src={personnel.photo} />
           ) : (
             <View style={styles.photoBox} />
           )}
@@ -127,20 +140,30 @@ export function BzvpPdfDocument({ personnel }: Props) {
             <Field label="ПІБ" value={personnel.fullName} />
             <Field
               label="Дата та місце народження"
-              value={[personnel.birthDate, personnel.birthPlace].filter(Boolean).join(", ")}
+              value={[personnel.birthDate, personnel.birthPlace]
+                .filter(Boolean)
+                .join(", ")}
             />
             <Field
               label="Серія та номер паспорту, коли і ким виданий"
-              value={[personnel.passport, personnel.passportIssued].filter(Boolean).join(", ")}
+              value={[personnel.passport, personnel.passportIssued]
+                .filter(Boolean)
+                .join(", ")}
             />
             <Field label="ІПН" value={personnel.tin} />
             <Field
               label="№ військового квитка, коли та ким виданий"
-              value={[personnel.militaryId, personnel.militaryIdIssued].filter(Boolean).join(", ")}
+              value={[personnel.militaryId, personnel.militaryIdIssued]
+                .filter(Boolean)
+                .join(", ")}
             />
             <Field
               label="УБД та дата видачі"
-              value={personnel.ubd === "Так" ? `Так, ${personnel.ubdDate}` : personnel.ubd}
+              value={
+                personnel.ubd === "Так"
+                  ? `Так, ${personnel.ubdDate}`
+                  : personnel.ubd
+              }
             />
           </View>
         </View>
@@ -149,30 +172,54 @@ export function BzvpPdfDocument({ personnel }: Props) {
 
         <Field
           label="Воєнна частина (В/ч) та роки проходження служби"
-          value={[personnel.serviceUnit, personnel.serviceYears].filter(Boolean).join(", ")}
+          value={[personnel.serviceUnit, personnel.serviceYears]
+            .filter(Boolean)
+            .join(", ")}
         />
         <Field label="Цивільна робота, фах" value={personnel.civilianJob} />
         <Field
           label="Які навчальні заклади закінчив, у якому році, спеціальність"
           value={personnel.education}
         />
-        <Field label="Фактичне місце проживання" value={personnel.actualAddress} />
+        <Field
+          label="Фактичне місце проживання"
+          value={personnel.actualAddress}
+        />
         <Field label="Місце прописки" value={personnel.registrationAddress} />
-        <Field label="Посвідчення водія (категорія)" value={personnel.driverLicense} />
+        <Field
+          label="Посвідчення водія (категорія)"
+          value={personnel.driverLicense}
+        />
         <Field label="Судимість" value={personnel.criminalRecord} />
-        <Field label="Приводи в поліцію / адмін-порушення" value={personnel.policeRecords} />
-        <Field label="Склад сім'ї (члени родини), їх адреса проживання" value={personnel.family} />
+        <Field
+          label="Приводи в поліцію / адмін-порушення"
+          value={personnel.policeRecords}
+        />
+        <Field
+          label="Склад сім'ї (члени родини), їх адреса проживання"
+          value={personnel.family}
+        />
         <Field
           label="Номера телефонів (особистий, близьких родичів)"
-          value={[personnel.phone, personnel.relativePhones].filter(Boolean).join("; ")}
+          value={[personnel.phone, personnel.relativePhones]
+            .filter(Boolean)
+            .join("; ")}
         />
         <Field label="Особисте розпорядження" value={personnel.personalOrder} />
-        <Field label="Яким РТЦК та СП призваний" value={personnel.conscription} />
+        <Field
+          label="Яким РТЦК та СП призваний"
+          value={personnel.conscription}
+        />
         <Field
           label="Стан здоров'я, скарги на здоров'я"
-          value={[personnel.health, personnel.healthComplaints].filter(Boolean).join(". ")}
+          value={[personnel.health, personnel.healthComplaints]
+            .filter(Boolean)
+            .join(". ")}
         />
-        <Field label="Морально-психологічний стан" value={personnel.moralState} />
+        <Field
+          label="Морально-психологічний стан"
+          value={personnel.moralState}
+        />
         <Field label="Група крові" value={personnel.bloodType} />
         <Field label="Розмір взуття" value={personnel.shoeSize} />
         <Field label="Особливі примітки" value={personnel.notes} />

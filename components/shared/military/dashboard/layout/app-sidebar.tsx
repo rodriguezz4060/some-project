@@ -12,6 +12,7 @@ import {
   IconBuildingFortress,
   IconTargetArrow,
   IconShieldCheck,
+  IconCamera,
 } from "@tabler/icons-react";
 
 import { NavMain } from "@/components/shared/military/dashboard/layout/nav-main";
@@ -75,6 +76,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       url: "/military/reports",
       icon: IconReportAnalytics,
       isActive: pathname.startsWith("/military/reports"),
+    },
+    {
+      title: "Детекція об'єктів",
+      url: "/military/detection",
+      icon: IconCamera,
+      isActive: pathname.startsWith("/military/detection"),
     },
   ];
   if (isAdmin) {

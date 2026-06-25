@@ -95,6 +95,7 @@ model User {
   name      String?
   role      Role     @default(user)
   auditLogs AuditLog[]
+  photos    Photo[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -139,6 +140,30 @@ model ClothingSizes {
   uniform     String?
   personnelId Int     @unique
   personnel   MilitaryPersonnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
+}
+
+model Photo {
+  id         Int      @id @default(autoincrement())
+  filename   String
+  original   String
+  width      Int
+  height     Int
+  uploadedAt DateTime @default(now())
+  uploaderId Int
+  uploader   User     @relation(fields: [uploaderId], references: [id])
+  detections Detection[]
+}
+
+model Detection {
+  id         Int     @id @default(autoincrement())
+  photoId    Int
+  photo      Photo   @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  label      String
+  confidence Float
+  x1         Float
+  y1         Float
+  x2         Float
+  y2         Float
 }
 
 model AuditLog {
