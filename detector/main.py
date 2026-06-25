@@ -16,15 +16,16 @@ app.add_middleware(
 
 model = AutoDetectionModel.from_pretrained(
     model_type="ultralytics",
-    model_path="yolo26s.pt",
+    model_path="best.pt",
     confidence_threshold=0.1,
     device="cpu",
 )
 
 CLASS_FILTER = {
     "person": ["person"],
-    "vehicle": ["car", "truck", "bus", "motorcycle", "bicycle", "boat", "train"],
-    "aircraft": ["airplane"],
+    "tank": ["tank"],
+    "vehicle": ["vehicle"],
+    "aircraft": ["airplane", "helicopter"],
 }
 
 @app.post("/detect")
@@ -84,7 +85,7 @@ async def detect(file: UploadFile = File(...)):
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "model": "yolo26s.pt (COCO 80cls, SAHI)"}
+    return {"status": "ok", "model": "best.pt (YOLOv8n tank-detection, SAHI)"}
 
 
 if __name__ == "__main__":
