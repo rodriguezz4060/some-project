@@ -5,7 +5,7 @@ export default auth((req) => {
   const { pathname } = req.nextUrl;
   const isLoggedIn = !!req.auth;
 
-  const protectedPaths = ["/military", "/bzvp"];
+  const protectedPaths = ["/military", "/bzvp", "/admin"];
   const isProtected = protectedPaths.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`),
   );
@@ -20,5 +20,5 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/military/:path*", "/bzvp/:path*"],
+  matcher: ["/military/:path*", "/bzvp/:path*", "/admin/:path*"],
 };

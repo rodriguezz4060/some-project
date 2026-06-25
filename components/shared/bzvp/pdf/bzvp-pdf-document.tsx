@@ -118,7 +118,7 @@ export function BzvpPdfDocument({ personnel }: Props) {
 
         <View style={styles.heroRow}>
           {personnel.photo ? (
-            <Image style={styles.photo} src={personnel.photo} />
+            <Image style={styles.photo} src={personnel.photo} alt="" />
           ) : (
             <View style={styles.photoBox} />
           )}

@@ -1,7 +1,8 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
-import { LogIn, LogOut, Shield, User } from "lucide-react";
+import Link from "next/link";
+import { LogIn, LogOut, Shield, ShieldCheck, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { AuthForm } from "./auth-form";
@@ -16,6 +17,15 @@ export function AuthModal() {
 
     return (
       <div className="flex items-center gap-3">
+        {isAdmin && (
+          <Link
+            href="/admin"
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ShieldCheck className="size-4 text-amber-400" />
+            <span className="hidden sm:inline">Адмін</span>
+          </Link>
+        )}
         <div className="hidden sm:flex flex-col items-end text-xs">
           <span className="font-medium text-foreground">
             {session.user.name ?? session.user.email}

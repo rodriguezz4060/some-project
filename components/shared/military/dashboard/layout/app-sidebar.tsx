@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   IconCalendarClock,
   IconHelp,
@@ -10,6 +11,7 @@ import {
   IconUsers,
   IconBuildingFortress,
   IconTargetArrow,
+  IconShieldCheck,
 } from "@tabler/icons-react";
 
 import { NavMain } from "@/components/shared/military/dashboard/layout/nav-main";
@@ -40,6 +42,8 @@ const navSecondary = [
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === "admin";
 
   const navMain = [
     {
@@ -73,6 +77,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       isActive: pathname.startsWith("/military/reports"),
     },
   ];
+  if (isAdmin) {
+    navMain.push({
+      title: "Адміністрування",
+      url: "/admin",
+      icon: IconShieldCheck,
+      isActive: pathname.startsWith("/admin"),
+    });
+  }
+
   return (
     <Sidebar
       collapsible="offcanvas"
