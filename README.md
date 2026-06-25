@@ -3,7 +3,7 @@
 ## Технологічний стек
 
 | Технологія | Версія |
-|---|---|
+|---|---|---|
 | Next.js | 16 |
 | React | 19 |
 | TypeScript | 5 |
@@ -12,6 +12,12 @@
 | Prisma | 7 |
 | PostgreSQL (через `@prisma/adapter-pg`) | — |
 | NextAuth | v5 (beta) |
+| **Детекція об'єктів** | |
+| Python | 3.14 |
+| FastAPI | 0.115 |
+| Ultralytics (YOLO) | 8.4 |
+| SAHI | 0.11 |
+| YOLO26n / YOLOv8n | — |
 
 ## Початок роботи
 
