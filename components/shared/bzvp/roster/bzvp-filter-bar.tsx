@@ -71,7 +71,7 @@ export function BzvpFilterBar({
   return (
     <div className="mb-6 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <BzvpSearchInput key={initialQuery} initialQuery={initialQuery} />
+        <BzvpSearchInput initialQuery={initialQuery} />
         <Button asChild size="sm" className="gap-1.5">
           <Link href="/bzvp/new">
             <Plus className="size-4" />

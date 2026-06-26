@@ -113,7 +113,7 @@ export function MilitaryFilterBar({
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <MilitarySearchInput key={initialQuery} initialQuery={initialQuery} />
+        <MilitarySearchInput initialQuery={initialQuery} />
         <Button asChild size="sm" className="gap-1.5">
           <Link href="/military/new">
             <Plus className="size-4" />

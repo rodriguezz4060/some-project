@@ -1,4 +1,5 @@
 import { prisma } from "@root/lib/prisma";
+import type { Prisma } from "@/generated/prisma/client";
 import type { MilitaryPersonnel, StatusType } from "@/components/shared/military/types";
 
 const SEARCH_FIELDS: (keyof MilitaryPersonnel)[] = [
@@ -9,14 +10,6 @@ const SEARCH_FIELDS: (keyof MilitaryPersonnel)[] = [
   "phone",
   "email",
 ];
-
-function matchesQuery(person: MilitaryPersonnel, query: string): boolean {
-  const lower = query.toLowerCase();
-  return SEARCH_FIELDS.some((field) => {
-    const val = person[field];
-    return val != null && String(val).toLowerCase().includes(lower);
-  });
-}
 
 function toMilitaryPersonnel(raw: Record<string, unknown>): MilitaryPersonnel {
   return {
@@ -39,30 +32,30 @@ export async function getFilteredMilitary(
   statuses: StatusType[],
   query: string,
 ): Promise<{ personnel: MilitaryPersonnel[]; totalCount: number }> {
-  const all = await prisma.militaryPersonnel.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      medicalRecords: true,
-      achievements: true,
-      equipment: true,
-      positionHistory: true,
-      clothingSizes: true,
-    },
-  });
-
-  const totalCount = await prisma.militaryPersonnel.count();
-
-  let filtered = all.map(toMilitaryPersonnel);
+  const where: Prisma.MilitaryPersonnelWhereInput = {};
 
   if (statuses.length > 0) {
-    filtered = filtered.filter((p) => statuses.includes(p.status));
+    where.status = { in: statuses };
   }
 
   if (query) {
-    filtered = filtered.filter((p) => matchesQuery(p, query));
+    where.OR = SEARCH_FIELDS.map((field) => ({
+      [field]: { contains: query, mode: "insensitive" },
+    })) as Prisma.MilitaryPersonnelWhereInput[];
   }
 
-  return { personnel: filtered, totalCount };
+  const [personnel, totalCount] = await Promise.all([
+    prisma.militaryPersonnel.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.militaryPersonnel.count(),
+  ]);
+
+  return {
+    personnel: personnel.map(toMilitaryPersonnel),
+    totalCount,
+  };
 }
 
 export async function getMilitaryPersonnelById(id: number): Promise<MilitaryPersonnel | null> {

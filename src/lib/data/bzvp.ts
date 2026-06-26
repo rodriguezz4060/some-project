@@ -1,4 +1,5 @@
 import { prisma } from "@root/lib/prisma";
+import type { Prisma } from "@/generated/prisma/client";
 import type { BzvpPersonnel, BzvpStatus } from "@/components/shared/bzvp/types";
 
 const SEARCH_FIELDS: (keyof BzvpPersonnel)[] = [
@@ -11,23 +12,8 @@ const SEARCH_FIELDS: (keyof BzvpPersonnel)[] = [
   "civilianJob",
 ];
 
-function matchesQuery(person: BzvpPersonnel, query: string): boolean {
-  const lower = query.toLowerCase();
-  return SEARCH_FIELDS.some((field) => {
-    const val = person[field];
-    return val != null && String(val).toLowerCase().includes(lower);
-  });
-}
-
 function toBzvpStatus(s: string): BzvpStatus {
   return s as BzvpStatus;
-}
-
-function normalizeDate(value: string): string {
-  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
-  const m = value.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
-  if (m) return `${m[3]}-${m[2]}-${m[1]}`;
-  return value;
 }
 
 export async function getFilteredBzvp(
@@ -36,33 +22,37 @@ export async function getFilteredBzvp(
   arrivalFrom: string,
   arrivalTo: string,
 ): Promise<{ personnel: BzvpPersonnel[]; count: number }> {
-  const all = await prisma.bzvpPersonnel.findMany({
-    orderBy: { createdAt: "desc" },
-  });
-
-  let filtered = all.map((p) => ({
-    ...p,
-    status: toBzvpStatus(p.status),
-  })) as unknown as BzvpPersonnel[];
+  const where: Prisma.BzvpPersonnelWhereInput = {};
 
   if (statuses.length > 0) {
-    filtered = filtered.filter((p) => statuses.includes(p.status));
+    where.status = { in: statuses };
   }
 
   if (query) {
-    filtered = filtered.filter((p) => matchesQuery(p, query));
+    where.OR = SEARCH_FIELDS.map((field) => ({
+      [field]: { contains: query, mode: "insensitive" },
+    })) as Prisma.BzvpPersonnelWhereInput[];
   }
 
   if (arrivalFrom || arrivalTo) {
-    filtered = filtered.filter((p) => {
-      const d = normalizeDate(p.arrivalDate);
-      if (arrivalFrom && d < arrivalFrom) return false;
-      if (arrivalTo && d > arrivalTo) return false;
-      return true;
-    });
+    const dateFilter: Prisma.StringFilter<"BzvpPersonnel"> = {};
+    if (arrivalFrom) dateFilter.gte = arrivalFrom;
+    if (arrivalTo) dateFilter.lte = arrivalTo;
+    where.arrivalDate = dateFilter;
   }
 
-  return { personnel: filtered, count: filtered.length };
+  const personnel = await prisma.bzvpPersonnel.findMany({
+    where,
+    orderBy: { createdAt: "desc" },
+  });
+
+  return {
+    personnel: personnel.map((p) => ({
+      ...p,
+      status: toBzvpStatus(p.status),
+    })) as unknown as BzvpPersonnel[],
+    count: personnel.length,
+  };
 }
 
 export async function getBzvpPersonnelById(id: number): Promise<BzvpPersonnel | null> {
