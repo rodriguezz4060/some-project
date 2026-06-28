@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@root/lib/utils";
@@ -41,27 +41,26 @@ export default async function PersonnelProfilePage({
   return (
     <div>
       <div className="sticky top-[68px] z-10 bg-background/80 backdrop-blur-md border-b border-border/30">
-        <div className="px-6 py-3 flex items-center justify-between">
+        <div className="px-6 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <Link
             href="/military"
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
           >
             <ArrowLeft className="size-4" />
-            До списку особового складу
+            До списку
           </Link>
 
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-foreground/80 hidden sm:inline">
-              {person.fullName}
-            </span>
+          <div className="flex items-center gap-2 flex-wrap">
             <Badge
               variant="outline"
               className={cn("font-medium text-xs", statusInfo.color)}
             >
               {statusInfo.label}
             </Badge>
-            <Button variant="outline" size="sm" asChild className="gap-1.5">
-              <Link href={`/military/${person.id}/edit`}>Редагувати</Link>
+            <Button variant="outline" size="icon" className="size-8" asChild>
+              <Link href={`/military/${person.id}/edit`}>
+                <Pencil className="size-4" />
+              </Link>
             </Button>
             <DeletePersonnelDialog
               personnelId={person.id}

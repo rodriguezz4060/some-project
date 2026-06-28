@@ -25,7 +25,7 @@ export default async function AdminLayout({
       }
     >
       <AdminSidebar variant="inset" />
-      <SidebarInset className="overflow-y-auto overflow-x-hidden">
+      <SidebarInset className="overflow-y-auto">
         <SiteHeader title="Адміністрування" />
         {children}
       </SidebarInset>

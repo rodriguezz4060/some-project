@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -82,27 +82,26 @@ export default async function BzvpProfilePage({
   return (
     <div>
       <div className="sticky top-[68px] z-10 bg-background/80 backdrop-blur-md border-b border-border/30">
-        <div className="px-6 py-3 flex items-center justify-between">
+        <div className="px-6 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <Link
             href="/bzvp"
-            className="inline-flex items-center gap-1.5 text-base text-muted-foreground hover:text-foreground transition-colors"
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
           >
             <ArrowLeft className="size-4" />
-            До списку БЗВП
+            До списку
           </Link>
 
-          <div className="flex items-center gap-3">
-            <span className="text-base font-medium text-foreground/80 hidden sm:inline">
-              {person.fullName}
-            </span>
+          <div className="flex items-center gap-2 flex-wrap">
             <Badge
               variant="outline"
               className={cn("font-medium text-xs", statusInfo.badge)}
             >
               {statusInfo.label}
             </Badge>
-            <Button variant="outline" size="sm" asChild className="gap-1.5">
-              <Link href={`/bzvp/${person.id}/edit`}>Редагувати</Link>
+            <Button variant="outline" size="icon" className="size-8" asChild>
+              <Link href={`/bzvp/${person.id}/edit`}>
+                <Pencil className="size-4" />
+              </Link>
             </Button>
             <DeletePersonnelDialog
               personnelId={person.id}

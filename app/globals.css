@@ -127,4 +127,7 @@
   html {
     @apply font-sans;
   }
+  [data-slot="sidebar-inset"] {
+    overflow-x: hidden;
+  }
 }
