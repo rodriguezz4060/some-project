@@ -2,10 +2,20 @@
 
 import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, FileSpreadsheet, Download, Loader2, AlertTriangle, CheckCircle2, XCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Upload, FileSpreadsheet, Download, Loader2, AlertTriangle,
+  CheckCircle2, XCircle, ChevronLeft, ChevronRight, Eye,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
 import { cn } from "@root/lib/utils";
 import { toast } from "sonner";
 import { parseExcelBzvp, importBzvp } from "@root/actions/import-bzvp";
@@ -50,11 +60,153 @@ const FIELD_LABELS: Record<string, string> = {
   specialization: "Спеціалізація",
 };
 
-const REQUIRED_FIELDS = ["fullName", "rank", "birthDate", "status", "arrivalDate", "trainingPeriod"];
+const SECTIONS: { title: string; fields: string[] }[] = [
+  {
+    title: "Основні дані",
+    fields: ["fullName", "rank", "birthDate", "birthPlace", "status", "arrivalDate", "trainingPeriod", "specialization"],
+  },
+  {
+    title: "Документи",
+    fields: ["passport", "passportIssued", "tin", "militaryId", "militaryIdIssued", "ubd", "ubdDate"],
+  },
+  {
+    title: "Військова служба",
+    fields: ["serviceUnit", "serviceYears", "conscription"],
+  },
+  {
+    title: "Контакти та адреса",
+    fields: ["phone", "relativePhones", "actualAddress", "registrationAddress"],
+  },
+  {
+    title: "Освіта та робота",
+    fields: ["education", "civilianJob", "driverLicense"],
+  },
+  {
+    title: "Здоров'я",
+    fields: ["health", "healthComplaints", "moralState", "bloodType", "shoeSize"],
+  },
+  {
+    title: "Інше",
+    fields: ["family", "criminalRecord", "policeRecords", "personalOrder", "notes", "photo"],
+  },
+];
 
-const VISIBLE_FIELDS = ["fullName", "rank", "birthDate", "status", "phone", "arrivalDate", "specialization"];
+const STATUS_BADGE: Record<string, string> = {
+  training: "bg-blue-500/10 text-blue-600 border-blue-200 dark:bg-blue-950/20 dark:text-blue-400",
+  graduated: "bg-emerald-500/10 text-emerald-600 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400",
+  transferred: "bg-amber-500/10 text-amber-600 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400",
+  failed: "bg-rose-500/10 text-rose-600 border-rose-200 dark:bg-rose-950/20 dark:text-rose-400",
+};
+
+const STATUS_LABEL: Record<string, string> = {
+  training: "Навчання",
+  graduated: "Випускник",
+  transferred: "Переведений",
+  failed: "Не склав",
+};
 
 type Decision = "skip" | "update" | "add";
+
+function RowDialog({
+  row,
+  decision,
+  onDecisionChange,
+  onClose,
+}: {
+  row: ParsedRow;
+  decision: Decision;
+  onDecisionChange: (d: Decision) => void;
+  onClose: () => void;
+}) {
+  const isError = row.errors.length > 0;
+  const isDuplicate = !!row.duplicate;
+
+  return (
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 flex-wrap">
+            <span>{row.data.fullName || "Без ПІБ"}</span>
+            {row.data.rank && (
+              <Badge variant="outline" className="text-xs font-medium">{row.data.rank}</Badge>
+            )}
+            {row.data.status && (
+              <Badge variant="outline" className={cn("text-xs font-medium", STATUS_BADGE[row.data.status])}>
+                {STATUS_LABEL[row.data.status] ?? row.data.status}
+              </Badge>
+            )}
+          </DialogTitle>
+        </DialogHeader>
+
+        {isError && (
+          <div className="rounded-lg bg-rose-500/10 border border-rose-200 dark:border-rose-950/30 p-3 mb-4">
+            <p className="text-sm font-medium text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+              <XCircle className="size-4" /> Помилки валідації
+            </p>
+            <ul className="mt-1 text-sm text-rose-600/80 dark:text-rose-400/80 list-disc list-inside">
+              {row.errors.map((e, i) => <li key={i}>{e}</li>)}
+            </ul>
+          </div>
+        )}
+
+        {isDuplicate && (
+          <div className="rounded-lg bg-amber-500/10 border border-amber-200 dark:border-amber-950/30 p-3 mb-4">
+            <p className="text-sm font-medium text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+              <AlertTriangle className="size-4" /> Знайдено дублікат
+            </p>
+            <p className="text-sm text-amber-600/80 dark:text-amber-400/80 mt-1">
+              {row.duplicate!.fullName} (ID: {row.duplicate!.id}, {row.duplicate!.birthDate})
+            </p>
+            <div className="mt-2 flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">Дія:</span>
+              <select
+                value={decision}
+                onChange={(e) => onDecisionChange(e.target.value as Decision)}
+                className="text-xs rounded border border-border bg-background px-2 py-1 cursor-pointer"
+              >
+                <option value="skip">Пропустити</option>
+                <option value="update">Оновити існуючий</option>
+                <option value="add">Додати як новий</option>
+              </select>
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-5">
+          {SECTIONS.map((section) => {
+            const values = section.fields
+              .map((f) => ({ label: FIELD_LABELS[f], value: row.data[f] }))
+              .filter((v) => v.value);
+
+            if (values.length === 0) return null;
+
+            return (
+              <div key={section.title}>
+                <h4 className="text-sm font-semibold text-foreground/80 mb-2">{section.title}</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+                  {values.map((v) => (
+                    <div key={v.label} className="text-sm">
+                      <span className="text-muted-foreground">{v.label}: </span>
+                      <span className="font-medium">{v.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {!isError && !isDuplicate && (
+          <div className="mt-4 pt-3 border-t border-border">
+            <span className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+              <CheckCircle2 className="size-3.5" /> Буде додано
+            </span>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 export function ImportClient() {
   const router = useRouter();
@@ -66,6 +218,7 @@ export function ImportClient() {
   const [result, setResult] = useState<ParseResult | null>(null);
   const [decisions, setDecisions] = useState<Record<number, Decision>>({});
   const [previewPage, setPreviewPage] = useState(0);
+  const [selectedRow, setSelectedRow] = useState<ParsedRow | null>(null);
   const PREVIEW_PAGE_SIZE = 10;
 
   const handleFile = useCallback(async (f: File) => {
@@ -77,6 +230,7 @@ export function ImportClient() {
     setParsing(true);
     setResult(null);
     setDecisions({});
+    setSelectedRow(null);
 
     try {
       const fd = new FormData();
@@ -194,16 +348,12 @@ export function ImportClient() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="text-left px-3 py-2 text-xs text-muted-foreground font-medium whitespace-nowrap w-8">#</th>
-                    {VISIBLE_FIELDS.map((f) => (
-                      <th key={f} className="text-left px-3 py-2 text-xs text-muted-foreground font-medium whitespace-nowrap">
-                        {FIELD_LABELS[f]}
-                        {REQUIRED_FIELDS.includes(f) && <span className="text-rose-500 ml-0.5">*</span>}
-                      </th>
-                    ))}
-                    <th className="text-left px-3 py-2 text-xs text-muted-foreground font-medium whitespace-nowrap min-w-[140px]">
-                      {result.duplicateCount > 0 ? "Дія" : "Статус"}
-                    </th>
+                    <th className="text-left px-3 py-2 text-xs text-muted-foreground font-medium w-8">#</th>
+                    <th className="text-left px-3 py-2 text-xs text-muted-foreground font-medium">ПІБ</th>
+                    <th className="text-left px-3 py-2 text-xs text-muted-foreground font-medium">Звання</th>
+                    <th className="text-left px-3 py-2 text-xs text-muted-foreground font-medium">Статус</th>
+                    <th className="text-left px-3 py-2 text-xs text-muted-foreground font-medium min-w-[140px]">Дія</th>
+                    <th className="w-10 px-3 py-2" />
                   </tr>
                 </thead>
                 <tbody>
@@ -216,48 +366,60 @@ export function ImportClient() {
                       <tr
                         key={row.index}
                         className={cn(
-                          "border-b border-border/50 transition-colors",
+                          "border-b border-border/50 transition-colors cursor-pointer",
                           isError && "bg-rose-500/5",
                           isDuplicate && !isError && "bg-amber-500/5",
                           !isError && !isDuplicate && "hover:bg-muted/30",
                         )}
+                        onClick={() => setSelectedRow(row)}
                       >
                         <td className="px-3 py-2 text-xs text-muted-foreground tabular-nums">
                           {row.index + 1}
                         </td>
-                        {VISIBLE_FIELDS.map((f) => (
-                          <td
-                            key={f}
-                            className={cn(
-                              "px-3 py-2 text-sm max-w-[200px] truncate",
-                              !row.data[f] && REQUIRED_FIELDS.includes(f) && "text-rose-500",
-                              !row.data[f] && !REQUIRED_FIELDS.includes(f) && "text-muted-foreground/50",
-                            )}
-                            title={row.data[f]}
-                          >
-                            {row.data[f] || "—"}
-                          </td>
-                        ))}
+                        <td className={cn(
+                          "px-3 py-2 text-sm font-medium max-w-[200px] truncate",
+                          !row.data.fullName && "text-rose-500",
+                        )}>
+                          {row.data.fullName || "—"}
+                        </td>
+                        <td className="px-3 py-2 text-sm text-muted-foreground">
+                          {row.data.rank || "—"}
+                        </td>
+                        <td className="px-3 py-2">
+                          {row.data.status ? (
+                            <Badge variant="outline" className={cn("text-[10px] font-medium", STATUS_BADGE[row.data.status])}>
+                              {STATUS_LABEL[row.data.status] ?? row.data.status}
+                            </Badge>
+                          ) : (
+                            <span className="text-xs text-muted-foreground/50">—</span>
+                          )}
+                        </td>
                         <td className="px-3 py-2">
                           {isError ? (
-                            <span className="text-xs text-rose-500" title={row.errors.join("; ")}>
-                              Помилка
+                            <span className="text-xs text-rose-500 flex items-center gap-1">
+                              <XCircle className="size-3" /> Помилка
                             </span>
                           ) : isDuplicate ? (
                             <select
                               value={decision}
+                              onClick={(e) => e.stopPropagation()}
                               onChange={(e) => setDecision(row.index, e.target.value as Decision)}
                               className="text-xs rounded border border-border bg-background px-2 py-1 cursor-pointer"
                             >
                               <option value="skip">Пропустити</option>
                               <option value="update">Оновити</option>
-                              <option value="add">Додати як новий</option>
+                              <option value="add">Додати</option>
                             </select>
                           ) : (
                             <span className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                               <CheckCircle2 className="size-3" /> Додати
                             </span>
                           )}
+                        </td>
+                        <td className="px-3 py-2">
+                          <Button variant="ghost" size="icon-sm" className="size-7" onClick={(e) => { e.stopPropagation(); setSelectedRow(row); }}>
+                            <Eye className="size-3.5" />
+                          </Button>
                         </td>
                       </tr>
                     );
@@ -292,6 +454,15 @@ export function ImportClient() {
           </Card>
         )}
 
+        {selectedRow && (
+          <RowDialog
+            row={selectedRow}
+            decision={decisions[selectedRow.index] ?? "add"}
+            onDecisionChange={(d) => setDecision(selectedRow.index, d)}
+            onClose={() => setSelectedRow(null)}
+          />
+        )}
+
         <div className="flex items-center gap-3">
           <Button
             size="lg"
@@ -315,6 +486,7 @@ export function ImportClient() {
               setResult(null);
               setFile(null);
               setDecisions({});
+              setSelectedRow(null);
             }}
             disabled={importing}
           >
