@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Plus, ChevronDown } from "lucide-react";
+import { Plus, ChevronDown, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@root/lib/utils";
 import { useCollapsed } from "@/hooks/use-collapsed";
@@ -72,12 +72,20 @@ export function BzvpFilterBar({
     <div className="mb-6 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <BzvpSearchInput initialQuery={initialQuery} />
-        <Button asChild size="sm" className="gap-1.5">
-          <Link href="/bzvp/new">
-            <Plus className="size-4" />
-            Нова анкета
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline" size="sm" className="gap-1.5">
+            <Link href="/bzvp/import">
+              <Upload className="size-4" />
+              Імпорт
+            </Link>
+          </Button>
+          <Button asChild size="sm" className="gap-1.5">
+            <Link href="/bzvp/new">
+              <Plus className="size-4" />
+              Нова анкета
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div>
