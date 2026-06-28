@@ -47,9 +47,11 @@ For the `cn()` utility, prefer `@root/lib/utils` (the prevalent pattern).
 - `components/shared/auth/providers.tsx` — SessionProvider wrapper
 - `components/shared/auth/auth-modal.tsx` — client component: shows login form when logged out, user info + signOut when logged in
 - `components/shared/header/header.tsx` — imports `AuthModal`
-- `middleware.ts` — protects `/military/*`, `/bzvp/*` (redirects to `/` if unauthenticated)
-- Two roles: `admin` (full access) / `user` (read-only — no "Нова анкета", no PDF export)
-- Seed users: `admin@tracker.local` / `admin123` (admin), `user@tracker.local` / `user123` (user)
+- `proxy.ts` — protects `/military/*`, `/bzvp/*` (redirects to `/` if unauthenticated)
+- `src/actions/users.ts` — admin-only user management (create, update, delete)
+- Server actions (`military.ts`, `bzvp.ts`, `detection.ts`) — guarded with `requireModerator()` (admin/moderator only)
+- Three roles: `admin` (full access + user management), `moderator` (can CRUD personnel), `user` (read-only for personnel, no create/delete)
+- Seed users: `admin@tracker.local` / `admin123` (admin), `moderator@tracker.local` / `moderator123` (moderator), `user@tracker.local` / `user123` (user)
 
 ## Prisma 7
 
@@ -71,4 +73,3 @@ This version has breaking changes from Next.js 14/15 — APIs, conventions, and 
 
 ### Known warnings (non-blocking)
 - Edge Runtime: `node:path`/`node:url` imported via Prisma client in middleware — dynamic import in `authorize` keeps the app functional
-- Middleware→Proxy deprecation: Next.js 16 prefers `proxy` file over `middleware.ts` (not migrated yet)

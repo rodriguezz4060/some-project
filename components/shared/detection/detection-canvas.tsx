@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useEffect } from "react";
+import { useCallback, useRef, useEffect, useState } from "react";
 import PhotoSwipe from "photoswipe";
 import "photoswipe/dist/photoswipe.css";
 import type { Detection } from "@/generated/prisma/client";
@@ -49,10 +49,13 @@ function drawAnnotations(
 
 export function DetectionCanvas({ src, width, height, detections }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    setLoaded(false);
 
     const img = new Image();
     img.crossOrigin = "anonymous";
@@ -63,6 +66,7 @@ export function DetectionCanvas({ src, width, height, detections }: Props) {
       const ctx = canvas.getContext("2d")!;
       ctx.drawImage(img, 0, 0);
       drawAnnotations(ctx, width, height, detections);
+      setLoaded(true);
     }).catch(() => {});
   }, [src, width, height, detections]);
 
@@ -75,18 +79,12 @@ export function DetectionCanvas({ src, width, height, detections }: Props) {
         canvas.toBlob((b) => {
           if (b) resolve(b);
           else reject(new Error("canvas toBlob failed"));
-        }, "image/jpeg", 0.95);
+        }, "image/jpeg", 0.8);
       });
       const blobUrl = URL.createObjectURL(blob);
 
       const pswp = new PhotoSwipe({
-        dataSource: [
-          {
-            src: blobUrl,
-            width,
-            height,
-          },
-        ],
+        dataSource: [{ src: blobUrl, width, height }],
         showHideAnimationType: "fade",
         bgOpacity: 0.95,
       });
@@ -107,9 +105,14 @@ export function DetectionCanvas({ src, width, height, detections }: Props) {
       style={{ width: Math.min(width, 1200) }}
       onClick={handleClick}
     >
+      {!loaded && (
+        <div className="absolute inset-0 w-full h-full animate-pulse rounded-lg bg-muted" />
+      )}
       <canvas
         ref={canvasRef}
-        className="w-full h-auto"
+        className={`w-full h-auto transition-opacity duration-500 ${
+          loaded ? "opacity-100" : "opacity-0"
+        }`}
         style={{ aspectRatio: `${width} / ${height}`, display: "block" }}
       />
     </div>

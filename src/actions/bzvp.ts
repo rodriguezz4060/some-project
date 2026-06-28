@@ -3,6 +3,15 @@
 import { prisma } from "@root/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { logCreate, logUpdate, logDelete } from "@root/lib/audit";
+import { auth } from "@root/lib/auth";
+import { redirect } from "next/navigation";
+
+async function requireModerator() {
+  const session = await auth();
+  if (!session?.user || (session.user.role !== "admin" && session.user.role !== "moderator")) {
+    redirect("/");
+  }
+}
 
 interface CreateBzvpData {
   rank: string;
@@ -122,6 +131,7 @@ const mainFields: (keyof CreateBzvpData | keyof UpdateBzvpData)[] = [
 const updateFields = [...mainFields, "status", "arrivalDate", "trainingPeriod", "specialization"];
 
 export async function createBzvp(data: CreateBzvpData) {
+  await requireModerator();
   const today = new Date().toISOString().split("T")[0];
 
   const person = await prisma.bzvpPersonnel.create({
@@ -176,6 +186,7 @@ export async function createBzvp(data: CreateBzvpData) {
 }
 
 export async function updateBzvp(id: number, data: UpdateBzvpData) {
+  await requireModerator();
   const oldPerson = await prisma.bzvpPersonnel.findUnique({ where: { id } });
 
   const person = await prisma.bzvpPersonnel.update({
@@ -251,6 +262,7 @@ export async function updateBzvp(id: number, data: UpdateBzvpData) {
 }
 
 export async function deleteBzvp(id: number) {
+  await requireModerator();
   const person = await prisma.bzvpPersonnel.delete({ where: { id } });
 
   await logDelete(

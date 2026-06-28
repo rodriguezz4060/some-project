@@ -44,7 +44,8 @@ const navSecondary = [
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
   const { data: session } = useSession();
-  const isAdmin = session?.user?.role === "admin";
+  const role = session?.user?.role;
+  const canAdmin = role === "admin" || role === "moderator";
 
   const navMain = [
     {
@@ -84,7 +85,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       isActive: pathname.startsWith("/military/detection"),
     },
   ];
-  if (isAdmin) {
+  if (canAdmin) {
     navMain.push({
       title: "Адміністрування",
       url: "/admin",

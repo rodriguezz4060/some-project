@@ -38,7 +38,9 @@ export async function getPhoto(id: number) {
 
 export async function deletePhoto(id: number) {
   const session = await auth();
-  if (!session?.user) redirect("/");
+  if (!session?.user || (session.user.role !== "admin" && session.user.role !== "moderator")) {
+    redirect("/");
+  }
 
   const photo = await prisma.photo.findUnique({ where: { id } });
   if (!photo) throw new Error("Photo not found");

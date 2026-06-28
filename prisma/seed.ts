@@ -167,6 +167,17 @@ async function seedUsers() {
     },
   });
 
+  await prisma.user.upsert({
+    where: { email: "moderator@tracker.local" },
+    update: {},
+    create: {
+      email: "moderator@tracker.local",
+      password: bcrypt.hashSync("moderator123", 10),
+      name: "Модератор",
+      role: "moderator",
+    },
+  });
+
   console.log("Seeded users");
 }
 

@@ -8,18 +8,13 @@ import {
   Font,
 } from "@react-pdf/renderer";
 import type { BzvpPersonnel } from "../types";
-import {
-  font400,
-  font500,
-  font700,
-} from "../../military/dashboard/profile/profile-pdf-fonts";
 
 Font.register({
   family: "Noto Sans",
   fonts: [
-    { src: font400, fontWeight: 400 },
-    { src: font500, fontWeight: 500 },
-    { src: font700, fontWeight: 700 },
+    { src: "/fonts/NotoSans-Regular.woff", fontWeight: 400 },
+    { src: "/fonts/NotoSans-Medium.woff", fontWeight: 500 },
+    { src: "/fonts/NotoSans-Bold.woff", fontWeight: 700 },
   ],
 });
 

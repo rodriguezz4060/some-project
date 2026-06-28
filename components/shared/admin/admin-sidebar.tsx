@@ -1,11 +1,13 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   IconDashboard,
   IconHistory,
   IconHelp,
   IconSearch,
+  IconUsers,
 } from "@tabler/icons-react";
 
 import { NavMain } from "@/components/shared/military/dashboard/layout/nav-main";
@@ -31,6 +33,8 @@ const navSecondary = [
 
 export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === "admin";
 
   const navMain = [
     {
@@ -39,6 +43,16 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
       icon: IconDashboard,
       isActive: pathname === "/admin",
     },
+    ...(isAdmin
+      ? [
+          {
+            title: "Користувачі",
+            url: "/admin/users",
+            icon: IconUsers,
+            isActive: pathname.startsWith("/admin/users"),
+          } as const,
+        ]
+      : []),
     {
       title: "Лог дій",
       url: "/admin/logs",

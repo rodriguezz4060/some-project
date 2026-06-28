@@ -1,5 +1,5 @@
 import type { StatusType } from "@/components/shared/military/types";
-import { getAllMilitary } from "@root/lib/data/military";
+import { getMilitaryStats } from "@root/lib/data/military";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ReportRadar } from "@/components/shared/military/dashboard/reports/report-radar";
 import { ReportRotationTable } from "@/components/shared/military/dashboard/reports/report-rotation-table";
@@ -22,12 +22,13 @@ const STATUS_LABELS: Record<StatusType, string> = {
 };
 
 export default async function ReportsPage() {
-  const personnel = await getAllMilitary();
+  const { statusCounts, replacementCount, totalCount, personnel } =
+    await getMilitaryStats();
 
   const distribution = Object.fromEntries(
     ALL_STATUSES.map((status) => [
       status,
-      personnel.filter((p) => p.status === status).length,
+      statusCounts.find((g) => g.status === status)?._count.id ?? 0,
     ]),
   ) as Record<StatusType, number>;
 
@@ -36,17 +37,8 @@ export default async function ReportsPage() {
     value: distribution[status],
   }));
 
-  const readyCount = personnel.filter(
-    (p) => p.status === "active",
-  ).length;
-
-  const replacementCount = personnel.filter(
-    (p) => (p.lastActiveDays ?? 0) > 14,
-  ).length;
-
-  const woundedCount = personnel.filter(
-    (p) => p.status === "wounded",
-  ).length;
+  const readyCount = distribution.active;
+  const woundedCount = distribution.wounded;
 
   return (
     <div className="space-y-6 p-6">
@@ -58,7 +50,7 @@ export default async function ReportsPage() {
       </div>
 
       <ReportQuickCards
-        totalCount={personnel.length}
+        totalCount={totalCount}
         readyCount={readyCount}
         replacementCount={replacementCount}
         woundedCount={woundedCount}
@@ -72,7 +64,7 @@ export default async function ReportsPage() {
           <CardContent>
             <ReportRadar
               data={radarData}
-              maxValue={personnel.length}
+              maxValue={totalCount}
             />
           </CardContent>
         </Card>

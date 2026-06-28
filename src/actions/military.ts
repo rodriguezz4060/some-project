@@ -3,6 +3,15 @@
 import { prisma } from "@root/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { logCreate, logUpdate, logDelete } from "@root/lib/audit";
+import { auth } from "@root/lib/auth";
+import { redirect } from "next/navigation";
+
+async function requireModerator() {
+  const session = await auth();
+  if (!session?.user || (session.user.role !== "admin" && session.user.role !== "moderator")) {
+    redirect("/");
+  }
+}
 
 interface MedicalRecordData {
   condition: string;
@@ -163,6 +172,7 @@ async function replaceRelation(delegate: any, personnelId: number, items: Record
 }
 
 export async function createMilitary(data: CreateMilitaryData) {
+  await requireModerator();
   const person = await prisma.militaryPersonnel.create({
     data: {
       fullName: data.fullName,
@@ -206,6 +216,7 @@ export async function createMilitary(data: CreateMilitaryData) {
 }
 
 export async function updateMilitary(id: number, data: CreateMilitaryData) {
+  await requireModerator();
   const oldPerson = await prisma.militaryPersonnel.findUnique({
     where: { id },
     include: {
@@ -390,6 +401,7 @@ export async function updateMilitary(id: number, data: CreateMilitaryData) {
 }
 
 export async function deleteMilitary(id: number) {
+  await requireModerator();
   const person = await prisma.militaryPersonnel.delete({ where: { id } });
 
   await logDelete(

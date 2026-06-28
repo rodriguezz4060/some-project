@@ -88,3 +88,35 @@ export async function getAllMilitary(): Promise<MilitaryPersonnel[]> {
 
   return all.map(toMilitaryPersonnel);
 }
+
+export async function getMilitaryStats() {
+  const [statusCounts, replacementCount, personnel] = await Promise.all([
+    prisma.militaryPersonnel.groupBy({
+      by: ["status"],
+      _count: { id: true },
+    }),
+    prisma.militaryPersonnel.count({
+      where: { lastActiveDays: { gt: 14 } },
+    }),
+    prisma.militaryPersonnel.findMany({
+      select: {
+        id: true,
+        fullName: true,
+        rank: true,
+        status: true,
+        missions: true,
+        lastActiveDays: true,
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
+
+  const totalCount = personnel.length;
+
+  return {
+    statusCounts,
+    replacementCount,
+    totalCount,
+    personnel: personnel as MilitaryPersonnel[],
+  };
+}
