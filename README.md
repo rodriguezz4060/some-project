@@ -15,7 +15,7 @@
 | **Детекція об'єктів** | |
 | Python | 3.14 |
 | FastAPI | 0.115 |
-| Ultralytics (YOLO) | 8.4 |
+| Ultralytics (YOLO) | 8.4 (n), 26 (n/s) |
 | SAHI | 0.11 |
 
 ## Початок роботи
@@ -48,10 +48,11 @@ npm run lint     # ESLint (перед комітом)
 
 ## Seed-користувачі
 
-| Роль | Email | Пароль |
-|---|---|---|
-| Адміністратор | `admin@tracker.local` | `admin123` |
-| Користувач | `user@tracker.local` | `user123` |
+| Роль | Email | Пароль | Доступ |
+|---|---|---|---|
+| Адміністратор | `admin@tracker.local` | `admin123` | Повний доступ + управління користувачами |
+| Модератор | `moderator@tracker.local` | `moderator123` | CRUD персоналу, перегляд адмін-панелі |
+| Користувач | `user@tracker.local` | `user123` | Читання персоналу, без створення/видалення |
 
 ## Структура проєкту
 
@@ -67,17 +68,17 @@ components/
     military/                 #   військовий облік
     bzvp/                     #   БЗВП
 prisma/
-  schema.prisma               # схема БД (7 моделей)
+  schema.prisma               # схема БД (11 моделей)
   seed.ts                     # seed-дані
 src/
   actions/                    # Server Actions
   lib/                        # утиліти, auth config, prisma client
-middleware.ts                 # захист маршрутів
+proxy.ts                     # захист маршрутів (auth middleware)
 ```
 
 ## Детекція об'єктів (Python)
 
-Додаток має інтегрований детектор об'єктів на основі **YOLOv8n**, навчений на військових датасетах.
+Додаток має інтегрований детектор об'єктів на основі **YOLOv8n / YOLO26**, навчений на військових датасетах.
 
 ### Класи, що детектуються
 
@@ -113,8 +114,9 @@ detector/
   colab_train.ipynb       # Colab ноутбук для тренування на GPU
   requirements.txt        # залежності
   start-server.bat        # швидкий запуск (подвійний клік)
-  best.pt                 # готова модель
-  yolo26n.pt              # базова COCO-модель
+  best.pt                 # готова модель (YOLOv8n, military)
+  yolo26n.pt              # YOLO26n nano (базова COCO)
+  yolo26s.pt              # YOLO26s small (детальніша)
 ```
 
 ### Тренування власної моделі
