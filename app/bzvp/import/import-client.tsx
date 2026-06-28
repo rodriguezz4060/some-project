@@ -155,11 +155,11 @@ function RowDialog({
         )}
 
         {isDuplicate && (
-          <div className="rounded-xl bg-amber-500/10 border border-amber-200 dark:border-amber-950/30 p-4 mb-6">
-            <p className="text-sm font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-2">
+          <div className="rounded-xl bg-orange-500/10 border border-orange-200 dark:border-orange-950/30 p-4 mb-6">
+            <p className="text-sm font-semibold text-orange-600 dark:text-orange-400 flex items-center gap-2">
               <AlertTriangle className="size-4" /> Знайдено дублікат
             </p>
-            <p className="text-sm text-amber-600/80 dark:text-amber-400/80 mt-1.5">
+            <p className="text-sm text-orange-600/80 dark:text-orange-400/80 mt-1.5">
               {row.duplicate!.fullName} (ID: {row.duplicate!.id}, {row.duplicate!.birthDate})
             </p>
             <div className="mt-3 flex items-center gap-3">
@@ -340,8 +340,8 @@ export function ImportClient() {
                   </Badge>
                 )}
                 {result.duplicateCount > 0 && (
-                  <Badge variant="outline" className="gap-1 border-amber-300">
-                    <AlertTriangle className="size-3.5 text-amber-500" />
+                  <Badge variant="outline" className="gap-1 border-orange-300">
+                    <AlertTriangle className="size-3.5 text-orange-500" />
                     {result.duplicateCount} дублікатів
                   </Badge>
                 )}
@@ -376,7 +376,7 @@ export function ImportClient() {
                         className={cn(
                           "border-b border-border/50 transition-colors cursor-pointer",
                           isError && "bg-rose-500/5",
-                          isDuplicate && !isError && "bg-amber-500/5",
+                          isDuplicate && !isError && "bg-orange-500/10",
                           !isError && !isDuplicate && "hover:bg-muted/30",
                         )}
                         onClick={() => setSelectedRow(row)}
