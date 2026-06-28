@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { useSidebar } from "@/components/ui/sidebar";
+import { cn } from "@root/lib/utils";
 import type { BzvpPersonnel } from "../types";
 import { BzvpCard } from "./bzvp-card";
 
@@ -12,6 +14,8 @@ interface Props {
 }
 
 export function BzvpCardGrid({ personnel }: Props) {
+  const { state } = useSidebar();
+  const isSidebarCollapsed = state === "collapsed";
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
 
   const hasMore = visibleCount < personnel.length;
@@ -28,7 +32,7 @@ export function BzvpCardGrid({ personnel }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className={cn("grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3", isSidebarCollapsed && "xl:grid-cols-4")}>
         {visibleItems.map((person) => (
           <BzvpCard key={person.id} {...person} />
         ))}

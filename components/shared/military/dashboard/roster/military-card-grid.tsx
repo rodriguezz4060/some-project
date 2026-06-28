@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { useSidebar } from "@/components/ui/sidebar";
+import { cn } from "@root/lib/utils";
 import type { MilitaryPersonnel } from "../../types";
 import { MilitaryCard } from "./military-card";
 
@@ -12,6 +14,8 @@ interface Props {
 }
 
 export function MilitaryCardGrid({ personnel }: Props) {
+  const { state } = useSidebar();
+  const isSidebarCollapsed = state === "collapsed";
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
 
   const hasMore = visibleCount < personnel.length;
@@ -31,7 +35,7 @@ export function MilitaryCardGrid({ personnel }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-6 auto-rows-fr grid-cols-[repeat(auto-fill,minmax(360px,1fr))]">
+      <div className={cn("grid gap-6 auto-rows-fr grid-cols-1 sm:grid-cols-2 lg:grid-cols-3", isSidebarCollapsed && "xl:grid-cols-4")}>
         {visibleItems.map((person) => (
           <MilitaryCard key={person.id} {...person} />
         ))}

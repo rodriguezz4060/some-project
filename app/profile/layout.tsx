@@ -22,7 +22,7 @@ export default async function ProfileLayout({
       }
     >
       <AppSidebar variant="inset" />
-      <SidebarInset>
+      <SidebarInset className="overflow-x-hidden">
         <SiteHeader title="Профіль" />
         <main className="flex-1">{children}</main>
       </SidebarInset>

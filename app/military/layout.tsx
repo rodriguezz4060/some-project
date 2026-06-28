@@ -23,7 +23,7 @@ export default function MilitaryLayout({
       }
     >
       <AppSidebar variant="inset" />
-      <SidebarInset>
+      <SidebarInset className="overflow-x-hidden">
         <SiteHeader title="Особовий склад" />
         <main className="flex-1">{children}</main>
       </SidebarInset>
