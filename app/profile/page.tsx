@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import { auth } from "@root/lib/auth";
 import { redirect } from "next/navigation";
 import { getProfile } from "@root/actions/profile";
 import { getAuditLogs } from "@root/lib/audit";
 import { prisma } from "@root/lib/prisma";
 import { ProfileClient } from "./profile-client";
+
+export const metadata: Metadata = {
+  title: "Профіль | 23 ОМБр",
+};
 
 interface Props {
   searchParams: Promise<{ page?: string }>;

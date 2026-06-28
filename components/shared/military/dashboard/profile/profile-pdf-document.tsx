@@ -270,14 +270,17 @@ function MedicalRow({ item }: { item: MedicalRecord }) {
 interface Props {
   personnel: MilitaryPersonnel;
   sections?: PdfSectionId[];
+  generatedDate?: string;
 }
 
-export function ProfilePdfDocument({ personnel, sections = ALL_SECTIONS }: Props) {
-  const generatedDate = new Date().toLocaleDateString("uk-UA", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+export function ProfilePdfDocument({ personnel, sections = ALL_SECTIONS, generatedDate }: Props) {
+  const date =
+    generatedDate ??
+    new Date().toLocaleDateString("uk-UA", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
 
   return (
     <Document>
@@ -348,8 +351,8 @@ export function ProfilePdfDocument({ personnel, sections = ALL_SECTIONS }: Props
         {sections.includes("positionHistory") && personnel.positionHistory && personnel.positionHistory.length > 0 && (
           <>
             <SectionTitle>Історія посад</SectionTitle>
-            {personnel.positionHistory.map((entry, i) => (
-              <HistoryEntry key={i} entry={entry} />
+            {personnel.positionHistory.map((entry) => (
+              <HistoryEntry key={entry.position + entry.startDate} entry={entry} />
             ))}
           </>
         )}
@@ -358,8 +361,8 @@ export function ProfilePdfDocument({ personnel, sections = ALL_SECTIONS }: Props
         {sections.includes("achievements") && personnel.achievements && personnel.achievements.length > 0 && (
           <>
             <SectionTitle>Нагороди та відзнаки</SectionTitle>
-            {personnel.achievements.map((item, i) => (
-              <AchievementRow key={i} item={item} />
+            {personnel.achievements.map((item) => (
+              <AchievementRow key={item.name + item.date} item={item} />
             ))}
           </>
         )}
@@ -368,8 +371,8 @@ export function ProfilePdfDocument({ personnel, sections = ALL_SECTIONS }: Props
         {sections.includes("equipment") && personnel.equipment && personnel.equipment.length > 0 && (
           <>
             <SectionTitle>Майно держави</SectionTitle>
-            {personnel.equipment.map((item, i) => (
-              <EquipmentRow key={i} item={item} />
+            {personnel.equipment.map((item) => (
+              <EquipmentRow key={item.name + (item.serialNumber ?? "")} item={item} />
             ))}
           </>
         )}
@@ -378,8 +381,8 @@ export function ProfilePdfDocument({ personnel, sections = ALL_SECTIONS }: Props
         {sections.includes("medical") && personnel.medicalRecords && personnel.medicalRecords.length > 0 && (
           <>
             <SectionTitle>Медичні записи</SectionTitle>
-            {personnel.medicalRecords.map((item, i) => (
-              <MedicalRow key={i} item={item} />
+            {personnel.medicalRecords.map((item) => (
+              <MedicalRow key={item.condition + item.diagnosisDate} item={item} />
             ))}
           </>
         )}
@@ -432,7 +435,7 @@ export function ProfilePdfDocument({ personnel, sections = ALL_SECTIONS }: Props
         {/* Footer */}
         <View style={styles.footer}>
           <Text>23 ОМБр — Особова справа</Text>
-          <Text>Згенеровано: {generatedDate}</Text>
+          <Text>Згенеровано: {date}</Text>
         </View>
       </Page>
     </Document>

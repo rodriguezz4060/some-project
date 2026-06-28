@@ -1,8 +1,9 @@
+import type { Metadata } from "next";
 import { getPhotos } from "@root/actions/detection";
 import { PhotoUpload } from "@/components/shared/detection/photo-upload";
 import { DetectionGallery } from "@/components/shared/detection/detection-gallery";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Детекція об'єктів | 23 ОМБр",
 };
 

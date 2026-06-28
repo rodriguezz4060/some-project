@@ -43,8 +43,11 @@ export function ProfilePdfButton({ personnel }: Props) {
   const handleDownload = useCallback(async () => {
     setIsLoading(true);
     try {
+      const generatedDate = new Date().toLocaleDateString("uk-UA", {
+        day: "numeric", month: "long", year: "numeric",
+      });
       const pdfInstance = pdf(
-        <ProfilePdfDocument personnel={personnel} sections={selected} />,
+        <ProfilePdfDocument personnel={personnel} sections={selected} generatedDate={generatedDate} />,
       );
       const blob = await pdfInstance.toBlob();
       const url = URL.createObjectURL(blob);

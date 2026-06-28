@@ -70,8 +70,8 @@ function MedicalTab({ records }: { records?: MedicalRecord[] }) {
 
   return (
     <div className="space-y-3">
-      {records.map((record, i) => (
-        <div key={i} className="flex items-center justify-between rounded-lg border border-border bg-card p-4">
+      {records.map((record) => (
+        <div key={record.condition + record.diagnosisDate} className="flex items-center justify-between rounded-lg border border-border bg-card p-4">
           <div className="flex items-center gap-3">
             {record.status === "active" ? (
               <ShieldAlert className="size-5 shrink-0 text-rose-500" />
@@ -114,8 +114,8 @@ function AchievementsTab({ achievements }: { achievements?: Achievement[] }) {
 
   return (
     <div className="space-y-3">
-      {achievements.map((item, i) => (
-        <div key={i} className="flex items-center gap-3 rounded-lg border border-border bg-card p-4">
+      {achievements.map((item) => (
+        <div key={item.name + item.date} className="flex items-center gap-3 rounded-lg border border-border bg-card p-4">
           <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted">
             {achievementIcon[item.type]}
           </span>
@@ -145,8 +145,8 @@ function EquipmentTab({ equipment }: { equipment?: Equipment[] }) {
 
   return (
     <div className="space-y-3">
-      {equipment.map((item, i) => (
-        <div key={i} className="flex items-center gap-3 rounded-lg border border-border bg-card p-4">
+      {equipment.map((item) => (
+        <div key={item.name + (item.serialNumber ?? "")} className="flex items-center gap-3 rounded-lg border border-border bg-card p-4">
           <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted">
             {equipmentIcon[item.type]}
           </span>

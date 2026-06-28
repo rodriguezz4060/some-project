@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { cn } from "@/src/lib/utils";
+import { cn } from "@root/lib/utils";
 import { Container } from "../container";
 import { AuthModal } from "../auth/auth-modal";
 

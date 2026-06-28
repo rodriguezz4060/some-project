@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@root/lib/prisma";
 import { auth } from "@root/lib/auth";
 import { redirect } from "next/navigation";
 import { ArrowRight, List, Plus, Trash2, Pencil } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+export const metadata: Metadata = {
+  title: "Адміністрування | 23 ОМБр",
+};
 
 export default async function AdminDashboardPage() {
   const session = await auth();

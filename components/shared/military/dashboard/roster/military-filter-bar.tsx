@@ -54,7 +54,7 @@ export function MilitaryFilterBar({
         nextStatuses.length > 0 &&
         nextStatuses.length < ALL_STATUSES.length
       ) {
-        params.set("status", nextStatuses.sort().join(","));
+        params.set("status", [...nextStatuses].sort().join(","));
       } else {
         params.delete("status");
       }

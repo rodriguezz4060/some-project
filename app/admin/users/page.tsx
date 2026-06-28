@@ -1,7 +1,12 @@
+import type { Metadata } from "next";
 import { auth } from "@root/lib/auth";
 import { redirect } from "next/navigation";
 import { getUsers } from "@root/actions/users";
 import { UsersTableClient } from "./users-table-client";
+
+export const metadata: Metadata = {
+  title: "Користувачі | 23 ОМБр",
+};
 
 interface Props {
   searchParams: Promise<{ q?: string; page?: string }>;

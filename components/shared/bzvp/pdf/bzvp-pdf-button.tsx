@@ -17,7 +17,10 @@ export function BzvpPdfButton({ personnel }: Props) {
   const handleDownload = useCallback(async () => {
     setIsLoading(true);
     try {
-      const pdfInstance = pdf(<BzvpPdfDocument personnel={personnel} />);
+      const generatedDate = new Date().toLocaleDateString("uk-UA", {
+        day: "numeric", month: "long", year: "numeric",
+      });
+      const pdfInstance = pdf(<BzvpPdfDocument personnel={personnel} generatedDate={generatedDate} />);
       const blob = await pdfInstance.toBlob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");

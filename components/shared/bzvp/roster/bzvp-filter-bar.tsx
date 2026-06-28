@@ -44,7 +44,7 @@ export function BzvpFilterBar({
       } else {
         current.add(status);
       }
-      const next = [...current].sort();
+      const next = [...current].toSorted();
       const params = new URLSearchParams(window.location.search);
       if (next.length > 0) {
         params.set("status", next.join(","));

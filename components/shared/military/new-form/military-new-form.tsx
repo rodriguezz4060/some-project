@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Save, Loader2, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -143,8 +143,19 @@ function ArraySection<T>({
   renderItem: (item: T, index: number, onChange: (item: T) => void) => React.ReactNode;
   createEmpty: () => T;
 }) {
-  const addItem = () => onItemsChange([...items, createEmpty()]);
-  const removeItem = (index: number) => onItemsChange(items.filter((_, i) => i !== index));
+  const [keys, setKeys] = useState<number[]>(() => items.map((_, i) => i));
+  const nextKey = useRef(items.length);
+
+  const addItem = () => {
+    const k = nextKey.current++;
+    setKeys([...keys, k]);
+    onItemsChange([...items, createEmpty()]);
+  };
+
+  const removeItem = (index: number) => {
+    setKeys(keys.filter((_, i) => i !== index));
+    onItemsChange(items.filter((_, i) => i !== index));
+  };
 
   return (
     <div className="space-y-4">
@@ -155,7 +166,7 @@ function ArraySection<T>({
         </Button>
       </div>
       {items.map((item, index) => (
-        <div key={index} className="relative border border-border/40 rounded-lg p-4 pt-7">
+        <div key={keys[index]} className="relative border border-border/40 rounded-lg p-4 pt-7">
           <button
             type="button"
             onClick={() => removeItem(index)}
@@ -164,9 +175,7 @@ function ArraySection<T>({
             <X className="size-4" />
           </button>
           {renderItem(item, index, (updated) => {
-            const next = [...items];
-            next[index] = updated;
-            onItemsChange(next);
+            onItemsChange(items.map((it, i) => (i === index ? updated : it)));
           })}
         </div>
       ))}

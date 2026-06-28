@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import { getAuditLogs, getAllAuditUsers } from "@root/lib/audit";
 import { prisma } from "@root/lib/prisma";
 import { redirect } from "next/navigation";
 import { auth } from "@root/lib/auth";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Журнал дій | 23 ОМБр",
+};
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {

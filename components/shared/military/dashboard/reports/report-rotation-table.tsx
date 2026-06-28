@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import type { MilitaryPersonnel } from "../../types";
 import {
@@ -56,12 +56,18 @@ function getDaysColor(days?: number): string {
 export function ReportRotationTable({ personnel }: Props) {
   const [filterMode, setFilterMode] = useState<"all" | "replacement">("all");
 
-  const sorted = [...personnel]
-    .sort((a, b) => (b.lastActiveDays ?? 0) - (a.lastActiveDays ?? 0));
+  const sorted = useMemo(
+    () => [...personnel].sort((a, b) => (b.lastActiveDays ?? 0) - (a.lastActiveDays ?? 0)),
+    [personnel],
+  );
 
-  const filtered = filterMode === "replacement"
-    ? sorted.filter((p) => (p.lastActiveDays ?? 0) > REPLACEMENT_DAYS)
-    : sorted;
+  const filtered = useMemo(
+    () =>
+      filterMode === "replacement"
+        ? sorted.filter((p) => (p.lastActiveDays ?? 0) > REPLACEMENT_DAYS)
+        : sorted,
+    [sorted, filterMode],
+  );
 
   if (sorted.length === 0) {
     return (

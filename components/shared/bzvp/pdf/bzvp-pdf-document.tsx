@@ -106,14 +106,17 @@ function Field({ label, value }: { label: string; value?: string | null }) {
 
 interface Props {
   personnel: BzvpPersonnel;
+  generatedDate?: string;
 }
 
-export function BzvpPdfDocument({ personnel }: Props) {
-  const generatedDate = new Date().toLocaleDateString("uk-UA", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+export function BzvpPdfDocument({ personnel, generatedDate }: Props) {
+  const date =
+    generatedDate ??
+    new Date().toLocaleDateString("uk-UA", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
 
   return (
     <Document>
@@ -221,7 +224,7 @@ export function BzvpPdfDocument({ personnel }: Props) {
 
         <View style={styles.footer}>
           <Text>23 ОМБр — Облікова картка БЗВП</Text>
-          <Text>Згенеровано: {generatedDate}</Text>
+          <Text>Згенеровано: {date}</Text>
         </View>
       </Page>
     </Document>

@@ -14,7 +14,7 @@ export function ProfilePositionHistory({ history }: Props) {
       {history.map((entry, i) => {
         const isCurrent = !entry.endDate;
         return (
-          <div key={i} className="relative flex gap-4 pb-4 last:pb-0">
+          <div key={entry.position + entry.startDate} className="relative flex gap-4 pb-4 last:pb-0">
             {/* Лінія таймлайну */}
             <div className="flex flex-col items-center">
               <div
