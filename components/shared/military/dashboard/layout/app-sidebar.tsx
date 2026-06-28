@@ -8,6 +8,7 @@ import {
   IconReportAnalytics,
   IconSearch,
   IconSettings,
+  IconUserCircle,
   IconUsers,
   IconBuildingFortress,
   IconTargetArrow,
@@ -24,6 +25,11 @@ import {
 } from "@/components/ui/sidebar";
 
 const navSecondary = [
+  {
+    title: "Профіль",
+    url: "/profile",
+    icon: IconUserCircle,
+  },
   {
     title: "Налаштування",
     url: "/military/settings",

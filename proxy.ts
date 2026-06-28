@@ -5,7 +5,7 @@ export const proxy = auth((req) => {
   const { pathname } = req.nextUrl;
   const isLoggedIn = !!req.auth;
 
-  const protectedPaths = ["/military", "/bzvp", "/admin"];
+  const protectedPaths = ["/military", "/bzvp", "/admin", "/profile"];
   const isProtected = protectedPaths.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`),
   );
@@ -20,5 +20,5 @@ export const proxy = auth((req) => {
 });
 
 export const config = {
-  matcher: ["/military/:path*", "/bzvp/:path*", "/admin/:path*"],
+  matcher: ["/military/:path*", "/bzvp/:path*", "/admin/:path*", "/profile"],
 };

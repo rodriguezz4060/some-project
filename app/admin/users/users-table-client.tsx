@@ -74,7 +74,7 @@ export function UsersTableClient({
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
   const [showCreate, setShowCreate] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const committedRef = useRef(currentQuery);
   const [draft, setDraft] = useState(currentQuery);
   const [isFocused, setIsFocused] = useState(false);

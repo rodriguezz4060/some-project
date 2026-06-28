@@ -7,6 +7,7 @@ import {
   IconHistory,
   IconHelp,
   IconSearch,
+  IconUserCircle,
   IconUsers,
 } from "@tabler/icons-react";
 
@@ -19,6 +20,11 @@ import {
 } from "@/components/ui/sidebar";
 
 const navSecondary = [
+  {
+    title: "Профіль",
+    url: "/profile",
+    icon: IconUserCircle,
+  },
   {
     title: "Довідка",
     url: "#",
