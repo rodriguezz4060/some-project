@@ -1,4 +1,43 @@
-export const FIELD_LABELS: Record<string, string> = {
+export type BzvpFieldKey =
+  | "fullName"
+  | "rank"
+  | "birthDate"
+  | "birthPlace"
+  | "photo"
+  | "passport"
+  | "passportIssued"
+  | "tin"
+  | "militaryId"
+  | "militaryIdIssued"
+  | "ubd"
+  | "ubdDate"
+  | "serviceUnit"
+  | "serviceYears"
+  | "civilianJob"
+  | "education"
+  | "actualAddress"
+  | "registrationAddress"
+  | "driverLicense"
+  | "criminalRecord"
+  | "policeRecords"
+  | "family"
+  | "phone"
+  | "relativePhones"
+  | "personalOrder"
+  | "conscription"
+  | "health"
+  | "healthComplaints"
+  | "moralState"
+  | "bloodType"
+  | "shoeSize"
+  | "notes"
+  | "status"
+  | "arrivalDate"
+  | "trainingPeriod"
+  | "specialization"
+  | "createdAt";
+
+export const FIELD_LABELS: Record<BzvpFieldKey, string> = {
   fullName: "ПІБ",
   rank: "Звання",
   birthDate: "Дата народження",
@@ -38,7 +77,12 @@ export const FIELD_LABELS: Record<string, string> = {
   createdAt: "Дата створення",
 };
 
-export const SECTIONS: { title: string; fields: string[] }[] = [
+export interface Section {
+  title: string;
+  fields: BzvpFieldKey[];
+}
+
+export const SECTIONS: Section[] = [
   {
     title: "Основні дані",
     fields: ["fullName", "rank", "birthDate", "birthPlace", "status", "arrivalDate", "trainingPeriod", "specialization"],
@@ -69,4 +113,4 @@ export const SECTIONS: { title: string; fields: string[] }[] = [
   },
 ];
 
-export const ALL_FIELDS = SECTIONS.flatMap((s) => s.fields);
+export const ALL_FIELDS: BzvpFieldKey[] = SECTIONS.flatMap((s) => s.fields);

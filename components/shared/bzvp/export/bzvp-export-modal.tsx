@@ -27,11 +27,12 @@ import {
   FIELD_LABELS,
   SECTIONS,
   ALL_FIELDS,
+  type BzvpFieldKey,
 } from "@/components/shared/bzvp/fields";
 
 export function BzvpExportModal() {
   const [open, setOpen] = useState(false);
-  const [selectedFields, setSelectedFields] = useState<Set<string>>(
+  const [selectedFields, setSelectedFields] = useState<Set<BzvpFieldKey>>(
     new Set(ALL_FIELDS),
   );
   const [createdFrom, setCreatedFrom] = useState("");
@@ -41,7 +42,7 @@ export function BzvpExportModal() {
     () => new Set(SECTIONS.map((s) => s.title)),
   );
 
-  const toggleField = useCallback((field: string) => {
+  const toggleField = useCallback((field: BzvpFieldKey) => {
     setSelectedFields((prev) => {
       const next = new Set(prev);
       if (next.has(field)) next.delete(field);
@@ -50,7 +51,7 @@ export function BzvpExportModal() {
     });
   }, []);
 
-  const toggleSectionFields = useCallback((sectionFields: string[]) => {
+  const toggleSectionFields = useCallback((sectionFields: BzvpFieldKey[]) => {
     setSelectedFields((prev) => {
       const allSelected = sectionFields.every((f) => prev.has(f));
       const next = new Set(prev);
@@ -93,6 +94,11 @@ export function BzvpExportModal() {
       return;
     }
 
+    if (createdFrom && createdTo && createdFrom > createdTo) {
+      toast.error("Дата «Від» не може бути пізніше «До»");
+      return;
+    }
+
     setExporting(true);
     try {
       const { exportBzvpData } = await import("@root/actions/export-bzvp");
@@ -127,7 +133,8 @@ export function BzvpExportModal() {
 
       toast.success(`Експортовано ${data.length} записів`);
       setOpen(false);
-    } catch {
+    } catch (err) {
+      console.error("Export error:", err);
       toast.error("Помилка експорту");
     } finally {
       setExporting(false);
@@ -145,7 +152,7 @@ export function BzvpExportModal() {
           Експорт
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-xl p-0 gap-0">
+      <DialogContent className="max-w-xl p-0 gap-0 overflow-hidden h-[85vh]">
         <DialogHeader className="p-5 pb-3">
           <div className="flex items-center gap-3">
             <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -160,7 +167,7 @@ export function BzvpExportModal() {
           </div>
         </DialogHeader>
 
-        <ScrollArea className="h-130 border-y border-border/40">
+        <ScrollArea className="flex-1 min-h-[360px] border-y border-border/40">
           <div className="p-5 space-y-5">
             <div className="rounded-xl border bg-muted/20 p-3">
               <div className="flex items-center justify-between mb-2">
@@ -171,6 +178,7 @@ export function BzvpExportModal() {
                 {hasDateFilter && (
                   <button
                     type="button"
+                    aria-label="Скинути фільтр дати"
                     onClick={() => {
                       setCreatedFrom("");
                       setCreatedTo("");
@@ -187,13 +195,13 @@ export function BzvpExportModal() {
                   type="date"
                   value={createdFrom}
                   onChange={(e) => setCreatedFrom(e.target.value)}
-                  className="h-8 w-full rounded-lg border border-input bg-background px-2.5 py-1 text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 text-foreground scheme-dark"
+                  className="h-8 w-full rounded-lg border border-input bg-background px-2.5 py-1 text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 text-foreground [color-scheme:dark]"
                 />
                 <input
                   type="date"
                   value={createdTo}
                   onChange={(e) => setCreatedTo(e.target.value)}
-                  className="h-8 w-full rounded-lg border border-input bg-background px-2.5 py-1 text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 text-foreground scheme-dark"
+                  className="h-8 w-full rounded-lg border border-input bg-background px-2.5 py-1 text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 text-foreground [color-scheme:dark]"
                 />
               </div>
             </div>
@@ -301,6 +309,7 @@ export function BzvpExportModal() {
             <Button
               variant="ghost"
               size="sm"
+              aria-label="Скинути всі налаштування"
               onClick={resetAll}
               className="gap-1.5 text-xs h-8 text-muted-foreground/60 hover:text-foreground"
             >
