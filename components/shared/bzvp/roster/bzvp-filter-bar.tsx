@@ -7,6 +7,7 @@ import { Plus, ChevronDown, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@root/lib/utils";
 import { useCollapsed } from "@/hooks/use-collapsed";
+import { BzvpExportModal } from "@/components/shared/bzvp/export/bzvp-export-modal";
 import {
   BZVP_STATUS_CONFIG,
   BZVP_STATUSES,
@@ -73,6 +74,7 @@ export function BzvpFilterBar({
       <div className="flex flex-wrap items-center justify-between gap-4">
         <BzvpSearchInput initialQuery={initialQuery} />
         <div className="flex items-center gap-2">
+          <BzvpExportModal />
           <Button asChild variant="outline" size="sm" className="gap-1.5">
             <Link href="/bzvp/import">
               <Upload className="size-4" />
