@@ -181,8 +181,77 @@ async function seedUsers() {
   console.log("Seeded users");
 }
 
+async function seedFuel() {
+  const { MOCK_VEHICLES, generateMockFuelRecords } = await import(
+    "../components/shared/fuel/mock"
+  );
+
+  const adminUser = await prisma.user.findUnique({
+    where: { email: "admin@tracker.local" },
+  });
+
+  const vehicleIdMap: Record<number, number> = {};
+
+  for (const v of MOCK_VEHICLES) {
+    const createdAt = new Date();
+    createdAt.setMinutes(createdAt.getMinutes() - (MOCK_VEHICLES.length * 5 - MOCK_VEHICLES.indexOf(v) * 5));
+
+    const created = await prisma.vehicle.create({
+      data: {
+        createdAt,
+        brand: v.brand,
+        model: v.model,
+        licensePlate: v.licensePlate,
+        type: v.type,
+        year: v.year,
+        vin: v.vin,
+        fuelType: v.fuelType,
+        tankCapacity: v.tankCapacity,
+        unit: v.unit,
+        notes: v.notes,
+      },
+    });
+
+    vehicleIdMap[MOCK_VEHICLES.indexOf(v) + 1] = created.id;
+  }
+
+  console.log(`Seeded ${MOCK_VEHICLES.length} vehicles`);
+
+  const records = generateMockFuelRecords(MOCK_VEHICLES.length);
+
+  for (const r of records) {
+    const createdAt = new Date(r.date);
+    createdAt.setHours(10 + Math.floor(Math.random() * 8), Math.floor(Math.random() * 60));
+
+    await prisma.fuelRecord.create({
+      data: {
+        createdAt,
+        vehicleId: vehicleIdMap[r.vehicleId] ?? r.vehicleId,
+        date: r.date,
+        fuelType: r.fuelType,
+        liters: r.liters,
+        pricePerLiter: r.pricePerLiter,
+        totalCost: r.totalCost,
+        mileage: r.mileage,
+        driverName: r.driverName,
+        invoiceNumber: r.invoiceNumber,
+        supplier: r.supplier,
+        purpose: r.purpose,
+        createdById: adminUser?.id ?? 1,
+      },
+    });
+  }
+
+  console.log(`Seeded ${records.length} fuel records`);
+}
+
 async function main() {
   console.log("Clearing existing data...");
+  await prisma.fuelRecord.deleteMany();
+  await prisma.detection.deleteMany();
+  await prisma.photo.deleteMany();
+  await prisma.auditLog.deleteMany();
+  await prisma.vehicle.deleteMany();
   await prisma.clothingSizes.deleteMany();
   await prisma.positionEntry.deleteMany();
   await prisma.equipment.deleteMany();
@@ -190,11 +259,13 @@ async function main() {
   await prisma.medicalRecord.deleteMany();
   await prisma.militaryPersonnel.deleteMany();
   await prisma.bzvpPersonnel.deleteMany();
-  await prisma.user.deleteMany();
 
+  // NOTE: users are NOT deleted — upsert preserves their IDs
+  // Deleting users would invalidate existing JWT tokens
   await seedUsers();
   await seedMilitary();
   await seedBzvp();
+  await seedFuel();
 }
 
 main()

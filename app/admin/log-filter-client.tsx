@@ -72,6 +72,8 @@ export function LogFilterClient({ users }: LogFilterClientProps) {
           <SelectItem value=" ">—</SelectItem>
           <SelectItem value="MilitaryPersonnel">Військові</SelectItem>
           <SelectItem value="BzvpPersonnel">БЗВП</SelectItem>
+          <SelectItem value="Vehicle">Автомобілі</SelectItem>
+          <SelectItem value="FuelRecord">Заправки</SelectItem>
         </SelectContent>
       </Select>
 

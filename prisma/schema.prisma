@@ -95,10 +95,11 @@ model User {
   password  String
   name      String?
   role      Role     @default(user)
-  auditLogs AuditLog[]
-  photos    Photo[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  auditLogs   AuditLog[]
+  photos      Photo[]
+  fuelRecords FuelRecord[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Achievement {
@@ -165,6 +166,44 @@ model Detection {
   y1         Float
   x2         Float
   y2         Float
+}
+
+model Vehicle {
+  id           Int      @id @default(autoincrement())
+  brand       String
+  model       String
+  licensePlate String  @unique
+  type        String
+  year        Int?
+  vin         String?
+  fuelType    String
+  tankCapacity Int?
+  unit        String
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  fuelRecords FuelRecord[]
+}
+
+model FuelRecord {
+  id            Int      @id @default(autoincrement())
+  vehicleId     Int
+  vehicle       Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  date          String
+  fuelType      String
+  liters        Float
+  pricePerLiter Float?
+  totalCost     Float?
+  mileage       Int?
+  driverName    String
+  invoiceNumber String?
+  supplier      String?
+  purpose       String?
+  createdById   Int
+  createdBy     User     @relation(fields: [createdById], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model AuditLog {

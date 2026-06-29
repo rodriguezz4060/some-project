@@ -14,6 +14,7 @@ import {
   IconTargetArrow,
   IconShieldCheck,
   IconCamera,
+  IconGasStation,
 } from "@tabler/icons-react";
 
 import { NavMain } from "@/components/shared/military/dashboard/layout/nav-main";
@@ -77,6 +78,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       url: "/military/schedule",
       icon: IconCalendarClock,
       isActive: pathname.startsWith("/military/schedule"),
+    },
+    {
+      title: "Паливо",
+      url: "/fuel",
+      icon: IconGasStation,
+      isActive: pathname.startsWith("/fuel"),
     },
     {
       title: "Звіти",

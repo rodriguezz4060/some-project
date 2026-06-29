@@ -6,6 +6,19 @@ interface ChangeEntry {
   new: string | null;
 }
 
+async function resolveUserId(session: Awaited<ReturnType<typeof auth>>): Promise<number | null> {
+  const id = Number(session?.user?.id);
+  if (id && (await prisma.user.findUnique({ where: { id } }))) return id;
+
+  const email = session?.user?.email;
+  if (email) {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (user) return user.id;
+  }
+
+  return null;
+}
+
 async function writeLog(
   userId: number,
   action: string,
@@ -39,15 +52,10 @@ export async function logCreate(
   description: string,
 ) {
   const session = await auth();
-  if (!session?.user?.id) return;
+  const userId = await resolveUserId(session);
+  if (!userId) return;
 
-  await writeLog(
-    Number(session.user.id),
-    "CREATE",
-    entityType,
-    entityId,
-    description,
-  );
+  await writeLog(userId, "CREATE", entityType, entityId, description);
 }
 
 export async function logUpdate(
@@ -57,16 +65,10 @@ export async function logUpdate(
   changes?: Record<string, ChangeEntry>,
 ) {
   const session = await auth();
-  if (!session?.user?.id) return;
+  const userId = await resolveUserId(session);
+  if (!userId) return;
 
-  await writeLog(
-    Number(session.user.id),
-    "UPDATE",
-    entityType,
-    entityId,
-    description,
-    changes,
-  );
+  await writeLog(userId, "UPDATE", entityType, entityId, description, changes);
 }
 
 export async function logDelete(
@@ -75,15 +77,10 @@ export async function logDelete(
   description: string,
 ) {
   const session = await auth();
-  if (!session?.user?.id) return;
+  const userId = await resolveUserId(session);
+  if (!userId) return;
 
-  await writeLog(
-    Number(session.user.id),
-    "DELETE",
-    entityType,
-    entityId,
-    description,
-  );
+  await writeLog(userId, "DELETE", entityType, entityId, description);
 }
 
 export interface AuditLogFilter {
