@@ -5,7 +5,8 @@ import { revalidatePath } from "next/cache";
 import { logCreate, logUpdate, logDelete } from "@root/lib/audit";
 import { auth } from "@root/lib/auth";
 import { redirect } from "next/navigation";
-import { z } from "zod";
+import { createMilitarySchema } from "@root/lib/schemas/military";
+import type { CreateMilitaryData } from "@root/lib/schemas/military";
 
 async function requireModerator() {
   const session = await auth();
@@ -13,66 +14,6 @@ async function requireModerator() {
     redirect("/");
   }
 }
-
-const optionalStr = z.string().optional();
-const optionalNum = z.number().optional();
-
-const medicalRecordSchema = z.object({
-  condition: z.string().min(1, "Діагноз обов'язковий"),
-  diagnosisDate: z.string().min(1, "Дата діагнозу обов'язкова"),
-  status: z.string().min(1, "Статус обов'язковий"),
-  notes: optionalStr,
-});
-
-const achievementSchema = z.object({
-  name: z.string().min(1, "Назва обов'язкова"),
-  date: z.string().min(1, "Дата обов'язкова"),
-  type: z.string().min(1, "Тип обов'язковий"),
-  description: optionalStr,
-});
-
-const equipmentSchema = z.object({
-  name: z.string().min(1, "Назва обов'язкова"),
-  type: z.string().min(1, "Тип обов'язковий"),
-  serialNumber: optionalStr,
-  issuedDate: z.string().min(1, "Дата видачі обов'язкова"),
-});
-
-const positionEntrySchema = z.object({
-  position: z.string().min(1, "Посада обов'язкова"),
-  unit: z.string().min(1, "Підрозділ обов'язковий"),
-  startDate: z.string().min(1, "Дата початку обов'язкова"),
-  endDate: optionalStr,
-});
-
-const clothingSizesSchema = z.object({
-  height: optionalStr,
-  chest: optionalStr,
-  waist: optionalStr,
-  shoes: optionalStr,
-  headgear: optionalStr,
-  uniform: optionalStr,
-});
-
-const createMilitarySchema = z.object({
-  fullName: z.string().min(1, "ПІБ обов'язкове"),
-  rank: z.string().min(1, "Звання обов'язкове"),
-  position: z.string().min(1, "Посада обов'язкова"),
-  unit: z.string().min(1, "Підрозділ обов'язковий"),
-  status: z.string().min(1, "Статус обов'язковий"),
-  birthDate: z.string().min(1, "Дата народження обов'язкова"),
-  photo: optionalStr,
-  experience: optionalNum,
-  missions: optionalNum,
-  phone: optionalStr,
-  email: optionalStr,
-  lastActiveDays: optionalNum,
-  medicalRecords: z.array(medicalRecordSchema).optional(),
-  achievements: z.array(achievementSchema).optional(),
-  equipment: z.array(equipmentSchema).optional(),
-  positionHistory: z.array(positionEntrySchema).optional(),
-  clothingSizes: clothingSizesSchema.optional(),
-});
 
 type Changes = Record<string, { old: string | null; new: string | null }>;
 
@@ -175,7 +116,7 @@ async function replaceRelation(delegate: any, personnelId: number, items: Record
   }
 }
 
-export async function createMilitary(rawData: z.infer<typeof createMilitarySchema>) {
+export async function createMilitary(rawData: CreateMilitaryData) {
   await requireModerator();
   const parsed = createMilitarySchema.safeParse(rawData);
   if (!parsed.success) {
@@ -224,7 +165,7 @@ export async function createMilitary(rawData: z.infer<typeof createMilitarySchem
   return { id: person.id, fullName: person.fullName };
 }
 
-export async function updateMilitary(id: number, rawData: z.infer<typeof createMilitarySchema>) {
+export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
   await requireModerator();
   const parsed = createMilitarySchema.safeParse(rawData);
   if (!parsed.success) {

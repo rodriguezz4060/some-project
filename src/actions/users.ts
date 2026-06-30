@@ -4,20 +4,8 @@ import { prisma } from "@root/lib/prisma";
 import { auth } from "@root/lib/auth";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
-import { z } from "zod";
-
-const createUserSchema = z.object({
-  email: z.string().email("Невірний формат електронної пошти"),
-  name: z.string().min(1, "Ім'я обов'язкове"),
-  password: z.string().min(6, "Пароль має бути не менше 6 символів"),
-  role: z.enum(["admin", "moderator", "user"]),
-});
-
-const updateUserSchema = z.object({
-  name: z.string().min(1).optional(),
-  role: z.enum(["admin", "moderator", "user"]).optional(),
-  password: z.string().min(6, "Пароль має бути не менше 6 символів").optional(),
-});
+import { createUserSchema, updateUserSchema } from "@root/lib/schemas/users";
+import type { CreateUserData, UpdateUserData } from "@root/lib/schemas/users";
 
 async function requireAdmin() {
   const session = await auth();
@@ -67,7 +55,7 @@ export async function getUsers(params?: {
   return { users, total, totalPages: Math.ceil(total / pageSize) };
 }
 
-export async function createUser(rawData: z.infer<typeof createUserSchema>) {
+export async function createUser(rawData: CreateUserData) {
   await requireAdmin();
   const parsed = createUserSchema.safeParse(rawData);
   if (!parsed.success) {
@@ -97,7 +85,7 @@ export async function createUser(rawData: z.infer<typeof createUserSchema>) {
 
 export async function updateUser(
   id: number,
-  rawData: z.infer<typeof updateUserSchema>,
+  rawData: UpdateUserData,
 ) {
   const session = await requireAdmin();
   const parsed = updateUserSchema.safeParse(rawData);

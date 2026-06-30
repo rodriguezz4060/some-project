@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { cn } from "@root/lib/utils";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -14,18 +15,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  FormProvider,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+import { toast } from "sonner";
 import { createFuelRecord, updateFuelRecord } from "@root/actions/fuel";
+import { createFuelRecordSchema } from "@root/lib/schemas/fuel";
 import { FUEL_TYPE_OPTIONS } from "./constants";
 import type { FuelRecord, Vehicle } from "./types";
-
-function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
-  return (
-    <div className="space-y-1.5">
-      <Label>{label}{required && " *"}</Label>
-      {children}
-    </div>
-  );
-}
+import type { CreateFuelRecordData } from "@root/lib/schemas/fuel";
 
 interface Props {
   vehicles: Pick<Vehicle, "id" | "brand" | "model" | "licensePlate">[];
@@ -38,184 +41,139 @@ export function FuelRecordForm({ vehicles, initialData, preselectedVehicleId }: 
   const isEdit = !!initialData;
   const [loading, setLoading] = useState(false);
 
-  const [vehicleId, setVehicleId] = useState(String(initialData?.vehicleId ?? preselectedVehicleId ?? ""));
-  const [date, setDate] = useState(initialData?.date ?? new Date().toISOString().split("T")[0]);
-  const [fuelType, setFuelType] = useState(initialData?.fuelType ?? "");
-  const [liters, setLiters] = useState(initialData?.liters ? String(initialData.liters) : "");
-  const [pricePerLiter, setPricePerLiter] = useState(
-    initialData?.pricePerLiter ? String(initialData.pricePerLiter) : "",
-  );
-  const [totalCost, setTotalCost] = useState(initialData?.totalCost ? String(initialData.totalCost) : "");
-  const [mileage, setMileage] = useState(initialData?.mileage ? String(initialData.mileage) : "");
-  const [driverName, setDriverName] = useState(initialData?.driverName ?? "");
-  const [invoiceNumber, setInvoiceNumber] = useState(initialData?.invoiceNumber ?? "");
-  const [supplier, setSupplier] = useState(initialData?.supplier ?? "");
-  const [purpose, setPurpose] = useState(initialData?.purpose ?? "");
+  const form = useForm<CreateFuelRecordData>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(createFuelRecordSchema) as any,
+    defaultValues: {
+      vehicleId: initialData?.vehicleId ?? preselectedVehicleId ?? 0,
+      date: initialData?.date ?? new Date().toISOString().split("T")[0],
+      fuelType: initialData?.fuelType ?? "",
+      liters: initialData?.liters ?? 0,
+      pricePerLiter: initialData?.pricePerLiter ?? undefined,
+      totalCost: initialData?.totalCost ?? undefined,
+      mileage: initialData?.mileage ?? undefined,
+      driverName: initialData?.driverName ?? "",
+      invoiceNumber: initialData?.invoiceNumber ?? undefined,
+      supplier: initialData?.supplier ?? undefined,
+      purpose: initialData?.purpose ?? undefined,
+    },
+  });
+
+  const watchedPpl = useWatch({ control: form.control, name: "pricePerLiter" });
+  const watchedLiters = useWatch({ control: form.control, name: "liters" });
 
   function autoCalculateTotal(litersVal: string, priceVal: string) {
     const l = parseFloat(litersVal);
     const ppl = parseFloat(priceVal);
     if (l && ppl) {
-      setTotalCost(String(Math.round(l * ppl * 100) / 100));
+      form.setValue("totalCost", Math.round(l * ppl * 100) / 100, { shouldValidate: false });
     }
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  const handleServerError = (err: unknown) => {
+    const message = err instanceof Error ? err.message : "";
+    if (message) {
+      const parts = message.split("; ");
+      const msgs = parts.map((p) => {
+        const colonIdx = p.indexOf(": ");
+        return colonIdx > 0 ? p.slice(colonIdx + 2) : p;
+      });
+      toast.error(
+        <div className="flex flex-col gap-0.5">
+          {msgs.map((m, i) => <span key={i}>{m}</span>)}
+        </div>,
+      );
+    } else {
+      toast.error("Помилка при збереженні");
+    }
+  };
+
+  async function onSubmit(data: CreateFuelRecordData) {
     setLoading(true);
-
     try {
-      const payload = {
-        vehicleId: Number(vehicleId),
-        date,
-        fuelType,
-        liters: Number(liters),
-        pricePerLiter: pricePerLiter ? Number(pricePerLiter) : undefined,
-        totalCost: totalCost ? Number(totalCost) : undefined,
-        mileage: mileage ? Number(mileage) : undefined,
-        driverName: driverName.trim(),
-        invoiceNumber: invoiceNumber.trim() || undefined,
-        supplier: supplier.trim() || undefined,
-        purpose: purpose.trim() || undefined,
-      };
-
-      if (!payload.vehicleId || !payload.date || !payload.fuelType || !payload.liters || !payload.driverName) {
-        toast.error("Заповніть обов'язкові поля");
-        setLoading(false);
-        return;
-      }
-
       if (isEdit && initialData) {
-        await updateFuelRecord(initialData.id, payload);
+        await updateFuelRecord(initialData.id, data);
         toast.success("Заправку оновлено");
       } else {
-        await createFuelRecord(payload);
+        await createFuelRecord(data);
         toast.success("Заправку додано");
       }
-
       router.push("/fuel");
       router.refresh();
-    } catch {
-      toast.error("Помилка при збереженні");
+    } catch (err) {
+      handleServerError(err);
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Card>
-        <CardHeader>
-          <CardTitle>{isEdit ? "Редагувати заправку" : "Нова заправка"}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Автомобіль" required>
-              <Select value={vehicleId} onValueChange={setVehicleId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Оберіть авто" />
-                </SelectTrigger>
-                <SelectContent>
-                  {vehicles.map((v) => (
-                    <SelectItem key={v.id} value={String(v.id)}>
-                      {v.brand} {v.model} — {v.licensePlate}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-            <Field label="Дата" required>
-              <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-            </Field>
-          </div>
+    <FormProvider {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <Card>
+          <CardHeader>
+            <CardTitle>{isEdit ? "Редагувати заправку" : "Нова заправка"}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField control={form.control} name="vehicleId" render={({ field, fieldState }) => (
+                <FormItem><FormLabel>Автомобіль</FormLabel><FormControl><Select onValueChange={(v) => field.onChange(Number(v))} value={field.value ? String(field.value) : undefined}><SelectTrigger className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")}><SelectValue placeholder="Оберіть автомобіль" /></SelectTrigger><SelectContent>{vehicles.map((v) => (<SelectItem key={v.id} value={String(v.id)}>{v.brand} {v.model} — {v.licensePlate}</SelectItem>))}</SelectContent></Select></FormControl><FormMessage /></FormItem>
+              )} />
+              <FormField control={form.control} name="date" render={({ field, fieldState }) => (
+                <FormItem><FormLabel>Дата</FormLabel><FormControl><Input type="date" {...field} className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
+              )} />
+            </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Тип пального" required>
-              <Select value={fuelType} onValueChange={setFuelType}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Оберіть пальне" />
-                </SelectTrigger>
-                <SelectContent>
-                  {FUEL_TYPE_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-            <Field label="Кількість літрів" required>
-              <Input
-                type="number"
-                step="0.01"
-                value={liters}
-                onChange={(e) => { const v = e.target.value; setLiters(v); autoCalculateTotal(v, pricePerLiter); }}
-                placeholder="20.0"
-              />
-            </Field>
-          </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField control={form.control} name="fuelType" render={({ field, fieldState }) => (
+                <FormItem><FormLabel>Тип пального</FormLabel><FormControl><Select onValueChange={field.onChange} value={field.value}><SelectTrigger className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")}><SelectValue placeholder="Оберіть пальне" /></SelectTrigger><SelectContent>{FUEL_TYPE_OPTIONS.map((opt) => (<SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>))}</SelectContent></Select></FormControl><FormMessage /></FormItem>
+              )} />
+              <FormField control={form.control} name="liters" render={({ field, fieldState }) => (
+                <FormItem><FormLabel>Кількість літрів</FormLabel><FormControl><Input type="number" step="0.01" value={field.value ?? ""} onChange={(e) => { const v = e.target.value; field.onChange(v ? Number(v) : undefined); autoCalculateTotal(v, String(watchedPpl ?? "")); }} placeholder="20.0" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
+              )} />
+            </div>
 
-          <div className="grid gap-4 sm:grid-cols-3">
-            <Field label="Ціна за літр">
-              <Input
-                type="number"
-                step="0.01"
-                value={pricePerLiter}
-                onChange={(e) => { const v = e.target.value; setPricePerLiter(v); autoCalculateTotal(liters, v); }}
-                placeholder="53.50"
-              />
-            </Field>
-            <Field label="Загальна вартість">
-              <Input
-                type="number"
-                step="0.01"
-                value={totalCost}
-                onChange={(e) => setTotalCost(e.target.value)}
-                placeholder="1070.00"
-              />
-            </Field>
-            <Field label="Пробіг (км)">
-              <Input type="number" value={mileage} onChange={(e) => setMileage(e.target.value)} placeholder="125000" />
-            </Field>
-          </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <FormField control={form.control} name="pricePerLiter" render={({ field, fieldState }) => (
+                <FormItem><FormLabel>Ціна за літр</FormLabel><FormControl><Input type="number" step="0.01" value={field.value ?? ""} onChange={(e) => { const v = e.target.value; field.onChange(v ? Number(v) : undefined); autoCalculateTotal(String(watchedLiters ?? ""), v); }} placeholder="53.50" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
+              )} />
+              <FormField control={form.control} name="totalCost" render={({ field, fieldState }) => (
+                <FormItem><FormLabel>Загальна вартість</FormLabel><FormControl><Input type="number" step="0.01" value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)} placeholder="1070.00" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
+              )} />
+              <FormField control={form.control} name="mileage" render={({ field, fieldState }) => (
+                <FormItem><FormLabel>Пробіг (км)</FormLabel><FormControl><Input type="number" value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)} placeholder="125000" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
+              )} />
+            </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Водій" required>
-              <Input value={driverName} onChange={(e) => setDriverName(e.target.value)} placeholder="ПІБ водія" />
-            </Field>
-            <Field label="Призначення">
-              <Select value={purpose} onValueChange={setPurpose}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Мета" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="combat">Бойове завдання</SelectItem>
-                  <SelectItem value="rotation">Планова заміна</SelectItem>
-                  <SelectItem value="logistics">Господарчі потреби</SelectItem>
-                  <SelectItem value="training">Навчання</SelectItem>
-                  <SelectItem value="other">Інше</SelectItem>
-                </SelectContent>
-              </Select>
-            </Field>
-          </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField control={form.control} name="driverName" render={({ field, fieldState }) => (
+                <FormItem><FormLabel>Водій</FormLabel><FormControl><Input {...field} placeholder="ПІБ водія" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
+              )} />
+              <FormField control={form.control} name="purpose" render={({ field, fieldState }) => (
+                <FormItem><FormLabel>Призначення</FormLabel><FormControl><Select onValueChange={field.onChange} value={field.value ?? ""}><SelectTrigger className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")}><SelectValue placeholder="Мета" /></SelectTrigger><SelectContent><SelectItem value="combat">Бойове завдання</SelectItem><SelectItem value="rotation">Планова заміна</SelectItem><SelectItem value="logistics">Господарчі потреби</SelectItem><SelectItem value="training">Навчання</SelectItem><SelectItem value="other">Інше</SelectItem></SelectContent></Select></FormControl><FormMessage /></FormItem>
+              )} />
+            </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Номер накладної">
-              <Input value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} placeholder="" />
-            </Field>
-            <Field label="Постачальник">
-              <Input value={supplier} onChange={(e) => setSupplier(e.target.value)} placeholder="" />
-            </Field>
-          </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField control={form.control} name="invoiceNumber" render={({ field, fieldState }) => (
+                <FormItem><FormLabel>Номер накладної</FormLabel><FormControl><Input {...field} value={field.value ?? ""} className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
+              )} />
+              <FormField control={form.control} name="supplier" render={({ field, fieldState }) => (
+                <FormItem><FormLabel>Постачальник</FormLabel><FormControl><Input {...field} value={field.value ?? ""} className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
+              )} />
+            </div>
 
-          <div className="flex gap-3 pt-2">
-            <Button type="submit" disabled={loading}>
-              {loading ? "Збереження..." : isEdit ? "Зберегти зміни" : "Додати заправку"}
-            </Button>
-            <Button type="button" variant="outline" onClick={() => router.push("/fuel")}>
-              Скасувати
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </form>
+            <div className="flex gap-3 pt-2">
+              <Button type="submit" disabled={loading}>
+                {loading ? "Збереження..." : isEdit ? "Зберегти зміни" : "Додати заправку"}
+              </Button>
+              <Button type="button" variant="outline" onClick={() => router.push("/fuel")}>
+                Скасувати
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </form>
+    </FormProvider>
   );
 }

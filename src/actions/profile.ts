@@ -6,13 +6,8 @@ import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { prisma } from "@root/lib/prisma";
 import { logUpdate } from "@root/lib/audit";
-import { z } from "zod";
-
-const updateProfileSchema = z.object({
-  name: z.string().min(1, "Ім'я не може бути порожнім").optional(),
-  currentPassword: z.string().optional(),
-  newPassword: z.string().min(6, "Пароль має бути не менше 6 символів").optional(),
-});
+import { updateProfileSchema } from "@root/lib/schemas/profile";
+import type { UpdateProfileData } from "@root/lib/schemas/profile";
 
 export async function getProfile() {
   const session = await auth();
@@ -27,7 +22,7 @@ export async function getProfile() {
   return user;
 }
 
-export async function updateProfile(rawData: z.infer<typeof updateProfileSchema>) {
+export async function updateProfile(rawData: UpdateProfileData) {
   const session = await auth();
   const parsed = updateProfileSchema.safeParse(rawData);
   if (!parsed.success) {
