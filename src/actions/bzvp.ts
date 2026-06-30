@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { logCreate, logUpdate, logDelete } from "@root/lib/audit";
 import { auth } from "@root/lib/auth";
 import { redirect } from "next/navigation";
+import { z } from "zod";
 
 async function requireModerator() {
   const session = await auth();
@@ -13,47 +14,49 @@ async function requireModerator() {
   }
 }
 
-interface CreateBzvpData {
-  rank: string;
-  fullName: string;
-  birthDate: string;
-  birthPlace: string;
-  photo: string;
-  passport: string;
-  passportIssued: string;
-  tin: string;
-  militaryId: string;
-  militaryIdIssued: string;
-  ubd: string;
-  ubdDate: string;
-  serviceUnit: string;
-  serviceYears: string;
-  civilianJob: string;
-  education: string;
-  actualAddress: string;
-  registrationAddress: string;
-  driverLicense: string;
-  criminalRecord: string;
-  policeRecords: string;
-  family: string;
-  phone: string;
-  relativePhones: string;
-  personalOrder: string;
-  conscription: string;
-  health: string;
-  healthComplaints: string;
-  moralState: string;
-  bloodType: string;
-  shoeSize: string;
-  notes: string;
-}
+const optionalField = z.string().optional();
 
-interface UpdateBzvpData extends CreateBzvpData {
-  status: string;
-  arrivalDate: string;
-  trainingPeriod: string;
-  specialization: string;
-}
+const createBzvpSchema = z.object({
+  fullName: z.string().min(1, "ПІБ обов'язкове"),
+  rank: z.string().min(1, "Звання обов'язкове"),
+  birthDate: z.string().min(1, "Дата народження обов'язкова"),
+  birthPlace: optionalField,
+  photo: optionalField,
+  passport: optionalField,
+  passportIssued: optionalField,
+  tin: optionalField,
+  militaryId: optionalField,
+  militaryIdIssued: optionalField,
+  ubd: optionalField,
+  ubdDate: optionalField,
+  serviceUnit: optionalField,
+  serviceYears: optionalField,
+  civilianJob: optionalField,
+  education: optionalField,
+  actualAddress: optionalField,
+  registrationAddress: optionalField,
+  driverLicense: optionalField,
+  criminalRecord: optionalField,
+  policeRecords: optionalField,
+  family: optionalField,
+  phone: optionalField,
+  relativePhones: optionalField,
+  personalOrder: optionalField,
+  conscription: optionalField,
+  health: optionalField,
+  healthComplaints: optionalField,
+  moralState: optionalField,
+  bloodType: optionalField,
+  shoeSize: optionalField,
+  notes: optionalField,
+});
+
+const updateBzvpSchema = createBzvpSchema.extend({
+  status: z.string().min(1, "Статус обов'язковий"),
+  arrivalDate: z.string().min(1, "Дата прибуття обов'язкова"),
+  trainingPeriod: z.string().min(1, "Період навчання обов'язковий"),
+  specialization: optionalField,
+});
 
 type Changes = Record<string, { old: string | null; new: string | null }>;
 
@@ -118,7 +121,7 @@ function compareFields(
   return changes;
 }
 
-const mainFields: (keyof CreateBzvpData | keyof UpdateBzvpData)[] = [
+const mainFields: string[] = [
   "fullName", "rank", "birthDate", "birthPlace", "photo",
   "passport", "passportIssued", "tin", "militaryId", "militaryIdIssued",
   "ubd", "ubdDate", "serviceUnit", "serviceYears", "civilianJob",
@@ -130,8 +133,13 @@ const mainFields: (keyof CreateBzvpData | keyof UpdateBzvpData)[] = [
 
 const updateFields = [...mainFields, "status", "arrivalDate", "trainingPeriod", "specialization"];
 
-export async function createBzvp(data: CreateBzvpData) {
+export async function createBzvp(rawData: z.infer<typeof createBzvpSchema>) {
   await requireModerator();
+  const parsed = createBzvpSchema.safeParse(rawData);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues.map((i) => i.message).join("; "));
+  }
+  const data = parsed.data;
   const today = new Date().toISOString().split("T")[0];
 
   const person = await prisma.bzvpPersonnel.create({
@@ -185,8 +193,13 @@ export async function createBzvp(data: CreateBzvpData) {
   return { id: person.id, fullName: person.fullName };
 }
 
-export async function updateBzvp(id: number, data: UpdateBzvpData) {
+export async function updateBzvp(id: number, rawData: z.infer<typeof updateBzvpSchema>) {
   await requireModerator();
+  const parsed = updateBzvpSchema.safeParse(rawData);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues.map((i) => i.message).join("; "));
+  }
+  const data = parsed.data;
   const oldPerson = await prisma.bzvpPersonnel.findUnique({ where: { id } });
 
   const person = await prisma.bzvpPersonnel.update({

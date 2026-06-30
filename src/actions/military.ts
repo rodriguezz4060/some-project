@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { logCreate, logUpdate, logDelete } from "@root/lib/audit";
 import { auth } from "@root/lib/auth";
 import { redirect } from "next/navigation";
+import { z } from "zod";
 
 async function requireModerator() {
   const session = await auth();
@@ -13,62 +14,65 @@ async function requireModerator() {
   }
 }
 
-interface MedicalRecordData {
-  condition: string;
-  diagnosisDate: string;
-  status: string;
-  notes?: string;
-}
+const optionalStr = z.string().optional();
+const optionalNum = z.number().optional();
 
-interface AchievementData {
-  name: string;
-  date: string;
-  type: string;
-  description?: string;
-}
+const medicalRecordSchema = z.object({
+  condition: z.string().min(1, "Діагноз обов'язковий"),
+  diagnosisDate: z.string().min(1, "Дата діагнозу обов'язкова"),
+  status: z.string().min(1, "Статус обов'язковий"),
+  notes: optionalStr,
+});
 
-interface EquipmentData {
-  name: string;
-  type: string;
-  serialNumber?: string;
-  issuedDate: string;
-}
+const achievementSchema = z.object({
+  name: z.string().min(1, "Назва обов'язкова"),
+  date: z.string().min(1, "Дата обов'язкова"),
+  type: z.string().min(1, "Тип обов'язковий"),
+  description: optionalStr,
+});
 
-interface PositionEntryData {
-  position: string;
-  unit: string;
-  startDate: string;
-  endDate?: string;
-}
+const equipmentSchema = z.object({
+  name: z.string().min(1, "Назва обов'язкова"),
+  type: z.string().min(1, "Тип обов'язковий"),
+  serialNumber: optionalStr,
+  issuedDate: z.string().min(1, "Дата видачі обов'язкова"),
+});
 
-interface ClothingSizesData {
-  height?: string;
-  chest?: string;
-  waist?: string;
-  shoes?: string;
-  headgear?: string;
-  uniform?: string;
-}
+const positionEntrySchema = z.object({
+  position: z.string().min(1, "Посада обов'язкова"),
+  unit: z.string().min(1, "Підрозділ обов'язковий"),
+  startDate: z.string().min(1, "Дата початку обов'язкова"),
+  endDate: optionalStr,
+});
 
-interface CreateMilitaryData {
-  fullName: string;
-  rank: string;
-  position: string;
-  unit: string;
-  status: string;
-  birthDate: string;
-  photo?: string;
-  experience?: number;
-  missions?: number;
-  phone?: string;
-  email?: string;
-  lastActiveDays?: number;
-  medicalRecords?: MedicalRecordData[];
-  achievements?: AchievementData[];
-  equipment?: EquipmentData[];
-  positionHistory?: PositionEntryData[];
-  clothingSizes?: ClothingSizesData;
-}
+const clothingSizesSchema = z.object({
+  height: optionalStr,
+  chest: optionalStr,
+  waist: optionalStr,
+  shoes: optionalStr,
+  headgear: optionalStr,
+  uniform: optionalStr,
+});
+
+const createMilitarySchema = z.object({
+  fullName: z.string().min(1, "ПІБ обов'язкове"),
+  rank: z.string().min(1, "Звання обов'язкове"),
+  position: z.string().min(1, "Посада обов'язкова"),
+  unit: z.string().min(1, "Підрозділ обов'язковий"),
+  status: z.string().min(1, "Статус обов'язковий"),
+  birthDate: z.string().min(1, "Дата народження обов'язкова"),
+  photo: optionalStr,
+  experience: optionalNum,
+  missions: optionalNum,
+  phone: optionalStr,
+  email: optionalStr,
+  lastActiveDays: optionalNum,
+  medicalRecords: z.array(medicalRecordSchema).optional(),
+  achievements: z.array(achievementSchema).optional(),
+  equipment: z.array(equipmentSchema).optional(),
+  positionHistory: z.array(positionEntrySchema).optional(),
+  clothingSizes: clothingSizesSchema.optional(),
+});
 
 type Changes = Record<string, { old: string | null; new: string | null }>;
 
@@ -171,8 +175,13 @@ async function replaceRelation(delegate: any, personnelId: number, items: Record
   }
 }
 
-export async function createMilitary(data: CreateMilitaryData) {
+export async function createMilitary(rawData: z.infer<typeof createMilitarySchema>) {
   await requireModerator();
+  const parsed = createMilitarySchema.safeParse(rawData);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues.map((i) => i.message).join("; "));
+  }
+  const data = parsed.data;
   const person = await prisma.militaryPersonnel.create({
     data: {
       fullName: data.fullName,
@@ -215,8 +224,13 @@ export async function createMilitary(data: CreateMilitaryData) {
   return { id: person.id, fullName: person.fullName };
 }
 
-export async function updateMilitary(id: number, data: CreateMilitaryData) {
+export async function updateMilitary(id: number, rawData: z.infer<typeof createMilitarySchema>) {
   await requireModerator();
+  const parsed = createMilitarySchema.safeParse(rawData);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues.map((i) => i.message).join("; "));
+  }
+  const data = parsed.data;
   const oldPerson = await prisma.militaryPersonnel.findUnique({
     where: { id },
     include: {
