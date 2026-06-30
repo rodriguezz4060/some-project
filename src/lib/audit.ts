@@ -1,12 +1,13 @@
 import { prisma } from "@root/lib/prisma";
 import { auth } from "@root/lib/auth";
+import type { Session } from "next-auth";
 
 interface ChangeEntry {
   old: string | null;
   new: string | null;
 }
 
-async function resolveUserId(session: Awaited<ReturnType<typeof auth>>): Promise<number | null> {
+async function resolveUserId(session: Session | null): Promise<number | null> {
   const id = Number(session?.user?.id);
   if (id && (await prisma.user.findUnique({ where: { id } }))) return id;
 
