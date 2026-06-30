@@ -25,6 +25,8 @@ function formatShortName(fullName: string): string {
 const entityLabels: Record<string, string> = {
   MilitaryPersonnel: "Військовий",
   BzvpPersonnel: "БЗВП",
+  Vehicle: "Автомобіль",
+  FuelRecord: "Заправка",
   User: "Користувач",
 };
 
@@ -73,6 +75,39 @@ export default async function ProfilePage(props: Props) {
     for (const p of personnel) {
       entityNames.set(`BzvpPersonnel:${p.id}`, {
         name: formatShortName(p.fullName),
+      });
+    }
+  }
+
+  const vehicleIds = logs
+    .filter((l) => l.entityType === "Vehicle" && l.entityId != null)
+    .map((l) => l.entityId!);
+
+  const fuelRecordIds = logs
+    .filter((l) => l.entityType === "FuelRecord" && l.entityId != null)
+    .map((l) => l.entityId!);
+
+  if (vehicleIds.length > 0) {
+    const vehicles = await prisma.vehicle.findMany({
+      where: { id: { in: vehicleIds } },
+      select: { id: true, brand: true, model: true, licensePlate: true },
+    });
+    for (const v of vehicles) {
+      entityNames.set(`Vehicle:${v.id}`, {
+        name: `${v.brand} ${v.model} (${v.licensePlate})`,
+      });
+    }
+  }
+
+  if (fuelRecordIds.length > 0) {
+    const records = await prisma.fuelRecord.findMany({
+      where: { id: { in: fuelRecordIds } },
+      select: { id: true, vehicle: { select: { id: true, brand: true, model: true, licensePlate: true } } },
+    });
+    for (const r of records) {
+      const vehicleName = `${r.vehicle.brand} ${r.vehicle.model} (${r.vehicle.licensePlate})`;
+      entityNames.set(`FuelRecord:${r.id}`, {
+        name: vehicleName,
       });
     }
   }
