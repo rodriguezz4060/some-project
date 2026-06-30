@@ -124,7 +124,6 @@ const FIELD_LABELS: Record<string, string> = {
   specialization: "Спеціалізація",
 };
 
-const ALL_FIELDS = Object.keys(FIELD_LABELS);
 
 function normalizeHeader(header: string): string {
   const h = header.trim().toLowerCase().replace(/[«»"''\[\]]/g, "").replace(/\s+/g, " ");

@@ -84,7 +84,7 @@ export async function GET() {
     ],
   ]);
 
-  ws["!cols"] = HEADERS.map((h, i) => {
+  ws["!cols"] = HEADERS.map((h) => {
     const required = [
       "ПІБ",
       "Звання",
