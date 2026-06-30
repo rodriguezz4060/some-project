@@ -6,6 +6,8 @@ import { revalidatePath } from "next/cache";
 import { logCreate, logUpdate } from "@root/lib/audit";
 import { auth } from "@root/lib/auth";
 import { redirect } from "next/navigation";
+import { z } from "zod";
+import { FIELD_LABELS, type BzvpFieldKey } from "@/components/shared/bzvp/fields";
 
 async function requireModerator() {
   const session = await auth();
@@ -83,46 +85,61 @@ const COLUMN_ALIASES: Record<string, string> = {
   "спеціальність": "specialization",
 };
 
-const REQUIRED_FIELDS = ["fullName", "rank", "birthDate", "status", "arrivalDate", "trainingPeriod"];
+const UKR_DATE_REGEX = /^\d{2}[./-]\d{2}[./-]\d{4}$/;
 
-const FIELD_LABELS: Record<string, string> = {
-  fullName: "ПІБ",
-  rank: "Звання",
-  birthDate: "Дата народження",
-  birthPlace: "Місце народження",
-  photo: "Фото",
-  passport: "Паспорт",
-  passportIssued: "Паспорт видано",
-  tin: "ІПН",
-  militaryId: "Військовий квиток",
-  militaryIdIssued: "В/к видано",
-  ubd: "УБД",
-  ubdDate: "Дата УБД",
-  serviceUnit: "В/ч",
-  serviceYears: "Роки служби",
-  civilianJob: "Цивільна робота",
-  education: "Освіта",
-  actualAddress: "Фактична адреса",
-  registrationAddress: "Прописка",
-  driverLicense: "Посвідчення водія",
-  criminalRecord: "Судимість",
-  policeRecords: "Поліція",
-  family: "Склад сім'ї",
-  phone: "Телефон",
-  relativePhones: "Телефони рідних",
-  personalOrder: "Особисте розпорядження",
-  conscription: "Призваний",
-  health: "Стан здоров'я",
-  healthComplaints: "Скарги",
-  moralState: "Моральний стан",
-  bloodType: "Група крові",
-  shoeSize: "Розмір взуття",
-  notes: "Примітки",
-  status: "Статус",
-  arrivalDate: "Дата прибуття",
-  trainingPeriod: "Період навчання",
-  specialization: "Спеціалізація",
+const BZVP_STATUS_VALUES = ["training", "graduated", "transferred", "failed"] as const;
+
+const STATUS_ALIASES: Record<string, string> = {
+  "навчання": "training",
+  "навчається": "training",
+  "training": "training",
+  "випущено": "graduated",
+  "graduate": "graduated",
+  "graduated": "graduated",
+  "переведено": "transferred",
+  "transferred": "transferred",
+  "не склав": "failed",
+  "failed": "failed",
 };
+
+const BzvpRowSchema = z.object({
+  fullName: z.string().min(1),
+  rank: z.string().min(1),
+  birthDate: z.string().regex(UKR_DATE_REGEX),
+  birthPlace: z.string().optional(),
+  photo: z.string().optional(),
+  passport: z.string().optional(),
+  passportIssued: z.string().optional(),
+  tin: z.string().optional(),
+  militaryId: z.string().optional(),
+  militaryIdIssued: z.string().optional(),
+  ubd: z.string().optional(),
+  ubdDate: z.string().regex(UKR_DATE_REGEX).optional(),
+  serviceUnit: z.string().optional(),
+  serviceYears: z.string().optional(),
+  civilianJob: z.string().optional(),
+  education: z.string().optional(),
+  actualAddress: z.string().optional(),
+  registrationAddress: z.string().optional(),
+  driverLicense: z.string().optional(),
+  criminalRecord: z.string().optional(),
+  policeRecords: z.string().optional(),
+  family: z.string().optional(),
+  phone: z.string().optional(),
+  relativePhones: z.string().optional(),
+  personalOrder: z.string().optional(),
+  conscription: z.string().optional(),
+  health: z.string().optional(),
+  healthComplaints: z.string().optional(),
+  moralState: z.string().optional(),
+  bloodType: z.string().optional(),
+  shoeSize: z.string().optional(),
+  notes: z.string().optional(),
+  status: z.enum(BZVP_STATUS_VALUES),
+  arrivalDate: z.string().regex(UKR_DATE_REGEX),
+  trainingPeriod: z.string().min(1),
+  specialization: z.string().optional(),
+});
 
 
 function normalizeHeader(header: string): string {
@@ -143,14 +160,21 @@ function mapRow(raw: Record<string, unknown>): Record<string, string> {
   return mapped;
 }
 
-function validateRow(data: Record<string, string>): string[] {
-  const errors: string[] = [];
-  for (const field of REQUIRED_FIELDS) {
-    if (!data[field]) {
-      errors.push(`Не заповнено обов'язкове поле «${FIELD_LABELS[field]}»`);
-    }
+function validateRow(data: Record<string, string>): { success: boolean; data: Record<string, string>; errors: string[] } {
+  const normalized = { ...data };
+  if (normalized.status) {
+    normalized.status = STATUS_ALIASES[normalized.status.trim().toLowerCase()] ?? normalized.status;
   }
-  return errors;
+  const result = BzvpRowSchema.safeParse(normalized);
+  if (result.success) {
+    return { success: true, data: result.data as Record<string, string>, errors: [] };
+  }
+  const errors = result.error.issues.map((issue) => {
+    const field = issue.path.join(".");
+    const label = FIELD_LABELS[field as BzvpFieldKey] ?? field;
+    return `Поле «${label}»: ${issue.message}`;
+  });
+  return { success: false, data, errors };
 }
 
 export interface ParsedRow {
@@ -188,11 +212,11 @@ export async function parseExcelBzvp(formData: FormData): Promise<ParseResult> {
   let duplicateCount = 0;
 
   for (let i = 0; i < rawData.length; i++) {
-    const data = mapRow(rawData[i]);
-    const errors = validateRow(data);
+    const mapped = mapRow(rawData[i]);
+    const { success, data, errors } = validateRow(mapped);
 
     let duplicate: { id: number; fullName: string; birthDate: string } | null = null;
-    if (errors.length === 0 && data.fullName && data.birthDate) {
+    if (success && data.fullName && data.birthDate) {
       const existing = await prisma.bzvpPersonnel.findFirst({
         where: { fullName: data.fullName, birthDate: data.birthDate },
         select: { id: true, fullName: true, birthDate: true },
@@ -203,7 +227,7 @@ export async function parseExcelBzvp(formData: FormData): Promise<ParseResult> {
       }
     }
 
-    if (errors.length === 0) {
+    if (success) {
       validCount++;
     } else {
       errorCount++;
