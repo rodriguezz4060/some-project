@@ -17,6 +17,15 @@
 | FastAPI | 0.115 |
 | Ultralytics (YOLO) | 8.4 (n), 26 (n/s) |
 | SAHI | 0.11 |
+| **Ключові бібліотеки** | |
+| @react-pdf/renderer | Генерація PDF |
+| xlsx | Excel імпорт/експорт |
+| @dnd-kit | Drag & drop |
+| @tanstack/react-table | Таблиці |
+| recharts | Графіки |
+| photoswipe | Галерея зображень |
+| sonner | Сповіщення |
+| vaul | Drawer-компонент |
 
 ## Початок роботи
 
@@ -40,10 +49,14 @@ npm run dev
 ## Скрипти
 
 ```bash
-npm run dev      # dev-сервер (http://localhost:3000)
-npm run build    # production build
-npm run start    # запуск production-збірки
-npm run lint     # ESLint (перед комітом)
+npm run dev          # dev-сервер (http://localhost:3000)
+npm run build        # production build
+npm run start        # запуск production-збірки
+npm run lint         # ESLint (перед комітом)
+npm run db:migrate   # prisma migrate dev
+npm run db:seed      # prisma db seed
+npm run db:studio    # prisma studio
+npm run postinstall  # автоматично після npm install (prisma generate)
 ```
 
 ## Seed-користувачі
@@ -61,7 +74,12 @@ app/                          # Next.js App Router сторінки
   military/                   #   військовий облік
   bzvp/                       #   БЗВП
   fuel/                       #   облік пального
-  api/auth/[...nextauth]/     #   NextAuth handler
+  admin/                      #   адмін-панель (лог дій, користувачі)
+  profile/                    #   профіль користувача
+  api/
+    auth/[...nextauth]/       #   NextAuth handler
+    detect/                   #   проксі до Python-детектора
+    bzvp-template/            #   генерація PDF шаблонів БЗВП
 components/
   ui/                         # shadcn/ui примітиви
   shared/                     # компоненти застосунку
@@ -69,14 +87,80 @@ components/
     military/                 #   військовий облік
     bzvp/                     #   БЗВП
     fuel/                     #   облік пального
+    detection/                #   детекція об'єктів
 prisma/
-  schema.prisma               # схема БД (13 моделей)
+  schema.prisma               # схема БД (13 моделей + enum Role)
   seed.ts                     # seed-дані
 src/
   actions/                    # Server Actions
-  lib/                        # утиліти, auth config, prisma client
-proxy.ts                     # захист маршрутів (auth middleware)
+    military.ts               #   військовий облік
+    bzvp.ts                   #   БЗВП
+    fuel.ts                   #   облік пального
+    detection.ts              #   детекція об'єктів
+    profile.ts                #   профіль користувача
+    users.ts                  #   управління користувачами (admin)
+    export-bzvp.ts            #   експорт БЗВП
+    import-bzvp.ts            #   імпорт БЗВП (Excel)
+  lib/
+    auth.ts                   # NextAuth конфігурація
+    prisma.ts                 # Prisma client
+    utils.ts                  # cn() та інші утиліти
+    audit.ts                  # система аудиту (лог дій)
+    middleware-auth.ts         # допоміжні функції для middleware
+    detection-colors.ts        # кольори для детекції
+    data/                     # дані для фільтрів/довідників
+proxy.ts                      # захист маршрутів (auth middleware)
 ```
+
+## Система аутентифікації
+
+- **NextAuth v5** з Credentials provider + JWT стратегією (без сесій у БД)
+- Три ролі: `admin`, `moderator`, `user`
+- Middleware (`proxy.ts`) захищає маршрути:
+  - `/military/*`, `/bzvp/*` — автентифікація обов'язкова
+  - `/admin/*` — тільки `admin`
+  - `/fuel/*`, `/profile` — автентифікація обов'язкова
+- Server Actions захищені — `requireModerator()` для створення/редагування, `requireAdmin()` для управління користувачами
+
+## Адмін-панель
+
+Модуль `/admin` — управління системою:
+
+- **Журнал дій** (`/admin/logs`) — повний аудит всіх змін: дата, дія (створення/зміна/видалення), сутність, користувач, опис, деталі змін (до/після)
+- **Користувачі** (`/admin/users`) — створення, редагування, видалення користувачів (тільки admin)
+
+## Профіль користувача
+
+Модуль `/profile` — особистий кабінет:
+
+- Перегляд та редагування імені
+- Зміна пароля
+- Перегляд власних дій (аудит-лог)
+
+## Облік пального
+
+Модуль `/fuel` — облік видачі пального для автомобілів роти.
+
+**Моделі БД:** `Vehicle` (транспортні засоби) та `FuelRecord` (заправки).
+
+**Можливості:**
+- Додавання/редагування/видалення автомобілів (марка, модель, держномер, тип пального, підрозділ)
+- Фіксація заправок: дата, літри, ціна/л, вартість, пробіг, водій, накладна, постачальник
+- Автоматичний розрахунок вартості
+- Фільтр заправок за місяць/рік/довільний період
+- Статистика на дашборді (загальні літри, витрати, к-сть заправок)
+- Історія заправок для кожного авто
+- Аудит всіх дій (лог адмін-панелі)
+
+## Аудит (лог дій)
+
+Всі дії користувачів (створення, оновлення, видалення) записуються в таблицю `AuditLog`:
+- `action` — CREATE / UPDATE / DELETE
+- `entityType` — назва моделі (MilitaryPersonnel, BzvpPersonnel, Vehicle, FuelRecord, User)
+- `entityId` — ID запису
+- `description` — текстовий опис змін
+- `changes` — JSON з полями до/після (для UPDATE)
+- `userId` — хто виконав дію
 
 ## Детекція об'єктів (Python)
 
@@ -126,21 +210,6 @@ detector/
 1. Відкрити `detector/colab_train.ipynb` в [Google Colab](https://colab.research.google.com)
 2. Виконати клітинки по порядку — датасети завантажаться автоматично з Kaggle + Roboflow
 3. Після завершення завантажити `best.pt` і покласти в `detector/`
-
-## Облік пального
-
-Модуль `/fuel` — облік видачі пального для автомобілів роти.
-
-**Моделі БД:** `Vehicle` (транспортні засоби) та `FuelRecord` (заправки).
-
-**Можливості:**
-- Додавання/редагування/видалення автомобілів (марка, модель, держномер, тип пального, підрозділ)
-- Фіксація заправок: дата, літри, ціна/л, вартість, пробіг, водій, накладна, постачальник
-- Автоматичний розрахунок вартості
-- Фільтр заправок за місяць/рік/довільний період
-- Статистика на дашборді (загальні літри, витрати, к-сть заправок)
-- Історія заправок для кожного авто
-- Аудит всіх дій (лог admin-панелі)
 
 ## Гіт-стратегія
 
