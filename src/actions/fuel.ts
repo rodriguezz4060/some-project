@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { logCreate, logUpdate, logDelete } from "@root/lib/audit";
 import { auth } from "@root/lib/auth";
 import { redirect } from "next/navigation";
+import { z } from "zod";
 
 async function requireModerator() {
   const session = await auth();
@@ -13,32 +14,32 @@ async function requireModerator() {
   }
 }
 
-interface CreateVehicleData {
-  brand: string;
-  model: string;
-  licensePlate: string;
-  type: string;
-  year?: number;
-  vin?: string;
-  fuelType: string;
-  tankCapacity?: number;
-  unit: string;
-  notes?: string;
-}
+const createVehicleSchema = z.object({
+  brand: z.string().min(1, "Марка обов'язкова"),
+  model: z.string().min(1, "Модель обов'язкова"),
+  licensePlate: z.string().min(1, "Держномер обов'язковий"),
+  type: z.string().min(1, "Тип обов'язковий"),
+  year: z.number().int().min(1900).max(2030).optional(),
+  vin: z.string().optional(),
+  fuelType: z.string().min(1, "Тип пального обов'язковий"),
+  tankCapacity: z.number().positive("Об'єм баку має бути більше 0").optional(),
+  unit: z.string().min(1, "Підрозділ обов'язковий"),
+  notes: z.string().optional(),
+});
 
-interface CreateFuelRecordData {
-  vehicleId: number;
-  date: string;
-  fuelType: string;
-  liters: number;
-  pricePerLiter?: number;
-  totalCost?: number;
-  mileage?: number;
-  driverName: string;
-  invoiceNumber?: string;
-  supplier?: string;
-  purpose?: string;
-}
+const createFuelRecordSchema = z.object({
+  vehicleId: z.number().int().positive("ID транспортного засобу обов'язковий"),
+  date: z.string().min(1, "Дата обов'язкова"),
+  fuelType: z.string().min(1, "Тип пального обов'язковий"),
+  liters: z.number().positive("Кількість літрів має бути більше 0"),
+  pricePerLiter: z.number().positive("Ціна має бути більше 0").optional(),
+  totalCost: z.number().positive("Вартість має бути більше 0").optional(),
+  mileage: z.number().int().nonnegative("Пробіг не може бути від'ємним").optional(),
+  driverName: z.string().min(1, "Водій обов'язковий"),
+  invoiceNumber: z.string().optional(),
+  supplier: z.string().optional(),
+  purpose: z.string().optional(),
+});
 
 const fieldLabels: Record<string, string> = {
   brand: "Марка",
@@ -88,8 +89,13 @@ function compareFields(
 
 // ── Vehicles ──
 
-export async function createVehicle(data: CreateVehicleData) {
+export async function createVehicle(rawData: z.infer<typeof createVehicleSchema>) {
   await requireModerator();
+  const parsed = createVehicleSchema.safeParse(rawData);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues.map((i) => i.message).join("; "));
+  }
+  const data = parsed.data;
 
   const vehicle = await prisma.vehicle.create({
     data: {
@@ -112,8 +118,13 @@ export async function createVehicle(data: CreateVehicleData) {
   return { id: vehicle.id, brand: vehicle.brand, model: vehicle.model, licensePlate: vehicle.licensePlate };
 }
 
-export async function updateVehicle(id: number, data: CreateVehicleData) {
+export async function updateVehicle(id: number, rawData: z.infer<typeof createVehicleSchema>) {
   await requireModerator();
+  const parsed = createVehicleSchema.safeParse(rawData);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues.map((i) => i.message).join("; "));
+  }
+  const data = parsed.data;
 
   const oldVehicle = await prisma.vehicle.findUnique({ where: { id } });
 
@@ -174,8 +185,13 @@ export async function deleteVehicle(id: number) {
 
 // ── Fuel Records ──
 
-export async function createFuelRecord(data: CreateFuelRecordData) {
+export async function createFuelRecord(rawData: z.infer<typeof createFuelRecordSchema>) {
   await requireModerator();
+  const parsed = createFuelRecordSchema.safeParse(rawData);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues.map((i) => i.message).join("; "));
+  }
+  const data = parsed.data;
 
   const session = await auth();
   let userId = Number(session?.user?.id);
@@ -215,8 +231,13 @@ export async function createFuelRecord(data: CreateFuelRecordData) {
   return { id: record.id };
 }
 
-export async function updateFuelRecord(id: number, data: CreateFuelRecordData) {
+export async function updateFuelRecord(id: number, rawData: z.infer<typeof createFuelRecordSchema>) {
   await requireModerator();
+  const parsed = createFuelRecordSchema.safeParse(rawData);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues.map((i) => i.message).join("; "));
+  }
+  const data = parsed.data;
 
   const oldRecord = await prisma.fuelRecord.findUnique({
     where: { id },

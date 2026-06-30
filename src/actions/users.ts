@@ -4,6 +4,20 @@ import { prisma } from "@root/lib/prisma";
 import { auth } from "@root/lib/auth";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
+import { z } from "zod";
+
+const createUserSchema = z.object({
+  email: z.string().email("Невірний формат електронної пошти"),
+  name: z.string().min(1, "Ім'я обов'язкове"),
+  password: z.string().min(6, "Пароль має бути не менше 6 символів"),
+  role: z.enum(["admin", "moderator", "user"]),
+});
+
+const updateUserSchema = z.object({
+  name: z.string().min(1).optional(),
+  role: z.enum(["admin", "moderator", "user"]).optional(),
+  password: z.string().min(6, "Пароль має бути не менше 6 символів").optional(),
+});
 
 async function requireAdmin() {
   const session = await auth();
@@ -53,13 +67,13 @@ export async function getUsers(params?: {
   return { users, total, totalPages: Math.ceil(total / pageSize) };
 }
 
-export async function createUser(data: {
-  email: string;
-  name: string;
-  password: string;
-  role: "admin" | "moderator" | "user";
-}) {
+export async function createUser(rawData: z.infer<typeof createUserSchema>) {
   await requireAdmin();
+  const parsed = createUserSchema.safeParse(rawData);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues.map((i) => i.message).join("; "));
+  }
+  const data = parsed.data;
 
   const exists = await prisma.user.findUnique({ where: { email: data.email } });
   if (exists) {
@@ -83,13 +97,14 @@ export async function createUser(data: {
 
 export async function updateUser(
   id: number,
-  data: {
-    name?: string;
-    role?: "admin" | "moderator" | "user";
-    password?: string;
-  },
+  rawData: z.infer<typeof updateUserSchema>,
 ) {
   const session = await requireAdmin();
+  const parsed = updateUserSchema.safeParse(rawData);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues.map((i) => i.message).join("; "));
+  }
+  const data = parsed.data;
 
   if (Number(session.user.id) === id && data.role && data.role !== "admin") {
     throw new Error("Ви не можете змінити власну роль");
