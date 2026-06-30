@@ -115,8 +115,7 @@ export function MilitaryForm({ initialData }: Props) {
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<CreateMilitaryData>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(createMilitarySchema) as any,
+    resolver: zodResolver(createMilitarySchema),
     defaultValues: getDefaultValues(initialData),
   });
 

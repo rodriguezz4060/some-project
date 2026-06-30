@@ -41,8 +41,7 @@ export function VehicleForm({ initialData }: Props) {
   const [loading, setLoading] = useState(false);
 
   const form = useForm<CreateVehicleData>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(createVehicleSchema) as any,
+    resolver: zodResolver(createVehicleSchema),
     defaultValues: {
       brand: initialData?.brand ?? "",
       model: initialData?.model ?? "",

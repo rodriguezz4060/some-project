@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cn } from "@root/lib/utils";
 import { Save, Loader2 } from "lucide-react";
@@ -29,12 +29,12 @@ import {
 } from "@/components/ui/form";
 import { toast } from "sonner";
 import { createBzvp, updateBzvp } from "@root/actions/bzvp";
-import { createBzvpSchema, updateBzvpSchema } from "@root/lib/schemas/bzvp";
+import { bzvpSchema } from "@root/lib/schemas/bzvp";
 import { BZVP_STATUS_CONFIG, BZVP_STATUSES } from "@/components/shared/bzvp/constants";
 import type { BzvpPersonnel } from "@/components/shared/bzvp/types";
 import type { z } from "zod";
 
-type FormValues = z.infer<typeof updateBzvpSchema>;
+type FormValues = z.infer<typeof bzvpSchema>;
 
 function getDefaultValues(person?: BzvpPersonnel): FormValues {
   if (!person) {
@@ -42,6 +42,10 @@ function getDefaultValues(person?: BzvpPersonnel): FormValues {
       rank: "",
       fullName: "",
       birthDate: "",
+      status: "training",
+      arrivalDate: "",
+      trainingPeriod: "",
+      specialization: "",
       birthPlace: "",
       photo: "",
       passport: "",
@@ -71,10 +75,6 @@ function getDefaultValues(person?: BzvpPersonnel): FormValues {
       bloodType: "",
       shoeSize: "",
       notes: "",
-      status: "training",
-      arrivalDate: "",
-      trainingPeriod: "",
-      specialization: "",
     };
   }
   return {
@@ -110,9 +110,9 @@ function getDefaultValues(person?: BzvpPersonnel): FormValues {
     bloodType: person.bloodType ?? "",
     shoeSize: person.shoeSize ?? "",
     notes: person.notes ?? "",
-    status: person.status,
-    arrivalDate: person.arrivalDate,
-    trainingPeriod: person.trainingPeriod,
+    status: person.status ?? "",
+    arrivalDate: person.arrivalDate ?? "",
+    trainingPeriod: person.trainingPeriod ?? "",
     specialization: person.specialization ?? "",
   };
 }
@@ -127,8 +127,7 @@ export function BzvpForm({ initialData }: Props) {
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<FormValues>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: (isEdit ? zodResolver(updateBzvpSchema) : zodResolver(createBzvpSchema)) as any,
+    resolver: zodResolver(bzvpSchema) as unknown as Resolver<FormValues>,
     defaultValues: getDefaultValues(initialData),
   });
 
@@ -136,20 +135,7 @@ export function BzvpForm({ initialData }: Props) {
 
   const handleServerError = (err: unknown) => {
     const message = err instanceof Error ? err.message : "";
-    if (message) {
-      const parts = message.split("; ");
-      const msgs = parts.map((p) => {
-        const colonIdx = p.indexOf(": ");
-        return colonIdx > 0 ? p.slice(colonIdx + 2) : p;
-      });
-      toast.error(
-        <div className="flex flex-col gap-0.5">
-          {msgs.map((m, i) => <span key={i}>{m}</span>)}
-        </div>,
-      );
-    } else {
-      toast.error("Помилка при збереженні");
-    }
+    toast.error(message || "Помилка при збереженні");
   };
 
   async function onSubmit(data: FormValues) {
@@ -176,21 +162,20 @@ export function BzvpForm({ initialData }: Props) {
   }
 
   function field(name: keyof FormValues, label: string, opts?: { placeholder?: string; type?: string; multiline?: boolean }) {
-    const error = form.formState.errors[name];
     return (
       <FormField
         control={form.control}
         name={name}
-        render={({ field: f }) => (
+        render={({ field: f, fieldState }) => (
           <FormItem>
             <FormLabel>{label}</FormLabel>
             <FormControl>
               {opts?.multiline ? (
-                <Textarea {...f} placeholder={opts?.placeholder} rows={3}
-                  className={cn(error && "border-destructive ring-3 ring-destructive/20")} />
+                <Textarea {...f} value={f.value ?? ""} placeholder={opts?.placeholder} rows={3}
+                  className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} />
               ) : (
-                <Input {...f} type={opts?.type ?? "text"} placeholder={opts?.placeholder}
-                  className={cn("placeholder:text-muted-foreground/40", error && "border-destructive ring-3 ring-destructive/20")} />
+                <Input {...f} value={f.value ?? ""} type={opts?.type ?? "text"} placeholder={opts?.placeholder}
+                  className={cn("placeholder:text-muted-foreground/40", fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} />
               )}
             </FormControl>
             <FormMessage />
@@ -208,32 +193,30 @@ export function BzvpForm({ initialData }: Props) {
             <CardTitle>Основна інформація та документи</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-            {isEdit && (
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field: f }) => (
-                  <FormItem>
-                    <FormLabel>Статус</FormLabel>
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field: f, fieldState }) => (
+                <FormItem>
+                  <FormLabel>Статус</FormLabel>
+                  <Select onValueChange={f.onChange} value={f.value ?? ""}>
                     <FormControl>
-                      <Select onValueChange={f.onChange} value={f.value}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {BZVP_STATUSES.map((s) => (
-                            <SelectItem key={s} value={s}>
-                              {BZVP_STATUS_CONFIG[s].label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <SelectTrigger className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")}>
+                        <SelectValue />
+                      </SelectTrigger>
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
+                    <SelectContent>
+                      {BZVP_STATUSES.map((s) => (
+                        <SelectItem key={s} value={s}>
+                          {BZVP_STATUS_CONFIG[s].label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             {field("rank", "Військове звання", { placeholder: "старший солдат" })}
             {field("fullName", "ПІБ", { placeholder: "Ковальчук Андрій Петрович" })}
             {field("birthDate", "Дата народження", { type: "date" })}
@@ -269,17 +252,13 @@ export function BzvpForm({ initialData }: Props) {
             <CardTitle>Служба, адреси, правовий статус та сім&apos;я</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-            {isEdit && (
-              <>
-                {field("arrivalDate", "Дата прибуття", { placeholder: "ДД.ММ.РРРР" })}
-                {field("trainingPeriod", "Період навчання", { placeholder: "01.03.2025 – 01.06.2025" })}
-              </>
-            )}
+            {field("arrivalDate", "Дата прибуття", { placeholder: "ДД.ММ.РРРР" })}
+            {field("trainingPeriod", "Період навчання", { placeholder: "01.03.2025 – 01.06.2025" })}
             {field("serviceUnit", "Воєнна частина (В/ч)", { placeholder: "72 ОМБр" })}
             {field("serviceYears", "Роки проходження служби", { placeholder: "2020-2024" })}
             {field("civilianJob", "Цивільна робота, фах", { placeholder: "Електрик, ТОВ «Енергія»" })}
             {field("education", "Які навчальні заклади закінчив, у якому році, спеціальність", { placeholder: "Житомирський політехнічний коледж, 2021, електромонтажник", multiline: true })}
-            {isEdit && field("specialization", "Спеціалізація", { placeholder: "Кулеметник, водій" })}
+            {field("specialization", "Спеціалізація", { placeholder: "Кулеметник, водій" })}
             {field("actualAddress", "Фактичне місце проживання", { placeholder: "м. Житомир, вул. Перемоги 15, кв. 42" })}
             {field("registrationAddress", "Місце прописки", { placeholder: "м. Житомир, вул. Перемоги 15, кв. 42" })}
             {field("driverLicense", "Посвідчення водія (категорія)", { placeholder: "B, C" })}

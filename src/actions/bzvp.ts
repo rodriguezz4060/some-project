@@ -5,8 +5,7 @@ import { revalidatePath } from "next/cache";
 import { logCreate, logUpdate, logDelete } from "@root/lib/audit";
 import { auth } from "@root/lib/auth";
 import { redirect } from "next/navigation";
-import { createBzvpSchema, updateBzvpSchema } from "@root/lib/schemas/bzvp";
-import type { CreateBzvpData, UpdateBzvpData } from "@root/lib/schemas/bzvp";
+import { bzvpSchema, type BzvpData } from "@root/lib/schemas/bzvp";
 
 async function requireModerator() {
   const session = await auth();
@@ -78,169 +77,111 @@ function compareFields(
   return changes;
 }
 
-const mainFields: string[] = [
-  "fullName", "rank", "birthDate", "birthPlace", "photo",
-  "passport", "passportIssued", "tin", "militaryId", "militaryIdIssued",
-  "ubd", "ubdDate", "serviceUnit", "serviceYears", "civilianJob",
-  "education", "actualAddress", "registrationAddress", "driverLicense",
-  "criminalRecord", "policeRecords", "family", "phone", "relativePhones",
-  "personalOrder", "conscription", "health", "healthComplaints",
-  "moralState", "bloodType", "shoeSize", "notes",
-];
+const allFields = Object.keys(bzvpSchema.shape);
 
-const updateFields = [...mainFields, "status", "arrivalDate", "trainingPeriod", "specialization"];
-
-export async function createBzvp(rawData: CreateBzvpData) {
-  await requireModerator();
-  const parsed = createBzvpSchema.safeParse(rawData);
+function parseBzvp(rawData: BzvpData) {
+  const parsed = bzvpSchema.safeParse(rawData);
   if (!parsed.success) {
-    throw new Error(parsed.error.issues.map((i) => i.message).join("; "));
+    throw new Error(Object.values(parsed.error.flatten().fieldErrors).flat().join("; "));
   }
-  const data = parsed.data;
-  const today = new Date().toISOString().split("T")[0];
-
-  const person = await prisma.bzvpPersonnel.create({
-    data: {
-      fullName: data.fullName,
-      rank: data.rank,
-      birthDate: data.birthDate,
-      birthPlace: data.birthPlace || null,
-      photo: data.photo || null,
-      passport: data.passport || null,
-      passportIssued: data.passportIssued || null,
-      tin: data.tin || null,
-      militaryId: data.militaryId || null,
-      militaryIdIssued: data.militaryIdIssued || null,
-      ubd: data.ubd || null,
-      ubdDate: data.ubdDate || null,
-      serviceUnit: data.serviceUnit || null,
-      serviceYears: data.serviceYears || null,
-      civilianJob: data.civilianJob || null,
-      education: data.education || null,
-      actualAddress: data.actualAddress || null,
-      registrationAddress: data.registrationAddress || null,
-      driverLicense: data.driverLicense || null,
-      criminalRecord: data.criminalRecord || null,
-      policeRecords: data.policeRecords || null,
-      family: data.family || null,
-      phone: data.phone || null,
-      relativePhones: data.relativePhones || null,
-      personalOrder: data.personalOrder || null,
-      conscription: data.conscription || null,
-      health: data.health || null,
-      healthComplaints: data.healthComplaints || null,
-      moralState: data.moralState || null,
-      bloodType: data.bloodType || null,
-      shoeSize: data.shoeSize || null,
-      notes: data.notes || null,
-      status: "training",
-      arrivalDate: today,
-      trainingPeriod: "",
-      specialization: null,
-    },
-  });
-
-  await logCreate(
-    "BzvpPersonnel",
-    person.id,
-    `Створив анкету БЗВП «${person.fullName}»`,
-  );
-
-  revalidatePath("/bzvp");
-  return { id: person.id, fullName: person.fullName };
+  return parsed.data;
 }
 
-export async function updateBzvp(id: number, rawData: UpdateBzvpData) {
+export async function createBzvp(rawData: BzvpData) {
   await requireModerator();
-  const parsed = updateBzvpSchema.safeParse(rawData);
-  if (!parsed.success) {
-    throw new Error(parsed.error.issues.map((i) => i.message).join("; "));
-  }
-  const data = parsed.data;
-  const oldPerson = await prisma.bzvpPersonnel.findUnique({ where: { id } });
+  const data = parseBzvp(rawData);
+  const today = new Date().toISOString().split("T")[0];
+  const { status, arrivalDate, trainingPeriod, ...rest } = data;
 
-  const person = await prisma.bzvpPersonnel.update({
-    where: { id },
-    data: {
-      fullName: data.fullName,
-      rank: data.rank,
-      birthDate: data.birthDate,
-      birthPlace: data.birthPlace || null,
-      photo: data.photo || null,
-      passport: data.passport || null,
-      passportIssued: data.passportIssued || null,
-      tin: data.tin || null,
-      militaryId: data.militaryId || null,
-      militaryIdIssued: data.militaryIdIssued || null,
-      ubd: data.ubd || null,
-      ubdDate: data.ubdDate || null,
-      serviceUnit: data.serviceUnit || null,
-      serviceYears: data.serviceYears || null,
-      civilianJob: data.civilianJob || null,
-      education: data.education || null,
-      actualAddress: data.actualAddress || null,
-      registrationAddress: data.registrationAddress || null,
-      driverLicense: data.driverLicense || null,
-      criminalRecord: data.criminalRecord || null,
-      policeRecords: data.policeRecords || null,
-      family: data.family || null,
-      phone: data.phone || null,
-      relativePhones: data.relativePhones || null,
-      personalOrder: data.personalOrder || null,
-      conscription: data.conscription || null,
-      health: data.health || null,
-      healthComplaints: data.healthComplaints || null,
-      moralState: data.moralState || null,
-      bloodType: data.bloodType || null,
-      shoeSize: data.shoeSize || null,
-      notes: data.notes || null,
-      status: data.status,
-      arrivalDate: data.arrivalDate,
-      trainingPeriod: data.trainingPeriod,
-      specialization: data.specialization || null,
-    },
-  });
+  try {
+    const person = await prisma.bzvpPersonnel.create({
+      data: {
+        ...rest,
+        status: status ?? "training",
+        arrivalDate: arrivalDate ?? today,
+        trainingPeriod: trainingPeriod ?? "",
+      },
+    });
 
-  if (oldPerson) {
-    const changes = compareFields(
-      oldPerson as unknown as Record<string, unknown>,
-      data as unknown as Record<string, unknown>,
-      updateFields as string[],
+    await logCreate(
+      "BzvpPersonnel",
+      person.id,
+      `Створив анкету БЗВП «${person.fullName}»`,
     );
 
-    if (Object.keys(changes).length > 0) {
-      const descriptions: string[] = [];
-      for (const [key, val] of Object.entries(changes)) {
-        descriptions.push(
-          `змінив «${getLabel(key)}» з «${val.old ?? ""}» на «${val.new ?? ""}»`,
-        );
-      }
-
-      let description: string;
-      if (descriptions.length <= 3) {
-        description = `Зміни в картці БЗВП «${person.fullName}»: ${descriptions.join("; ")}`;
-      } else {
-        description = `Зміни в картці БЗВП «${person.fullName}»: ${descriptions.slice(0, 3).join("; ")} та ще ${descriptions.length - 3} змін`;
-      }
-
-      await logUpdate("BzvpPersonnel", id, description, changes);
-    }
+    revalidatePath("/bzvp");
+    return { id: person.id, fullName: person.fullName };
+  } catch {
+    throw new Error("Помилка при збереженні");
   }
+}
 
-  revalidatePath("/bzvp");
-  return { id: person.id, fullName: person.fullName };
+export async function updateBzvp(id: number, rawData: BzvpData) {
+  await requireModerator();
+  const data = parseBzvp(rawData);
+  const { status, arrivalDate, trainingPeriod, ...rest } = data;
+
+  try {
+    const oldPerson = await prisma.bzvpPersonnel.findUnique({ where: { id } });
+
+    const person = await prisma.bzvpPersonnel.update({
+      where: { id },
+      data: {
+        ...rest,
+        status: status ?? "training",
+        arrivalDate: arrivalDate ?? oldPerson?.arrivalDate ?? "",
+        trainingPeriod: trainingPeriod ?? "",
+      },
+    });
+
+    if (oldPerson) {
+      const changes = compareFields(
+        oldPerson as unknown as Record<string, unknown>,
+        data as unknown as Record<string, unknown>,
+        allFields,
+      );
+
+      if (Object.keys(changes).length > 0) {
+        const descriptions: string[] = [];
+        for (const [key, val] of Object.entries(changes)) {
+          descriptions.push(
+            `змінив «${getLabel(key)}» з «${val.old ?? ""}» на «${val.new ?? ""}»`,
+          );
+        }
+
+        let description: string;
+        if (descriptions.length <= 3) {
+          description = `Зміни в картці БЗВП «${person.fullName}»: ${descriptions.join("; ")}`;
+        } else {
+          description = `Зміни в картці БЗВП «${person.fullName}»: ${descriptions.slice(0, 3).join("; ")} та ще ${descriptions.length - 3} змін`;
+        }
+
+        await logUpdate("BzvpPersonnel", id, description, changes);
+      }
+    }
+
+    revalidatePath("/bzvp");
+    return { id: person.id, fullName: person.fullName };
+  } catch {
+    throw new Error("Помилка при збереженні");
+  }
 }
 
 export async function deleteBzvp(id: number) {
   await requireModerator();
-  const person = await prisma.bzvpPersonnel.delete({ where: { id } });
 
-  await logDelete(
-    "BzvpPersonnel",
-    id,
-    `Видалив анкету БЗВП «${person.fullName}»`,
-  );
+  try {
+    const person = await prisma.bzvpPersonnel.delete({ where: { id } });
 
-  revalidatePath("/bzvp");
-  return { id: person.id, fullName: person.fullName };
+    await logDelete(
+      "BzvpPersonnel",
+      id,
+      `Видалив анкету БЗВП «${person.fullName}»`,
+    );
+
+    revalidatePath("/bzvp");
+    return { id: person.id, fullName: person.fullName };
+  } catch {
+    throw new Error("Помилка при видаленні");
+  }
 }

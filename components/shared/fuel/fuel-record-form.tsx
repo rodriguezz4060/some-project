@@ -42,8 +42,7 @@ export function FuelRecordForm({ vehicles, initialData, preselectedVehicleId }: 
   const [loading, setLoading] = useState(false);
 
   const form = useForm<CreateFuelRecordData>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(createFuelRecordSchema) as any,
+    resolver: zodResolver(createFuelRecordSchema),
     defaultValues: {
       vehicleId: initialData?.vehicleId ?? preselectedVehicleId ?? 0,
       date: initialData?.date ?? new Date().toISOString().split("T")[0],
