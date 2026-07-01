@@ -6,7 +6,9 @@ import { logCreate, logUpdate, logDelete } from "@root/lib/audit";
 import { requireModerator } from "@root/lib/auth-guards";
 import { compareFields } from "@root/lib/diff";
 import { buildChangeLines, formatDescription } from "@root/lib/audit-helpers";
+import { getBzvpPage as getBzvpPageData } from "@root/lib/data/bzvp";
 import { bzvpSchema, type BzvpData } from "@root/lib/schemas/bzvp";
+import type { BzvpStatus, BzvpPersonnel } from "@/components/shared/bzvp/types";
 
 const fieldLabels: Record<string, string> = {
   fullName: "ПІБ",
@@ -152,4 +154,14 @@ export async function deleteBzvp(id: number) {
   } catch {
     throw new Error("Помилка при видаленні");
   }
+}
+
+export async function getBzvpPage(
+  statuses: BzvpStatus[],
+  query: string,
+  arrivalFrom: string,
+  arrivalTo: string,
+  page: number,
+): Promise<BzvpPersonnel[]> {
+  return getBzvpPageData(statuses, query, arrivalFrom, arrivalTo, page);
 }

@@ -31,7 +31,6 @@ export default async function MilitaryMain({
   const { personnel: filtered, totalCount } = await getFilteredMilitary(selectedStatuses, rawQuery);
 
   const activeCount = filtered.filter((p) => p.status === "active").length;
-  const shownCount = filtered.length;
 
   return (
     <div className="p-6">
@@ -39,11 +38,15 @@ export default async function MilitaryMain({
         initialStatuses={selectedStatuses}
         initialQuery={rawQuery}
         activeCount={activeCount}
-        shownCount={shownCount}
+        shownCount={filtered.length}
         totalDbCount={totalCount}
       />
 
-      <MilitaryCardGrid>
+      <MilitaryCardGrid
+        totalCount={totalCount}
+        statuses={selectedStatuses}
+        query={rawQuery}
+      >
         {filtered.map((person) => (
           <MilitaryCard key={person.id} {...person} />
         ))}

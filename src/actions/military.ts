@@ -7,8 +7,11 @@ import { requireModerator } from "@root/lib/auth-guards";
 import { parseDate } from "@root/lib/utils/dates";
 import { compareFields, compareItemArrays, type Changes } from "@root/lib/diff";
 import { buildChangeLines, formatDescription } from "@root/lib/audit-helpers";
+import { getMilitaryPage as getMilitaryPageData } from "@root/lib/data/military";
 import { createMilitarySchema } from "@root/lib/schemas/military";
 import type { CreateMilitaryData } from "@root/lib/schemas/military";
+import type { StatusType } from "@/components/shared/military/types";
+import type { MilitaryPersonnel } from "@/components/shared/military/types";
 
 const fieldLabels: Record<string, string> = {
   fullName: "ПІБ",
@@ -301,4 +304,12 @@ export async function deleteMilitary(id: number) {
   } catch {
     throw new Error("Помилка при видаленні");
   }
+}
+
+export async function getMilitaryPage(
+  statuses: StatusType[],
+  query: string,
+  page: number,
+): Promise<MilitaryPersonnel[]> {
+  return getMilitaryPageData(statuses, query, page);
 }

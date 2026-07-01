@@ -42,6 +42,8 @@ export async function getTotalMilitaryCount(): Promise<number> {
 export async function getFilteredMilitary(
   statuses: StatusType[],
   query: string,
+  page = 1,
+  pageSize = 8,
 ): Promise<{ personnel: MilitaryPersonnel[]; totalCount: number }> {
   const where: Prisma.MilitaryPersonnelWhereInput = {};
 
@@ -55,19 +57,48 @@ export async function getFilteredMilitary(
     })) as Prisma.MilitaryPersonnelWhereInput[];
   }
 
-  const [personnel, totalCount] = await Promise.all([
+  const [personnel, totalCount] = await prisma.$transaction([
     prisma.militaryPersonnel.findMany({
       where,
       orderBy: { createdAt: "desc" },
-      take: MAX_FETCH,
+      skip: (page - 1) * pageSize,
+      take: pageSize,
     }),
-    prisma.militaryPersonnel.count(),
+    prisma.militaryPersonnel.count({ where }),
   ]);
 
   return {
     personnel: personnel.map(toMilitaryPersonnel),
     totalCount,
   };
+}
+
+export async function getMilitaryPage(
+  statuses: StatusType[],
+  query: string,
+  page: number,
+  pageSize = 8,
+): Promise<MilitaryPersonnel[]> {
+  const where: Prisma.MilitaryPersonnelWhereInput = {};
+
+  if (statuses.length > 0) {
+    where.status = { in: statuses };
+  }
+
+  if (query) {
+    where.OR = SEARCH_FIELDS.map((field) => ({
+      [field]: { contains: query, mode: "insensitive" },
+    })) as Prisma.MilitaryPersonnelWhereInput[];
+  }
+
+  const personnel = await prisma.militaryPersonnel.findMany({
+    where,
+    orderBy: { createdAt: "desc" },
+    skip: (page - 1) * pageSize,
+    take: pageSize,
+  });
+
+  return personnel.map(toMilitaryPersonnel);
 }
 
 export async function getMilitaryPersonnelById(id: number): Promise<MilitaryPersonnel | null> {

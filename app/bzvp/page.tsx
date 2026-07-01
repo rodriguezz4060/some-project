@@ -27,7 +27,7 @@ export default async function BzvpPage({
   const selectedStatuses = parseStatuses(status);
   const rawQuery = q?.trim() ?? "";
 
-  const { personnel: filtered, count: shownCount } = await getFilteredBzvp(
+  const { personnel: filtered, count: totalCount } = await getFilteredBzvp(
     selectedStatuses,
     rawQuery,
     arrivalFrom ?? "",
@@ -41,10 +41,16 @@ export default async function BzvpPage({
         initialQuery={rawQuery}
         initialArrivalFrom={arrivalFrom ?? ""}
         initialArrivalTo={arrivalTo ?? ""}
-        shownCount={shownCount}
+        shownCount={filtered.length}
       />
 
-      <BzvpCardGrid>
+      <BzvpCardGrid
+        totalCount={totalCount}
+        statuses={selectedStatuses}
+        query={rawQuery}
+        arrivalFrom={arrivalFrom ?? ""}
+        arrivalTo={arrivalTo ?? ""}
+      >
         {filtered.map((person) => (
           <BzvpCard key={person.id} {...person} />
         ))}
