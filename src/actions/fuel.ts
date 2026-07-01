@@ -77,8 +77,8 @@ export async function updateVehicle(id: number, rawData: CreateVehicleData) {
 
     if (oldVehicle) {
       const changes = compareFields(
-        oldVehicle,
-        data,
+        oldVehicle as Record<string, unknown>,
+        data as Record<string, unknown>,
         ["brand", "model", "licensePlate", "type", "year", "vin", "fuelType", "tankCapacity", "unit", "notes"],
         fieldLabels,
       );
@@ -183,8 +183,8 @@ export async function updateFuelRecord(id: number, rawData: CreateFuelRecordData
 
     if (oldRecord) {
       const changes = compareFields(
-        oldRecord,
-        data,
+        oldRecord as Record<string, unknown>,
+        data as Record<string, unknown>,
         ["date", "fuelType", "liters", "pricePerLiter", "totalCost", "mileage", "driverName", "invoiceNumber", "supplier", "purpose"],
         fieldLabels,
         { purpose: PURPOSE_LABELS },

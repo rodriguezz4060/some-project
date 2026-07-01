@@ -159,8 +159,8 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
 
     if (oldPerson) {
       const mainFieldChanges = compareFields(
-        oldPerson,
-        data,
+        oldPerson as Record<string, unknown>,
+        data as Record<string, unknown>,
         ["fullName", "rank", "position", "unit", "status", "birthDate", "phone", "email", "experience", "missions", "lastActiveDays"],
         fieldLabels,
       );
@@ -173,8 +173,8 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
 
       if (medicalRecords) {
         const result = compareItemArrays(
-          oldPerson.medicalRecords,
-          medicalRecords,
+          oldPerson.medicalRecords as Record<string, unknown>[],
+          medicalRecords as Record<string, unknown>[],
           "Медицина",
           fieldLabels,
         );
@@ -184,8 +184,8 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
 
       if (achievements) {
         const result = compareItemArrays(
-          oldPerson.achievements,
-          achievements,
+          oldPerson.achievements as Record<string, unknown>[],
+          achievements as Record<string, unknown>[],
           "Нагороди",
           fieldLabels,
         );
@@ -195,8 +195,8 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
 
       if (equipment) {
         const result = compareItemArrays(
-          oldPerson.equipment,
-          equipment,
+          oldPerson.equipment as Record<string, unknown>[],
+          equipment as Record<string, unknown>[],
           "Спорядження",
           fieldLabels,
         );
@@ -206,8 +206,8 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
 
       if (positionHistory) {
         const result = compareItemArrays(
-          oldPerson.positionHistory,
-          positionHistory,
+          oldPerson.positionHistory as Record<string, unknown>[],
+          positionHistory as Record<string, unknown>[],
           "Історія посад",
           fieldLabels,
         );
@@ -217,8 +217,8 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
 
       if (clothingSizes && oldPerson.clothingSizes) {
         const result = compareFields(
-          oldPerson.clothingSizes,
-          clothingSizes,
+          oldPerson.clothingSizes as Record<string, unknown>,
+          clothingSizes as Record<string, unknown>,
           ["height", "chest", "waist", "shoes", "headgear", "uniform"],
           fieldLabels,
         );

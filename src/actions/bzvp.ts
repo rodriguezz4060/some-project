@@ -105,8 +105,8 @@ export async function updateBzvp(id: number, rawData: BzvpData) {
 
     if (oldPerson) {
       const changes = compareFields(
-        oldPerson,
-        data,
+        oldPerson as Record<string, unknown>,
+        data as Record<string, unknown>,
         allFields,
         fieldLabels,
       );
@@ -115,7 +115,7 @@ export async function updateBzvp(id: number, rawData: BzvpData) {
         const descriptions: string[] = [];
         for (const [key, val] of Object.entries(changes)) {
           descriptions.push(
-            `змінив «${getLabel(key)}» з «${val.old ?? ""}» на «${val.new ?? ""}»`,
+            `змінив «${key}» з «${val.old ?? ""}» на «${val.new ?? ""}»`,
           );
         }
 
