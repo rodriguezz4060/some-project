@@ -6,6 +6,7 @@ import { Providers } from "@/components/shared/auth/providers";
 import { Header } from "@/components/shared/header/header";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "sonner";
+import { ProgressBarProvider } from "./providers";
 
 const nunito = Nunito({
   subsets: ["cyrillic"],
@@ -26,6 +27,7 @@ export default function RootLayout({
   return (
     <html lang="ua" suppressHydrationWarning>
       <body className={nunito.className}>
+        <ProgressBarProvider>
         <Providers>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
             <Header />
@@ -35,6 +37,7 @@ export default function RootLayout({
             </TooltipProvider>
           </ThemeProvider>
         </Providers>
+        </ProgressBarProvider>
       </body>
     </html>
   );
