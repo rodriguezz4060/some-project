@@ -180,6 +180,7 @@ model Vehicle {
   tankCapacity Int?
   unit        String
   notes       String?
+  status      String   @default("active")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

@@ -1,11 +1,25 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Search, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { VehicleCard } from "@/components/shared/fuel/vehicle-card";
+import { setVehicleStatus } from "@root/actions/fuel";
+import { VEHICLE_STATUS_LABELS } from "@/components/shared/fuel/constants";
 import type { Vehicle } from "@/components/shared/fuel/types";
+import type { VehicleStatus } from "@/components/shared/fuel/constants";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const PER_PAGE = 12;
 
@@ -24,8 +38,11 @@ interface Props {
 }
 
 export function VehicleListClient({ vehicles, canManage }: Props) {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [visible, setVisible] = useState(PER_PAGE);
+  const [statusTarget, setStatusTarget] = useState<{ id: number; status: VehicleStatus } | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const filtered = useMemo(() => {
     if (!search) return vehicles;
@@ -37,6 +54,19 @@ export function VehicleListClient({ vehicles, canManage }: Props) {
 
   const displayed = filtered.slice(0, visible);
   const hasMore = visible < filtered.length;
+
+  async function handleStatusChange(id: number, newStatus: VehicleStatus) {
+    setLoading(true);
+    try {
+      await setVehicleStatus(id, newStatus);
+      router.refresh();
+    } catch {
+      // ignore
+    } finally {
+      setLoading(false);
+      setStatusTarget(null);
+    }
+  }
 
   if (vehicles.length === 0) {
     return (
@@ -72,7 +102,7 @@ export function VehicleListClient({ vehicles, canManage }: Props) {
         <>
           <div className="grid gap-6 auto-rows-fr grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {displayed.map((v) => (
-              <VehicleCard key={v.id} vehicle={v} canManage={canManage} />
+              <VehicleCard key={v.id} vehicle={v} canManage={canManage} onStatusChange={(id, s) => setStatusTarget({ id, status: s })} />
             ))}
           </div>
           {hasMore && (
@@ -86,6 +116,25 @@ export function VehicleListClient({ vehicles, canManage }: Props) {
             </div>
           )}
         </>
+      )}
+      {statusTarget && (
+        <AlertDialog open onOpenChange={() => !loading && setStatusTarget(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Змінити статус автомобіля</AlertDialogTitle>
+              <AlertDialogDescription>
+                Авто буде переведено в статус «{VEHICLE_STATUS_LABELS[statusTarget.status]}».
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={loading}>Скасувати</AlertDialogCancel>
+              <AlertDialogAction onClick={() => handleStatusChange(statusTarget.id, statusTarget.status)} disabled={loading}>
+                {loading ? <Loader2 className="size-4 animate-spin mr-1" /> : null}
+                {loading ? "Збереження..." : "Підтвердити"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       )}
     </div>
   );

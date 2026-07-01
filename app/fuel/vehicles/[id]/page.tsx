@@ -1,14 +1,21 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Plus, Fuel, Receipt, Gauge } from "lucide-react";
+import { ArrowLeft, Plus, Fuel, Receipt, Gauge, Wrench, Archive, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { FuelRecordsTable } from "@/components/shared/fuel/fuel-records-table";
 import { getVehicleById } from "@root/lib/data/fuel";
-import { FUEL_TYPE_LABELS, VEHICLE_TYPE_LABELS } from "@/components/shared/fuel/constants";
+import { FUEL_TYPE_LABELS, VEHICLE_TYPE_LABELS, VEHICLE_STATUS_LABELS } from "@/components/shared/fuel/constants";
+import { setVehicleStatus } from "@root/actions/fuel";
 import { auth } from "@root/lib/auth";
+
+const statusBtnStyles: Record<string, string> = {
+  active: "",
+  repair: "bg-warning/10 text-warning hover:bg-warning/20 border-warning/30",
+  decommissioned: "bg-muted text-muted-foreground hover:bg-border border-border",
+};
 
 export default async function VehicleDetailPage({
   params,
@@ -24,6 +31,7 @@ export default async function VehicleDetailPage({
   const canManage = role === "admin" || role === "moderator";
 
   const summary = vehicle._fuelSummary;
+  const isActive = vehicle.status === "active";
 
   return (
     <div className="p-6 space-y-6">
@@ -39,17 +47,29 @@ export default async function VehicleDetailPage({
         </div>
         {canManage && (
           <div className="flex gap-2">
-            <Link href={`/fuel/refuel?vehicleId=${vehicle.id}`}>
-              <Button variant="outline" size="sm">
-                <Plus className="size-4 mr-1.5" />
-                Заправка
-              </Button>
-            </Link>
+            {isActive && (
+              <Link href={`/fuel/refuel?vehicleId=${vehicle.id}`}>
+                <Button variant="outline" size="sm">
+                  <Plus className="size-4 mr-1.5" />
+                  Заправка
+                </Button>
+              </Link>
+            )}
             <Link href={`/fuel/vehicles/${vehicle.id}/edit`}>
               <Button variant="outline" size="sm">
                 Редагувати
               </Button>
             </Link>
+            <form action={async () => {
+              "use server";
+              const next = vehicle.status === "active" ? "repair" : vehicle.status === "repair" ? "decommissioned" : "active";
+              await setVehicleStatus(vehicle.id, next);
+            }}>
+              <Button type="submit" variant="outline" size="sm" className={statusBtnStyles[vehicle.status]}>
+                {vehicle.status === "active" ? <Wrench className="size-4 mr-1.5" /> : vehicle.status === "repair" ? <Archive className="size-4 mr-1.5" /> : <RotateCcw className="size-4 mr-1.5" />}
+                {vehicle.status === "active" ? "В ремонт" : vehicle.status === "repair" ? "Вивести" : "Відновити"}
+              </Button>
+            </form>
           </div>
         )}
       </div>
@@ -57,9 +77,16 @@ export default async function VehicleDetailPage({
       <div>
         <div className="flex items-center gap-3">
           <div>
-            <h1 className="text-2xl font-bold">
-              {vehicle.brand} {vehicle.model}
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold">
+                {vehicle.brand} {vehicle.model}
+              </h1>
+              {vehicle.status !== "active" && (
+                <Badge variant="outline" className="text-xs">
+                  {VEHICLE_STATUS_LABELS[vehicle.status as keyof typeof VEHICLE_STATUS_LABELS] ?? vehicle.status}
+                </Badge>
+              )}
+            </div>
             <p className="text-muted-foreground">{vehicle.licensePlate}</p>
           </div>
         </div>

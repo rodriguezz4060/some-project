@@ -1,8 +1,9 @@
 import { prisma } from "@root/lib/prisma";
 import type { Vehicle, FuelRecord } from "@/components/shared/fuel/types";
 
-export async function getVehicles(): Promise<Vehicle[]> {
+export async function getVehicles(status?: string): Promise<Vehicle[]> {
   const vehicles = await prisma.vehicle.findMany({
+    where: status ? { status } : { status: "active" },
     orderBy: { createdAt: "desc" },
     include: {
       fuelRecords: {

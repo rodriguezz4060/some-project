@@ -14,6 +14,7 @@ export interface Vehicle {
   tankCapacity: number | null;
   unit: string;
   notes: string | null;
+  status: string;
   createdAt: Date;
   updatedAt: Date;
   fuelRecords?: FuelRecord[];

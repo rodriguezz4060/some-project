@@ -1,19 +1,38 @@
 import Link from "next/link";
-import { Fuel, Gauge, Palette, Edit, Trash2 } from "lucide-react";
+import { Fuel, Gauge, Palette, Edit, Wrench, Archive } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@root/lib/utils";
-import { FUEL_TYPE_LABELS, VEHICLE_TYPE_LABELS } from "./constants";
+import { FUEL_TYPE_LABELS, VEHICLE_TYPE_LABELS, VEHICLE_STATUS_LABELS } from "./constants";
 import type { Vehicle } from "./types";
+import type { VehicleStatus } from "./constants";
 
 interface Props {
   vehicle: Vehicle;
-  onDelete?: (id: number) => void;
+  onStatusChange?: (id: number, status: VehicleStatus) => void;
   canManage?: boolean;
 }
 
-export function VehicleCard({ vehicle, onDelete, canManage }: Props) {
+const statusStyles: Record<string, string> = {
+  active: "bg-success/10 text-success border-success/20",
+  repair: "bg-warning/10 text-warning border-warning/20",
+  decommissioned: "bg-muted text-muted-foreground border-border",
+};
+
+const statusIcons: Record<string, React.ReactNode> = {
+  active: null,
+  repair: <Wrench className="size-3 mr-1" />,
+  decommissioned: <Archive className="size-3 mr-1" />,
+};
+
+const nextStatus: Record<string, VehicleStatus> = {
+  active: "repair",
+  repair: "decommissioned",
+  decommissioned: "active",
+};
+
+export function VehicleCard({ vehicle, onStatusChange, canManage }: Props) {
   const summary = vehicle._fuelSummary;
 
   return (
@@ -31,6 +50,12 @@ export function VehicleCard({ vehicle, onDelete, canManage }: Props) {
               <p className="text-xs text-muted-foreground">{vehicle.licensePlate}</p>
             </div>
           </div>
+          {vehicle.status !== "active" && (
+            <Badge variant="outline" className={cn("text-xs", statusStyles[vehicle.status])}>
+              {statusIcons[vehicle.status]}
+              {VEHICLE_STATUS_LABELS[vehicle.status as keyof typeof VEHICLE_STATUS_LABELS] ?? vehicle.status}
+            </Badge>
+          )}
           {canManage && (
             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <Link href={`/fuel/vehicles/${vehicle.id}/edit`}>
@@ -38,9 +63,9 @@ export function VehicleCard({ vehicle, onDelete, canManage }: Props) {
                   <Edit className="size-4" />
                 </Button>
               </Link>
-              {onDelete && (
-                <Button variant="ghost" size="icon" className="size-8 text-destructive" onClick={() => onDelete(vehicle.id)}>
-                  <Trash2 className="size-4" />
+              {onStatusChange && (
+                <Button variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-foreground" onClick={() => onStatusChange(vehicle.id, nextStatus[vehicle.status])}>
+                  {vehicle.status === "active" ? <Wrench className="size-4" /> : vehicle.status === "repair" ? <Archive className="size-4" /> : <Fuel className="size-4" />}
                 </Button>
               )}
             </div>

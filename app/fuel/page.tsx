@@ -3,6 +3,7 @@ import { Plus, Fuel, Receipt, BarChart3, ListOrdered } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { VehicleListClient } from "@/components/shared/fuel/vehicle-list-client";
 import { getVehicles, getVehicleStats } from "@root/lib/data/fuel";
 import { auth } from "@root/lib/auth";
@@ -12,8 +13,12 @@ export default async function FuelMain() {
   const role = session?.user?.role;
   const canManage = role === "admin" || role === "moderator";
 
-  const vehicles = await getVehicles();
-  const stats = await getVehicleStats();
+  const [activeVehicles, repairVehicles, decommissionedVehicles, stats] = await Promise.all([
+    getVehicles("active"),
+    getVehicles("repair"),
+    getVehicles("decommissioned"),
+    getVehicleStats(),
+  ]);
 
   return (
     <div className="p-6 space-y-6">
@@ -94,8 +99,22 @@ export default async function FuelMain() {
       <Separator />
 
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold tracking-tight">Автомобілі</h2>
-        <VehicleListClient vehicles={vehicles} canManage={canManage} />
+        <Tabs defaultValue="active">
+          <TabsList>
+            <TabsTrigger value="active">Активні ({activeVehicles.length})</TabsTrigger>
+            <TabsTrigger value="repair">В ремонті ({repairVehicles.length})</TabsTrigger>
+            <TabsTrigger value="decommissioned">Вибули ({decommissionedVehicles.length})</TabsTrigger>
+          </TabsList>
+          <TabsContent value="active">
+            <VehicleListClient vehicles={activeVehicles} canManage={canManage} />
+          </TabsContent>
+          <TabsContent value="repair">
+            <VehicleListClient vehicles={repairVehicles} canManage={canManage} />
+          </TabsContent>
+          <TabsContent value="decommissioned">
+            <VehicleListClient vehicles={decommissionedVehicles} canManage={canManage} />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

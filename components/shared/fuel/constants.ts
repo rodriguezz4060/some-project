@@ -31,3 +31,15 @@ export const VEHICLE_TYPE_OPTIONS = Object.entries(VEHICLE_TYPE_LABELS).map(
 export const FUEL_TYPE_OPTIONS = Object.entries(FUEL_TYPE_LABELS).map(
   ([value, label]) => ({ value, label }),
 );
+
+export type VehicleStatus = "active" | "repair" | "decommissioned";
+
+export const VEHICLE_STATUS_LABELS: Record<VehicleStatus, string> = {
+  active: "Активний",
+  repair: "В ремонті",
+  decommissioned: "Вибуло",
+};
+
+export const VEHICLE_STATUS_OPTIONS = Object.entries(VEHICLE_STATUS_LABELS).map(
+  ([value, label]) => ({ value, label }),
+);

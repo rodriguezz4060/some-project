@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { logCreate, logUpdate, logDelete } from "@root/lib/audit";
 import { requireModerator } from "@root/lib/auth-guards";
 import { compareFields } from "@root/lib/diff";
-import { PURPOSE_LABELS } from "@/components/shared/fuel/constants";
+import { PURPOSE_LABELS, VEHICLE_TYPE_LABELS, VEHICLE_STATUS_LABELS } from "@/components/shared/fuel/constants";
 import { createVehicleSchema, createFuelRecordSchema } from "@root/lib/schemas/fuel";
 import type { CreateVehicleData, CreateFuelRecordData } from "@root/lib/schemas/fuel";
 
@@ -56,7 +56,8 @@ export async function createVehicle(rawData: CreateVehicleData) {
   try {
     const vehicle = await prisma.vehicle.create({ data });
 
-    await logCreate("Vehicle", vehicle.id, `Додав авто «${vehicle.brand} ${vehicle.model}» (${vehicle.licensePlate}), тип: ${getLabel(vehicle.type)}, підрозділ: ${vehicle.unit}`);
+    const typeLabel = VEHICLE_TYPE_LABELS[vehicle.type as keyof typeof VEHICLE_TYPE_LABELS] ?? vehicle.type;
+    await logCreate("Vehicle", vehicle.id, `Додав авто «${vehicle.brand} ${vehicle.model}» (${vehicle.licensePlate}), тип: ${typeLabel}, підрозділ: ${vehicle.unit}`);
 
     revalidatePath("/fuel");
     return { id: vehicle.id, brand: vehicle.brand, model: vehicle.model, licensePlate: vehicle.licensePlate };
@@ -106,18 +107,23 @@ export async function updateVehicle(id: number, rawData: CreateVehicleData) {
   }
 }
 
-export async function deleteVehicle(id: number) {
+export async function setVehicleStatus(id: number, status: string) {
   await requireModerator();
 
   try {
-    const vehicle = await prisma.vehicle.delete({ where: { id } });
+    const vehicle = await prisma.vehicle.findUnique({ where: { id } });
+    if (!vehicle) throw new Error("Авто не знайдено");
 
-    await logDelete("Vehicle", id, `Видалив авто «${vehicle.brand} ${vehicle.model}» (${vehicle.licensePlate}), підрозділ: ${vehicle.unit}`);
+    await prisma.vehicle.update({ where: { id }, data: { status } });
+
+    const statusLabel = VEHICLE_STATUS_LABELS[status as keyof typeof VEHICLE_STATUS_LABELS] ?? status;
+    await logUpdate("Vehicle", id, `Змінив статус авто «${vehicle.brand} ${vehicle.model}» на «${statusLabel}»`);
 
     revalidatePath("/fuel");
-    return { id: vehicle.id };
+    revalidatePath(`/fuel/vehicles/${id}`);
+    return { id: vehicle.id, status };
   } catch {
-    throw new Error("Помилка при видаленні");
+    throw new Error("Помилка при зміні статусу");
   }
 }
 
@@ -135,8 +141,12 @@ export async function createFuelRecord(rawData: CreateFuelRecordData) {
   try {
     const vehicle = await prisma.vehicle.findUnique({
       where: { id: data.vehicleId },
-      select: { brand: true, model: true, licensePlate: true },
+      select: { brand: true, model: true, licensePlate: true, status: true },
     });
+
+    if (vehicle && vehicle.status !== "active") {
+      throw new Error("Авто неактивне — заправка неможлива");
+    }
 
     const record = await prisma.fuelRecord.create({
       data: { ...data, createdById: userId },
