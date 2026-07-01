@@ -3,7 +3,7 @@ import { Plus, Fuel, Receipt, BarChart3, ListOrdered } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { VehicleCard } from "@/components/shared/fuel/vehicle-card";
+import { VehicleListClient } from "@/components/shared/fuel/vehicle-list-client";
 import { getVehicles, getVehicleStats } from "@root/lib/data/fuel";
 import { auth } from "@root/lib/auth";
 
@@ -93,33 +93,9 @@ export default async function FuelMain() {
 
       <Separator />
 
-      <div>
-        <h2 className="text-lg font-semibold tracking-tight mb-4">Автомобілі</h2>
-        {vehicles.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="rounded-full bg-muted p-4 mb-4">
-            <Fuel className="size-8 text-muted-foreground" />
-          </div>
-          <p className="text-lg font-medium">Автомобілів ще немає</p>
-          <p className="text-sm text-muted-foreground mb-4">
-            Додайте перший автомобіль роти
-          </p>
-          {canManage && (
-            <Link href="/fuel/vehicles/new">
-              <Button>
-                <Plus className="size-4 mr-1.5" />
-                Додати автомобіль
-              </Button>
-            </Link>
-          )}
-        </div>
-      ) : (
-        <div className="grid gap-6 auto-rows-fr grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {vehicles.map((v) => (
-            <VehicleCard key={v.id} vehicle={v} canManage={canManage} />
-          ))}
-        </div>
-      )}
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold tracking-tight">Автомобілі</h2>
+        <VehicleListClient vehicles={vehicles} canManage={canManage} />
       </div>
     </div>
   );

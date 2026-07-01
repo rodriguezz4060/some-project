@@ -61,11 +61,9 @@ export function FuelRecordForm({ vehicles, initialData, preselectedVehicleId }: 
   const watchedPpl = useWatch({ control: form.control, name: "pricePerLiter" });
   const watchedLiters = useWatch({ control: form.control, name: "liters" });
 
-  function autoCalculateTotal(litersVal: string, priceVal: string) {
-    const l = parseFloat(litersVal);
-    const ppl = parseFloat(priceVal);
-    if (l && ppl) {
-      form.setValue("totalCost", Math.round(l * ppl * 100) / 100, { shouldValidate: false });
+  function autoCalculateTotal(liters: number, pricePerLiter: number) {
+    if (liters > 0 && pricePerLiter > 0) {
+      form.setValue("totalCost", Math.round(liters * pricePerLiter * 100) / 100, { shouldValidate: false });
     }
   }
 
@@ -128,13 +126,13 @@ export function FuelRecordForm({ vehicles, initialData, preselectedVehicleId }: 
                 <FormItem><FormLabel>Тип пального</FormLabel><FormControl><Select onValueChange={field.onChange} value={field.value}><SelectTrigger className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")}><SelectValue placeholder="Оберіть пальне" /></SelectTrigger><SelectContent>{FUEL_TYPE_OPTIONS.map((opt) => (<SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>))}</SelectContent></Select></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="liters" render={({ field, fieldState }) => (
-                <FormItem><FormLabel>Кількість літрів</FormLabel><FormControl><Input type="number" step="0.01" value={field.value ?? ""} onChange={(e) => { const v = e.target.value; field.onChange(v ? Number(v) : undefined); autoCalculateTotal(v, String(watchedPpl ?? "")); }} placeholder="20.0" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Кількість літрів</FormLabel><FormControl><Input type="number" step="0.01" value={field.value ?? ""} onChange={(e) => { const v = Number(e.target.value); field.onChange(v || undefined); autoCalculateTotal(v, watchedPpl ?? 0); }} placeholder="20.0" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
               )} />
             </div>
 
             <div className="grid gap-4 sm:grid-cols-3">
               <FormField control={form.control} name="pricePerLiter" render={({ field, fieldState }) => (
-                <FormItem><FormLabel>Ціна за літр</FormLabel><FormControl><Input type="number" step="0.01" value={field.value ?? ""} onChange={(e) => { const v = e.target.value; field.onChange(v ? Number(v) : undefined); autoCalculateTotal(String(watchedLiters ?? ""), v); }} placeholder="53.50" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Ціна за літр</FormLabel><FormControl><Input type="number" step="0.01" value={field.value ?? ""} onChange={(e) => { const v = Number(e.target.value); field.onChange(v || undefined); autoCalculateTotal(watchedLiters ?? 0, v); }} placeholder="53.50" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="totalCost" render={({ field, fieldState }) => (
                 <FormItem><FormLabel>Загальна вартість</FormLabel><FormControl><Input type="number" step="0.01" value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)} placeholder="1070.00" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>

@@ -17,9 +17,10 @@ interface Props {
   records: FuelRecord[];
   canManage?: boolean;
   onDelete?: (id: number) => void;
+  hideVehicle?: boolean;
 }
 
-export function FuelRecordsTable({ records, canManage, onDelete }: Props) {
+export function FuelRecordsTable({ records, canManage, onDelete, hideVehicle }: Props) {
   if (records.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -37,7 +38,7 @@ export function FuelRecordsTable({ records, canManage, onDelete }: Props) {
         <TableHeader>
           <TableRow>
             <TableHead>Дата</TableHead>
-            <TableHead>Автомобіль</TableHead>
+            {!hideVehicle && <TableHead>Автомобіль</TableHead>}
             <TableHead>Пальне</TableHead>
             <TableHead>Літри</TableHead>
             <TableHead>Ціна/л</TableHead>
@@ -52,15 +53,17 @@ export function FuelRecordsTable({ records, canManage, onDelete }: Props) {
           {records.map((r) => (
             <TableRow key={r.id}>
               <TableCell className="whitespace-nowrap">{r.date}</TableCell>
-              <TableCell>
-                {r.vehicle ? (
-                  <Link href={`/fuel/vehicles/${r.vehicle.id}`} className="hover:underline font-medium">
-                    {r.vehicle.brand} {r.vehicle.model}
-                  </Link>
-                ) : (
-                  <span className="text-muted-foreground">—</span>
-                )}
-              </TableCell>
+              {!hideVehicle && (
+                <TableCell>
+                  {r.vehicle ? (
+                    <Link href={`/fuel/vehicles/${r.vehicle.id}`} className="hover:underline font-medium">
+                      {r.vehicle.brand} {r.vehicle.model}
+                    </Link>
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </TableCell>
+              )}
               <TableCell>
                 <Badge variant="outline" className="text-xs">
                   {FUEL_TYPE_LABELS[r.fuelType as keyof typeof FUEL_TYPE_LABELS] ?? r.fuelType}

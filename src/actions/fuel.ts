@@ -49,6 +49,7 @@ function compareFields(
   oldData: Record<string, unknown>,
   newData: Record<string, unknown>,
   fields: string[],
+  valueLabels?: Record<string, Record<string, string>>,
 ): Changes {
   const changes: Changes = {};
   for (const field of fields) {
@@ -57,7 +58,13 @@ function compareFields(
     const oldStr = oldVal == null ? "" : String(oldVal);
     const newStr = newVal == null ? "" : String(newVal);
     if (oldStr !== newStr) {
-      changes[getLabel(field)] = { old: oldStr || null, new: newStr || null };
+      let displayOld: string | null = oldStr || null;
+      let displayNew: string | null = newStr || null;
+      if (valueLabels?.[field]) {
+        displayOld = valueLabels[field][displayOld ?? ""] ?? displayOld;
+        displayNew = valueLabels[field][displayNew ?? ""] ?? displayNew;
+      }
+      changes[getLabel(field)] = { old: displayOld, new: displayNew };
     }
   }
   return changes;
@@ -86,20 +93,7 @@ export async function createVehicle(rawData: CreateVehicleData) {
   const data = parseVehicle(rawData);
 
   try {
-    const vehicle = await prisma.vehicle.create({
-      data: {
-        brand: data.brand,
-        model: data.model,
-        licensePlate: data.licensePlate,
-        type: data.type,
-        year: data.year,
-        vin: data.vin,
-        fuelType: data.fuelType,
-        tankCapacity: data.tankCapacity,
-        unit: data.unit,
-        notes: data.notes,
-      },
-    });
+    const vehicle = await prisma.vehicle.create({ data });
 
     await logCreate("Vehicle", vehicle.id, `Додав авто «${vehicle.brand} ${vehicle.model}» (${vehicle.licensePlate}), тип: ${getLabel(vehicle.type)}, підрозділ: ${vehicle.unit}`);
 
@@ -117,21 +111,7 @@ export async function updateVehicle(id: number, rawData: CreateVehicleData) {
   try {
     const oldVehicle = await prisma.vehicle.findUnique({ where: { id } });
 
-    const vehicle = await prisma.vehicle.update({
-      where: { id },
-      data: {
-        brand: data.brand,
-        model: data.model,
-        licensePlate: data.licensePlate,
-        type: data.type,
-        year: data.year,
-        vin: data.vin,
-        fuelType: data.fuelType,
-        tankCapacity: data.tankCapacity,
-        unit: data.unit,
-        notes: data.notes,
-      },
-    });
+    const vehicle = await prisma.vehicle.update({ where: { id }, data });
 
     if (oldVehicle) {
       const changes = compareFields(
@@ -197,20 +177,7 @@ export async function createFuelRecord(rawData: CreateFuelRecordData) {
     });
 
     const record = await prisma.fuelRecord.create({
-      data: {
-        vehicleId: data.vehicleId,
-        date: data.date,
-        fuelType: data.fuelType,
-        liters: data.liters,
-        pricePerLiter: data.pricePerLiter,
-        totalCost: data.totalCost,
-        mileage: data.mileage,
-        driverName: data.driverName,
-        invoiceNumber: data.invoiceNumber,
-        supplier: data.supplier,
-        purpose: data.purpose,
-        createdById: userId,
-      },
+      data: { ...data, createdById: userId },
     });
 
     const vehicleName = vehicle ? `${vehicle.brand} ${vehicle.model} (${vehicle.licensePlate})` : `#${data.vehicleId}`;
@@ -240,41 +207,15 @@ export async function updateFuelRecord(id: number, rawData: CreateFuelRecordData
       select: { brand: true, model: true, licensePlate: true },
     });
 
-    const record = await prisma.fuelRecord.update({
-      where: { id },
-      data: {
-        vehicleId: data.vehicleId,
-        date: data.date,
-        fuelType: data.fuelType,
-        liters: data.liters,
-        pricePerLiter: data.pricePerLiter,
-        totalCost: data.totalCost,
-        mileage: data.mileage,
-        driverName: data.driverName,
-        invoiceNumber: data.invoiceNumber,
-        supplier: data.supplier,
-        purpose: data.purpose,
-      },
-    });
+    const record = await prisma.fuelRecord.update({ where: { id }, data });
 
     if (oldRecord) {
-      const allFields = ["date", "fuelType", "liters", "pricePerLiter", "totalCost", "mileage", "driverName", "invoiceNumber", "supplier", "purpose"];
-      const changes: Changes = {};
-      for (const field of allFields) {
-        const oldVal = (oldRecord as Record<string, unknown>)[field];
-        const newVal = (data as Record<string, unknown>)[field];
-        const oldStr = oldVal == null ? "" : String(oldVal);
-        const newStr = newVal == null ? "" : String(newVal);
-        if (oldStr !== newStr) {
-          let displayOld = oldStr || null;
-          let displayNew = newStr || null;
-          if (field === "purpose") {
-            displayOld = PURPOSE_LABELS[displayOld ?? ""] ?? displayOld;
-            displayNew = PURPOSE_LABELS[displayNew ?? ""] ?? displayNew;
-          }
-          changes[getLabel(field)] = { old: displayOld, new: displayNew };
-        }
-      }
+      const changes = compareFields(
+        oldRecord as unknown as Record<string, unknown>,
+        data as unknown as Record<string, unknown>,
+        ["date", "fuelType", "liters", "pricePerLiter", "totalCost", "mileage", "driverName", "invoiceNumber", "supplier", "purpose"],
+        { purpose: PURPOSE_LABELS },
+      );
 
       const descriptions = Object.entries(changes).map(
         ([key, val]) => `змінив «${key}» з «${val.old ?? ""}» на «${val.new ?? ""}»`,

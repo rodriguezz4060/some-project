@@ -123,7 +123,7 @@ export default async function VehicleDetailPage({
 
       <div>
         <h2 className="text-lg font-semibold tracking-tight mb-4">Історія заправок</h2>
-        <FuelRecordsTable records={vehicle.fuelRecords ?? []} canManage={canManage} />
+        <FuelRecordsTable records={vehicle.fuelRecords ?? []} canManage={canManage} hideVehicle />
       </div>
     </div>
   );
