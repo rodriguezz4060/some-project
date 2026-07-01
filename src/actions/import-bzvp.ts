@@ -301,7 +301,7 @@ export async function importBzvp(
         where: { id: row.duplicate.id },
         data: prismaData,
       });
-      await logUpdate(
+      logUpdate(
         "BzvpPersonnel",
         row.duplicate.id,
         `Оновлено з імпорту: «${row.data.fullName}»`,
@@ -311,7 +311,7 @@ export async function importBzvp(
       updated++;
     } else {
       const person = await prisma.bzvpPersonnel.create({ data: prismaData });
-      await logCreate(
+      logCreate(
         "BzvpPersonnel",
         person.id,
         `Імпортовано: «${person.fullName}»`,

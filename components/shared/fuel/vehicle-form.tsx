@@ -26,7 +26,7 @@ export function VehicleForm({ initialData }: Props) {
   const [loading, setLoading] = useState(false);
 
   const form = useForm<CreateVehicleData>({
-    resolver: createZodResolver(createVehicleSchema),
+    resolver: createZodResolver<CreateVehicleData>(createVehicleSchema),
     defaultValues: {
       brand: initialData?.brand ?? "",
       model: initialData?.model ?? "",

@@ -14,16 +14,26 @@ export default async function AdminDashboardPage() {
   const session = await auth();
   if (!session?.user || session.user.role !== "admin") redirect("/");
 
-  const totalLogs = await prisma.auditLog.count();
-  const createCount = await prisma.auditLog.count({ where: { action: "CREATE" } });
-  const updateCount = await prisma.auditLog.count({ where: { action: "UPDATE" } });
-  const deleteCount = await prisma.auditLog.count({ where: { action: "DELETE" } });
+  const [byAction, recentLogs] = await Promise.all([
+    prisma.auditLog.groupBy({
+      by: ["action"],
+      _count: { id: true },
+    }),
+    prisma.auditLog.findMany({
+      take: 5,
+      orderBy: { createdAt: "desc" },
+      include: { user: { select: { name: true, email: true } } },
+    }),
+  ]);
 
-  const recentLogs = await prisma.auditLog.findMany({
-    take: 5,
-    orderBy: { createdAt: "desc" },
-    include: { user: { select: { name: true, email: true } } },
-  });
+  const countMap: Record<string, number> = {};
+  for (const row of byAction) {
+    countMap[row.action] = row._count.id;
+  }
+  const totalLogs = byAction.reduce((sum, r) => sum + r._count.id, 0);
+  const createCount = countMap.CREATE ?? 0;
+  const updateCount = countMap.UPDATE ?? 0;
+  const deleteCount = countMap.DELETE ?? 0;
 
   return (
     <div className="p-6 space-y-6">

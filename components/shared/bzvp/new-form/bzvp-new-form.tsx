@@ -70,7 +70,7 @@ export function BzvpForm({ initialData }: Props) {
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<FormValues>({
-    resolver: createZodResolver(bzvpSchema),
+    resolver: createZodResolver<FormValues>(bzvpSchema),
     defaultValues: getDefaultValues(initialData),
   });
 

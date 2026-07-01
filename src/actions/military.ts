@@ -77,7 +77,7 @@ export async function createMilitary(rawData: CreateMilitaryData) {
       },
     });
 
-    await logCreate(
+    logCreate(
       "MilitaryPersonnel",
       person.id,
       `Створив анкету військовослужбовця «${person.fullName}»`,
@@ -113,76 +113,74 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
 
     const person = await prisma.militaryPersonnel.update({ where: { id }, data: flat });
 
-    async function syncItems<T extends { id?: number | null }>(
-      deleteMany: (args: { where: { id: { in: number[] } } }) => Promise<unknown>,
-      createMany: (args: { data: Record<string, unknown>[] }) => Promise<unknown>,
-      update: (args: { where: { id: number }; data: Record<string, unknown> }) => Promise<unknown>,
+    async function syncItems<TData extends Record<string, unknown>>(
+      deleteMany: (ids: number[]) => Promise<unknown>,
+      createMany: (data: TData[]) => Promise<unknown>,
+      update: (id: number, data: Partial<TData>) => Promise<unknown>,
       oldItems: ({ id: number } & Record<string, unknown>)[],
-      newItems: T[],
-      extraFields: Record<string, unknown>,
+      newItems: TData[],
     ) {
       const newIds = new Set(newItems.map((item) => item.id).filter(Boolean) as number[]);
       const toDelete = oldItems.filter((item) => !newIds.has(item.id)).map((item) => item.id);
 
       if (toDelete.length > 0) {
-        await deleteMany({ where: { id: { in: toDelete } } });
+        await deleteMany(toDelete);
       }
 
-      const toCreate: Record<string, unknown>[] = [];
       for (const item of newItems) {
-        const { id: itemId, ...fields } = item as Record<string, unknown>;
+        const { id: itemId, ...fields } = item;
         if (itemId && oldItems.some((o) => o.id === itemId)) {
-          await update({ where: { id: itemId as number }, data: fields });
-        } else {
-          toCreate.push({ ...extraFields, ...fields });
+          await update(itemId as number, fields as Partial<TData>);
         }
       }
+
+      const toCreate = newItems.filter((item) => !item.id);
       if (toCreate.length > 0) {
-        await createMany({ data: toCreate });
+        await createMany(toCreate);
       }
     }
 
     if (medicalRecords && oldPerson) {
+      const withFk = medicalRecords.map((r) => ({ ...r, personnelId: id }));
       await syncItems(
-        prisma.medicalRecord.deleteMany.bind(prisma.medicalRecord),
-        prisma.medicalRecord.createMany.bind(prisma.medicalRecord),
-        prisma.medicalRecord.update.bind(prisma.medicalRecord),
+        (ids) => prisma.medicalRecord.deleteMany({ where: { id: { in: ids } } }),
+        (data) => prisma.medicalRecord.createMany({ data }),
+        (itemId, data) => prisma.medicalRecord.update({ where: { id: itemId }, data }),
         oldPerson.medicalRecords,
-        medicalRecords,
-        { personnelId: id },
+        withFk,
       );
     }
 
     if (achievements && oldPerson) {
+      const withFk = achievements.map((r) => ({ ...r, personnelId: id }));
       await syncItems(
-        prisma.achievement.deleteMany.bind(prisma.achievement),
-        prisma.achievement.createMany.bind(prisma.achievement),
-        prisma.achievement.update.bind(prisma.achievement),
+        (ids) => prisma.achievement.deleteMany({ where: { id: { in: ids } } }),
+        (data) => prisma.achievement.createMany({ data }),
+        (itemId, data) => prisma.achievement.update({ where: { id: itemId }, data }),
         oldPerson.achievements,
-        achievements,
-        { personnelId: id },
+        withFk,
       );
     }
 
     if (equipment && oldPerson) {
+      const withFk = equipment.map((r) => ({ ...r, personnelId: id }));
       await syncItems(
-        prisma.equipment.deleteMany.bind(prisma.equipment),
-        prisma.equipment.createMany.bind(prisma.equipment),
-        prisma.equipment.update.bind(prisma.equipment),
+        (ids) => prisma.equipment.deleteMany({ where: { id: { in: ids } } }),
+        (data) => prisma.equipment.createMany({ data }),
+        (itemId, data) => prisma.equipment.update({ where: { id: itemId }, data }),
         oldPerson.equipment,
-        equipment,
-        { personnelId: id },
+        withFk,
       );
     }
 
     if (positionHistory && oldPerson) {
+      const withFk = positionHistory.map((r) => ({ ...r, personnelId: id }));
       await syncItems(
-        prisma.positionEntry.deleteMany.bind(prisma.positionEntry),
-        prisma.positionEntry.createMany.bind(prisma.positionEntry),
-        prisma.positionEntry.update.bind(prisma.positionEntry),
+        (ids) => prisma.positionEntry.deleteMany({ where: { id: { in: ids } } }),
+        (data) => prisma.positionEntry.createMany({ data }),
+        (itemId, data) => prisma.positionEntry.update({ where: { id: itemId }, data }),
         oldPerson.positionHistory,
-        positionHistory,
-        { personnelId: id },
+        withFk,
       );
     }
 
@@ -282,7 +280,7 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
     }
 
     if (Object.keys(allChanges).length > 0) {
-      await logUpdate("MilitaryPersonnel", id, description, allChanges, userId);
+      logUpdate("MilitaryPersonnel", id, description, allChanges, userId);
     }
 
     revalidatePath("/military");
@@ -300,7 +298,7 @@ export async function deleteMilitary(id: number) {
   try {
     const person = await prisma.militaryPersonnel.delete({ where: { id } });
 
-    await logDelete(
+    logDelete(
       "MilitaryPersonnel",
       id,
       `Видалив анкету військовослужбовця «${person.fullName}»`,

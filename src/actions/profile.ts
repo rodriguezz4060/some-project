@@ -76,6 +76,6 @@ export async function updateProfile(rawData: UpdateProfileData) {
     })
     .join(", ");
 
-  await logUpdate("User", userId, desc, changes, userId);
+  logUpdate("User", userId, desc, changes, userId);
   revalidatePath("/profile");
 }

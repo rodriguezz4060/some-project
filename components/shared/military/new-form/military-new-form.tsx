@@ -75,7 +75,7 @@ export function MilitaryForm({ initialData }: Props) {
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<CreateMilitaryData>({
-    resolver: createZodResolver(createMilitarySchema),
+    resolver: createZodResolver<CreateMilitaryData>(createMilitarySchema),
     defaultValues: getDefaultValues(initialData),
   });
 

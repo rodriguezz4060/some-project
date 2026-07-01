@@ -39,22 +39,24 @@ async function writeLog(
   }
 }
 
-export async function logCreate(
+export function logCreate(
   entityType: string,
   entityId: number,
   description: string,
   userId?: number,
 ) {
   if (!userId) {
-    const session = await auth();
-    userId = (await resolveUserId(session)) ?? undefined;
+    auth().then(async (session) => {
+      const uid = await resolveUserId(session);
+      if (uid) writeLog(uid, "CREATE", entityType, entityId, description);
+    });
+    return;
   }
-  if (!userId) return;
 
-  await writeLog(userId, "CREATE", entityType, entityId, description);
+  writeLog(userId, "CREATE", entityType, entityId, description);
 }
 
-export async function logUpdate(
+export function logUpdate(
   entityType: string,
   entityId: number,
   description: string,
@@ -62,27 +64,31 @@ export async function logUpdate(
   userId?: number,
 ) {
   if (!userId) {
-    const session = await auth();
-    userId = (await resolveUserId(session)) ?? undefined;
+    auth().then(async (session) => {
+      const uid = await resolveUserId(session);
+      if (uid) writeLog(uid, "UPDATE", entityType, entityId, description, changes);
+    });
+    return;
   }
-  if (!userId) return;
 
-  await writeLog(userId, "UPDATE", entityType, entityId, description, changes);
+  writeLog(userId, "UPDATE", entityType, entityId, description, changes);
 }
 
-export async function logDelete(
+export function logDelete(
   entityType: string,
   entityId: number,
   description: string,
   userId?: number,
 ) {
   if (!userId) {
-    const session = await auth();
-    userId = (await resolveUserId(session)) ?? undefined;
+    auth().then(async (session) => {
+      const uid = await resolveUserId(session);
+      if (uid) writeLog(uid, "DELETE", entityType, entityId, description);
+    });
+    return;
   }
-  if (!userId) return;
 
-  await writeLog(userId, "DELETE", entityType, entityId, description);
+  writeLog(userId, "DELETE", entityType, entityId, description);
 }
 
 export interface AuditLogFilter {

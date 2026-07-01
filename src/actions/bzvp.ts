@@ -73,7 +73,7 @@ export async function createBzvp(rawData: BzvpData) {
       },
     });
 
-    await logCreate(
+    logCreate(
       "BzvpPersonnel",
       person.id,
       `Створив анкету БЗВП «${person.fullName}»`,
@@ -129,7 +129,7 @@ export async function updateBzvp(id: number, rawData: BzvpData) {
           description = `Зміни в картці БЗВП «${person.fullName}»: ${descriptions.slice(0, 3).join("; ")} та ще ${descriptions.length - 3} змін`;
         }
 
-        await logUpdate("BzvpPersonnel", id, description, changes, userId);
+        logUpdate("BzvpPersonnel", id, description, changes, userId);
       }
     }
 
@@ -147,7 +147,7 @@ export async function deleteBzvp(id: number) {
   try {
     const person = await prisma.bzvpPersonnel.delete({ where: { id } });
 
-    await logDelete(
+    logDelete(
       "BzvpPersonnel",
       id,
       `Видалив анкету БЗВП «${person.fullName}»`,

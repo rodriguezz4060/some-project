@@ -58,7 +58,7 @@ export async function createVehicle(rawData: CreateVehicleData) {
     const vehicle = await prisma.vehicle.create({ data });
 
     const typeLabel = VEHICLE_TYPE_LABELS[vehicle.type as keyof typeof VEHICLE_TYPE_LABELS] ?? vehicle.type;
-    await logCreate("Vehicle", vehicle.id, `Додав авто «${vehicle.brand} ${vehicle.model}» (${vehicle.licensePlate}), тип: ${typeLabel}, підрозділ: ${vehicle.unit}`, userId);
+    logCreate("Vehicle", vehicle.id, `Додав авто «${vehicle.brand} ${vehicle.model}» (${vehicle.licensePlate}), тип: ${typeLabel}, підрозділ: ${vehicle.unit}`, userId);
 
     revalidatePath("/fuel");
     return { id: vehicle.id, brand: vehicle.brand, model: vehicle.model, licensePlate: vehicle.licensePlate };
@@ -98,7 +98,7 @@ export async function updateVehicle(id: number, rawData: CreateVehicleData) {
         description = `Оновлено авто «${vehicle.brand} ${vehicle.model}»: ${descriptions.slice(0, 3).join("; ")} та ще ${descriptions.length - 3} змін`;
       }
 
-      await logUpdate("Vehicle", id, description, changes, userId);
+      logUpdate("Vehicle", id, description, changes, userId);
     }
 
     revalidatePath("/fuel");
@@ -121,7 +121,7 @@ export async function setVehicleStatus(id: number, status: string) {
     });
 
     const statusLabel = VEHICLE_STATUS_LABELS[status as keyof typeof VEHICLE_STATUS_LABELS] ?? status;
-    await logUpdate("Vehicle", id, `Змінив статус авто «${vehicle.brand} ${vehicle.model}» на «${statusLabel}»`, undefined, userId);
+    logUpdate("Vehicle", id, `Змінив статус авто «${vehicle.brand} ${vehicle.model}» на «${statusLabel}»`, undefined, userId);
 
     revalidatePath("/fuel");
     revalidatePath(`/fuel/vehicles/${id}`);
@@ -153,7 +153,7 @@ export async function createFuelRecord(rawData: CreateFuelRecordData) {
     });
 
     const vehicleName = vehicle ? `${vehicle.brand} ${vehicle.model} (${vehicle.licensePlate})` : `#${data.vehicleId}`;
-    await logCreate("FuelRecord", record.id, `Заправка: ${data.liters.toFixed(1)} л на ${vehicleName}, водій «${data.driverName}»`, userId);
+    logCreate("FuelRecord", record.id, `Заправка: ${data.liters.toFixed(1)} л на ${vehicleName}, водій «${data.driverName}»`, userId);
 
     revalidatePath("/fuel");
     revalidatePath(`/fuel/vehicles/${data.vehicleId}`);
@@ -202,7 +202,7 @@ export async function updateFuelRecord(id: number, rawData: CreateFuelRecordData
         description = `Оновлено заправку №${id} (${vehicleName}): ${descriptions.slice(0, 3).join("; ")} та ще ${descriptions.length - 3} змін`;
       }
 
-      await logUpdate("FuelRecord", id, description, changes, userId);
+      logUpdate("FuelRecord", id, description, changes, userId);
     }
 
     revalidatePath("/fuel");
@@ -225,7 +225,7 @@ export async function deleteFuelRecord(id: number) {
     });
 
     const vehicleName = `${record.vehicle.brand} ${record.vehicle.model} (${record.vehicle.licensePlate})`;
-    await logDelete("FuelRecord", id, `Видалив заправку: ${record.liters.toFixed(1)} л на ${vehicleName}, водій «${record.driverName}»`, userId);
+    logDelete("FuelRecord", id, `Видалив заправку: ${record.liters.toFixed(1)} л на ${vehicleName}, водій «${record.driverName}»`, userId);
 
     revalidatePath("/fuel");
     revalidatePath(`/fuel/vehicles/${record.vehicleId}`);
