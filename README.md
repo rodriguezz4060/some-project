@@ -106,19 +106,24 @@ src/
     prisma.ts                 # Prisma client
     utils.ts                  # cn() та інші утиліти
     audit.ts                  # система аудиту (лог дій)
-    middleware-auth.ts         # допоміжні функції для middleware
+    middleware-auth.ts         # NextAuth для Edge middleware (без провайдерів)
     detection-colors.ts        # кольори для детекції
     data/                     # дані для фільтрів/довідників
+hooks/                        # кастомні React хуки (use-collapsed, use-debounce, use-mobile)
+types/
+  next-auth.d.ts               # розширення типів NextAuth (role, id)
 proxy.ts                      # захист маршрутів (auth middleware)
 ```
 
 ## Система аутентифікації
 
 - **NextAuth v5** з Credentials provider + JWT стратегією (без сесій у БД)
+- Два екземпляри NextAuth: `auth.ts` (основний) та `middleware-auth.ts` (для Edge-сумісності, без провайдерів)
+- Обидва мають `authorized` callback — інакше middleware не працює
 - Три ролі: `admin`, `moderator`, `user`
 - Middleware (`proxy.ts`) захищає маршрути:
   - `/military/*`, `/bzvp/*` — автентифікація обов'язкова
-  - `/admin/*` — тільки `admin`
+  - `/admin/*` — `admin` або `moderator`
   - `/fuel/*`, `/profile` — автентифікація обов'язкова
 - Server Actions захищені — `requireModerator()` для створення/редагування, `requireAdmin()` для управління користувачами
 
