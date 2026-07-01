@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, useWatch, type Resolver } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { cn } from "@root/lib/utils";
+import { useForm, useWatch } from "react-hook-form";
+import { cn, createZodResolver } from "@root/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,12 +42,12 @@ export function FuelRecordForm({ vehicles, initialData, preselectedVehicleId }: 
   const [loading, setLoading] = useState(false);
 
   const form = useForm<CreateFuelRecordData>({
-    resolver: zodResolver(createFuelRecordSchema) as unknown as Resolver<CreateFuelRecordData>,
+    resolver: createZodResolver(createFuelRecordSchema),
     defaultValues: {
       vehicleId: initialData?.vehicleId ?? preselectedVehicleId ?? 0,
       date: initialData?.date ?? new Date().toISOString().split("T")[0],
       fuelType: initialData?.fuelType ?? undefined,
-      liters: initialData?.liters ?? 0,
+      liters: initialData?.liters ?? undefined,
       pricePerLiter: initialData?.pricePerLiter ?? undefined,
       totalCost: initialData?.totalCost ?? undefined,
       mileage: initialData?.mileage ?? undefined,
@@ -123,13 +122,13 @@ export function FuelRecordForm({ vehicles, initialData, preselectedVehicleId }: 
             <div className="grid gap-4 sm:grid-cols-2">
               <SelectField control={form.control} name="fuelType" label="Тип пального" options={FUEL_TYPE_OPTIONS} placeholder="Оберіть пальне" />
               <FormField control={form.control} name="liters" render={({ field, fieldState }) => (
-                <FormItem><FormLabel>Кількість літрів</FormLabel><FormControl><Input type="number" step="0.01" value={field.value ?? ""} onChange={(e) => { const v = Number(e.target.value); field.onChange(v || undefined); autoCalculateTotal(v, watchedPpl ?? 0); }} placeholder="20.0" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Кількість літрів</FormLabel><FormControl><Input type="number" step="0.01" value={field.value ?? ""} onChange={(e) => { const val = e.target.value; if (val === "") { field.onChange(undefined); return; } const v = Number(val); field.onChange(v); autoCalculateTotal(v, watchedPpl ?? 0); }} placeholder="20.0" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
               )} />
             </div>
 
             <div className="grid gap-4 sm:grid-cols-3">
               <FormField control={form.control} name="pricePerLiter" render={({ field, fieldState }) => (
-                <FormItem><FormLabel>Ціна за літр</FormLabel><FormControl><Input type="number" step="0.01" value={field.value ?? ""} onChange={(e) => { const v = Number(e.target.value); field.onChange(v || undefined); autoCalculateTotal(watchedLiters ?? 0, v); }} placeholder="53.50" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Ціна за літр</FormLabel><FormControl><Input type="number" step="0.01" value={field.value ?? ""} onChange={(e) => { const val = e.target.value; if (val === "") { field.onChange(undefined); return; } const v = Number(val); field.onChange(v); autoCalculateTotal(watchedLiters ?? 0, v); }} placeholder="53.50" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
               )} />
               <NumberField control={form.control} name="totalCost" label="Загальна вартість" placeholder="1070.00" step="0.01" />
               <NumberField control={form.control} name="mileage" label="Пробіг (км)" placeholder="125000" />

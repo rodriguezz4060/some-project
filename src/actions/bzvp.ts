@@ -59,9 +59,9 @@ function getLabel(key: string): string {
   return fieldLabels[key] ?? key;
 }
 
-function compareFields(
-  oldData: Record<string, unknown>,
-  newData: Record<string, unknown>,
+function compareFields<T extends Record<string, unknown>>(
+  oldData: T,
+  newData: T,
   fields: string[],
 ): Changes {
   const changes: Changes = {};
@@ -136,8 +136,8 @@ export async function updateBzvp(id: number, rawData: BzvpData) {
 
     if (oldPerson) {
       const changes = compareFields(
-        oldPerson as unknown as Record<string, unknown>,
-        data as unknown as Record<string, unknown>,
+        oldPerson,
+        data,
         allFields,
       );
 

@@ -13,15 +13,25 @@ const SEARCH_FIELDS: (keyof MilitaryPersonnel)[] = [
 
 function toMilitaryPersonnel(raw: Record<string, unknown>): MilitaryPersonnel {
   return {
-    ...raw,
+    id: raw.id as number,
+    fullName: raw.fullName as string,
     rank: raw.rank as MilitaryPersonnel["rank"],
+    position: raw.position as string,
+    unit: raw.unit as string,
     status: raw.status as StatusType,
-    medicalRecords: (raw.medicalRecords as unknown[]) ?? undefined,
-    achievements: (raw.achievements as unknown[]) ?? undefined,
-    equipment: (raw.equipment as unknown[]) ?? undefined,
-    positionHistory: (raw.positionHistory as unknown[]) ?? undefined,
+    birthDate: raw.birthDate as string,
+    photo: (raw.photo as string | null) ?? null,
+    experience: (raw.experience as number | null) ?? null,
+    missions: (raw.missions as number | null) ?? null,
+    phone: (raw.phone as string | null) ?? null,
+    email: (raw.email as string | null) ?? null,
+    lastActiveDays: (raw.lastActiveDays as number | null) ?? null,
+    medicalRecords: (raw.medicalRecords ?? []) as unknown[],
+    achievements: (raw.achievements ?? []) as unknown[],
+    equipment: (raw.equipment ?? []) as unknown[],
+    positionHistory: (raw.positionHistory ?? []) as unknown[],
     clothingSizes: raw.clothingSizes ?? undefined,
-  } as unknown as MilitaryPersonnel;
+  };
 }
 
 export async function getTotalMilitaryCount(): Promise<number> {

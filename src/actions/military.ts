@@ -61,9 +61,9 @@ function parseMilitary(rawData: CreateMilitaryData) {
   return parsed.data;
 }
 
-function compareFields(
-  oldData: Record<string, unknown>,
-  newData: Record<string, unknown>,
+function compareFields<T extends Record<string, unknown>>(
+  oldData: T,
+  newData: T,
   fields: string[],
 ): Changes {
   const changes: Changes = {};
@@ -235,8 +235,8 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
 
     if (oldPerson) {
       const mainFieldChanges = compareFields(
-        oldPerson as unknown as Record<string, unknown>,
-        data as unknown as Record<string, unknown>,
+        oldPerson,
+        data,
         ["fullName", "rank", "position", "unit", "status", "birthDate", "phone", "email", "experience", "missions", "lastActiveDays"],
       );
       for (const [key, val] of Object.entries(mainFieldChanges)) {
@@ -288,8 +288,8 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
 
       if (clothingSizes && oldPerson.clothingSizes) {
         const result = compareFields(
-          oldPerson.clothingSizes as unknown as Record<string, unknown>,
-          clothingSizes as unknown as Record<string, unknown>,
+          oldPerson.clothingSizes,
+          clothingSizes,
           ["height", "chest", "waist", "shoes", "headgear", "uniform"],
         );
         Object.assign(allChanges, result);

@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, useFieldArray, type Resolver } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { cn } from "@root/lib/utils";
+import { useForm, useFieldArray } from "react-hook-form";
+import { cn, createZodResolver } from "@root/lib/utils";
 import { Save, Loader2, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -129,7 +128,7 @@ export function MilitaryForm({ initialData }: Props) {
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<CreateMilitaryData>({
-    resolver: zodResolver(createMilitarySchema) as unknown as Resolver<CreateMilitaryData>,
+    resolver: createZodResolver(createMilitarySchema),
     defaultValues: getDefaultValues(initialData),
   });
 

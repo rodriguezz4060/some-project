@@ -50,7 +50,7 @@ export async function getFilteredBzvp(
     personnel: personnel.map((p) => ({
       ...p,
       status: toBzvpStatus(p.status),
-    })) as unknown as BzvpPersonnel[],
+    })) as BzvpPersonnel[],
     count: personnel.length,
   };
 }
@@ -58,5 +58,5 @@ export async function getFilteredBzvp(
 export async function getBzvpPersonnelById(id: number): Promise<BzvpPersonnel | null> {
   const p = await prisma.bzvpPersonnel.findUnique({ where: { id } });
   if (!p) return null;
-  return { ...p, status: toBzvpStatus(p.status) } as unknown as BzvpPersonnel;
+  return { ...p, status: toBzvpStatus(p.status) } as BzvpPersonnel;
 }

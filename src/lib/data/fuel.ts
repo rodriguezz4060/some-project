@@ -12,7 +12,7 @@ export async function getVehicles(): Promise<Vehicle[]> {
   });
 
   return vehicles.map((v) => {
-    const records = v.fuelRecords as unknown as FuelRecord[];
+    const records = v.fuelRecords as FuelRecord[];
     const totalLiters = records.reduce((sum, r) => sum + r.liters, 0);
     const totalCost = records.reduce((sum, r) => sum + (r.totalCost ?? 0), 0);
 
@@ -29,7 +29,7 @@ export async function getVehicles(): Promise<Vehicle[]> {
         recordCount: records.length,
         lastRecordDate: records.length > 0 ? records[0].date : null,
       },
-    } as unknown as Vehicle;
+    } as Vehicle;
   });
 }
 
@@ -57,14 +57,14 @@ export async function getVehicleById(id: number): Promise<Vehicle | null> {
     vin: v.vin ?? null,
     tankCapacity: v.tankCapacity ?? null,
     notes: v.notes ?? null,
-    fuelRecords: v.fuelRecords as unknown as FuelRecord[],
+    fuelRecords: v.fuelRecords as FuelRecord[],
     _fuelSummary: {
       totalLiters,
       totalCost,
       recordCount: v.fuelRecords.length,
       lastRecordDate: v.fuelRecords.length > 0 ? v.fuelRecords[0].date : null,
     },
-  } as unknown as Vehicle;
+  } as Vehicle;
 }
 
 export async function getFuelRecords(options?: {
@@ -94,7 +94,7 @@ export async function getFuelRecords(options?: {
     },
   });
 
-  return records as unknown as FuelRecord[];
+  return records as FuelRecord[];
 }
 
 export async function getFuelRecordById(id: number): Promise<FuelRecord | null> {
@@ -106,7 +106,7 @@ export async function getFuelRecordById(id: number): Promise<FuelRecord | null> 
     },
   });
 
-  return r as unknown as FuelRecord | null;
+  return r as FuelRecord | null;
 }
 
 export async function getVehicleStats() {

@@ -2,14 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, type Resolver } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { cn, createZodResolver } from "@root/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FormProvider } from "@/components/ui/form";
-import { cn } from "@root/lib/utils";
 import { Input } from "@/components/ui/input";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { FormProvider, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { TextField, NumberField, SelectField, TextareaField } from "@/components/shared/form-fields";
 import { toast } from "sonner";
 import { createVehicle, updateVehicle } from "@root/actions/fuel";
@@ -28,7 +26,7 @@ export function VehicleForm({ initialData }: Props) {
   const [loading, setLoading] = useState(false);
 
   const form = useForm<CreateVehicleData>({
-    resolver: zodResolver(createVehicleSchema) as unknown as Resolver<CreateVehicleData>,
+    resolver: createZodResolver(createVehicleSchema),
     defaultValues: {
       brand: initialData?.brand ?? "",
       model: initialData?.model ?? "",

@@ -45,9 +45,9 @@ function getLabel(key: string): string {
 
 type Changes = Record<string, { old: string | null; new: string | null }>;
 
-function compareFields(
-  oldData: Record<string, unknown>,
-  newData: Record<string, unknown>,
+function compareFields<T extends Record<string, unknown>>(
+  oldData: T,
+  newData: T,
   fields: string[],
   valueLabels?: Record<string, Record<string, string>>,
 ): Changes {
@@ -115,8 +115,8 @@ export async function updateVehicle(id: number, rawData: CreateVehicleData) {
 
     if (oldVehicle) {
       const changes = compareFields(
-        oldVehicle as unknown as Record<string, unknown>,
-        data as unknown as Record<string, unknown>,
+        oldVehicle,
+        data,
         ["brand", "model", "licensePlate", "type", "year", "vin", "fuelType", "tankCapacity", "unit", "notes"],
       );
 
@@ -211,8 +211,8 @@ export async function updateFuelRecord(id: number, rawData: CreateFuelRecordData
 
     if (oldRecord) {
       const changes = compareFields(
-        oldRecord as unknown as Record<string, unknown>,
-        data as unknown as Record<string, unknown>,
+        oldRecord,
+        data,
         ["date", "fuelType", "liters", "pricePerLiter", "totalCost", "mileage", "driverName", "invoiceNumber", "supplier", "purpose"],
         { purpose: PURPOSE_LABELS },
       );
