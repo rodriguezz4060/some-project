@@ -3,20 +3,11 @@
 import { prisma } from "@root/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { logCreate, logUpdate, logDelete } from "@root/lib/audit";
-import { auth } from "@root/lib/auth";
-import { redirect } from "next/navigation";
+import { requireModerator } from "@root/lib/auth-guards";
+import { compareFields } from "@root/lib/diff";
 import { bzvpSchema, type BzvpData } from "@root/lib/schemas/bzvp";
 
-async function requireModerator() {
-  const session = await auth();
-  if (!session?.user || (session.user.role !== "admin" && session.user.role !== "moderator")) {
-    redirect("/");
-  }
-}
-
-type Changes = Record<string, { old: string | null; new: string | null }>;
-
-const fieldLabels: Record<string, string> = {
+export const fieldLabels: Record<string, string> = {
   fullName: "ПІБ",
   rank: "Звання",
   birthDate: "Дата народження",
@@ -54,28 +45,6 @@ const fieldLabels: Record<string, string> = {
   trainingPeriod: "Період навчання",
   specialization: "Спеціалізація",
 };
-
-function getLabel(key: string): string {
-  return fieldLabels[key] ?? key;
-}
-
-function compareFields<T extends Record<string, unknown>>(
-  oldData: T,
-  newData: T,
-  fields: string[],
-): Changes {
-  const changes: Changes = {};
-  for (const field of fields) {
-    const oldVal = oldData[field];
-    const newVal = newData[field];
-    const oldStr = oldVal == null ? "" : String(oldVal);
-    const newStr = newVal == null ? "" : String(newVal);
-    if (oldStr !== newStr) {
-      changes[getLabel(field)] = { old: oldStr || null, new: newStr || null };
-    }
-  }
-  return changes;
-}
 
 const allFields = Object.keys(bzvpSchema.shape);
 
@@ -139,6 +108,7 @@ export async function updateBzvp(id: number, rawData: BzvpData) {
         oldPerson,
         data,
         allFields,
+        fieldLabels,
       );
 
       if (Object.keys(changes).length > 0) {

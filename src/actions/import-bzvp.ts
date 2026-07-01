@@ -4,17 +4,9 @@ import * as XLSX from "xlsx";
 import { prisma } from "@root/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { logCreate, logUpdate } from "@root/lib/audit";
-import { auth } from "@root/lib/auth";
-import { redirect } from "next/navigation";
 import { z } from "zod";
+import { requireModerator } from "@root/lib/auth-guards";
 import { FIELD_LABELS, type BzvpFieldKey } from "@/components/shared/bzvp/fields";
-
-async function requireModerator() {
-  const session = await auth();
-  if (!session?.user || (session.user.role !== "admin" && session.user.role !== "moderator")) {
-    redirect("/");
-  }
-}
 
 const COLUMN_ALIASES: Record<string, string> = {
   "піб": "fullName",

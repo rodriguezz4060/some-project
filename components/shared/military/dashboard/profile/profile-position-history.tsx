@@ -1,5 +1,6 @@
 import * as React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { parseDate } from "@root/lib/utils/dates";
 import type { PositionEntry } from "../../types";
 
 interface Props {
@@ -9,15 +10,6 @@ interface Props {
 export function ProfilePositionHistory({ history }: Props) {
   if (!history || history.length === 0) {
     return null;
-  }
-
-  function parseDate(dateStr: string): number {
-    if (!dateStr) return 0;
-    const iso = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (iso) return new Date(+iso[1], +iso[2] - 1, +iso[3]).getTime();
-    const ukr = dateStr.match(/^(\d{2})\.(\d{4})$/);
-    if (ukr) return new Date(+ukr[2], +ukr[1] - 1, 1).getTime();
-    return new Date(dateStr).getTime() || 0;
   }
 
   const sorted = [...history].sort(

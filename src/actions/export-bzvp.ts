@@ -1,15 +1,7 @@
 "use server";
 
 import { prisma } from "@root/lib/prisma";
-import { auth } from "@root/lib/auth";
-import { redirect } from "next/navigation";
-
-async function requireModerator() {
-  const session = await auth();
-  if (!session?.user || (session.user.role !== "admin" && session.user.role !== "moderator")) {
-    redirect("/");
-  }
-}
+import { requireModerator } from "@root/lib/auth-guards";
 
 export async function exportBzvpData(
   fields: string[],

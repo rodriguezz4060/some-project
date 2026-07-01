@@ -3,21 +3,13 @@
 import { prisma } from "@root/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { logCreate, logUpdate, logDelete } from "@root/lib/audit";
-import { auth } from "@root/lib/auth";
-import { redirect } from "next/navigation";
+import { requireModerator } from "@root/lib/auth-guards";
+import { parseDate } from "@root/lib/utils/dates";
+import { compareFields, compareItemArrays, type Changes } from "@root/lib/diff";
 import { createMilitarySchema } from "@root/lib/schemas/military";
 import type { CreateMilitaryData } from "@root/lib/schemas/military";
 
-async function requireModerator() {
-  const session = await auth();
-  if (!session?.user || (session.user.role !== "admin" && session.user.role !== "moderator")) {
-    redirect("/");
-  }
-}
-
-type Changes = Record<string, { old: string | null; new: string | null }>;
-
-const fieldLabels: Record<string, string> = {
+export const fieldLabels: Record<string, string> = {
   fullName: "ПІБ",
   rank: "Звання",
   position: "Посада",
@@ -49,80 +41,12 @@ const fieldLabels: Record<string, string> = {
   uniform: "Розмір форми",
 };
 
-function getLabel(key: string): string {
-  return fieldLabels[key] ?? key;
-}
-
 function parseMilitary(rawData: CreateMilitaryData) {
   const parsed = createMilitarySchema.safeParse(rawData);
   if (!parsed.success) {
     throw new Error(parsed.error.issues.map((i) => i.message).join("; "));
   }
   return parsed.data;
-}
-
-function compareFields<T extends Record<string, unknown>>(
-  oldData: T,
-  newData: T,
-  fields: string[],
-): Changes {
-  const changes: Changes = {};
-  for (const field of fields) {
-    const oldVal = oldData[field];
-    const newVal = newData[field];
-    const oldStr = oldVal == null ? "" : String(oldVal);
-    const newStr = newVal == null ? "" : String(newVal);
-    if (oldStr !== newStr) {
-      changes[getLabel(field)] = { old: oldStr || null, new: newStr || null };
-    }
-  }
-  return changes;
-}
-
-function compareItemArrays<T extends Record<string, unknown>>(
-  oldItems: T[],
-  newItems: T[],
-  label: string,
-): { changes: Changes; descriptions: string[] } {
-  const changes: Changes = {};
-  const descriptions: string[] = [];
-  const excludeKeys = new Set(["id", "personnelId"]);
-
-  if (oldItems.length < newItems.length) {
-    descriptions.push(`додано ${newItems.length - oldItems.length} записів у «${label}»`);
-  } else if (oldItems.length > newItems.length) {
-    descriptions.push(`видалено ${oldItems.length - newItems.length} записів з «${label}»`);
-  }
-
-  const compareCount = Math.min(oldItems.length, newItems.length);
-  for (let i = 0; i < compareCount; i++) {
-    const oldItem = oldItems[i] ?? {};
-    const newItem = newItems[i] ?? {};
-    const allKeys = [...new Set([...Object.keys(oldItem), ...Object.keys(newItem)])];
-    for (const key of allKeys) {
-      if (excludeKeys.has(key)) continue;
-      const oldVal = String(oldItem[key] ?? "");
-      const newVal = String(newItem[key] ?? "");
-      if (oldVal !== newVal) {
-        const changeKey = `${label} №${i + 1} / ${getLabel(key)}`;
-        changes[changeKey] = { old: oldVal || null, new: newVal || null };
-        descriptions.push(
-          `змінив «${getLabel(key)}» в «${label}» №${i + 1} з «${oldVal}» на «${newVal}»`,
-        );
-      }
-    }
-  }
-
-  return { changes, descriptions };
-}
-
-function parseDate(dateStr: string): number {
-  if (!dateStr) return 0;
-  const iso = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (iso) return new Date(+iso[1], +iso[2] - 1, +iso[3]).getTime();
-  const ukr = dateStr.match(/^(\d{2})\.(\d{4})$/);
-  if (ukr) return new Date(+ukr[2], +ukr[1] - 1, 1).getTime();
-  return new Date(dateStr).getTime() || 0;
 }
 
 function autoFillEndDates(history: { startDate: string; endDate?: string | null }[]): void {
@@ -238,11 +162,12 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
         oldPerson,
         data,
         ["fullName", "rank", "position", "unit", "status", "birthDate", "phone", "email", "experience", "missions", "lastActiveDays"],
+        fieldLabels,
       );
       for (const [key, val] of Object.entries(mainFieldChanges)) {
         allChanges[key] = val;
         allDescriptions.push(
-          `змінив «${getLabel(key)}» з «${val.old ?? ""}» на «${val.new ?? ""}»`,
+          `змінив «${key}» з «${val.old ?? ""}» на «${val.new ?? ""}»`,
         );
       }
 
@@ -251,6 +176,7 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
           oldPerson.medicalRecords,
           medicalRecords,
           "Медицина",
+          fieldLabels,
         );
         Object.assign(allChanges, result.changes);
         allDescriptions.push(...result.descriptions);
@@ -261,6 +187,7 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
           oldPerson.achievements,
           achievements,
           "Нагороди",
+          fieldLabels,
         );
         Object.assign(allChanges, result.changes);
         allDescriptions.push(...result.descriptions);
@@ -271,6 +198,7 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
           oldPerson.equipment,
           equipment,
           "Спорядження",
+          fieldLabels,
         );
         Object.assign(allChanges, result.changes);
         allDescriptions.push(...result.descriptions);
@@ -281,6 +209,7 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
           oldPerson.positionHistory,
           positionHistory,
           "Історія посад",
+          fieldLabels,
         );
         Object.assign(allChanges, result.changes);
         allDescriptions.push(...result.descriptions);
@@ -291,11 +220,12 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
           oldPerson.clothingSizes,
           clothingSizes,
           ["height", "chest", "waist", "shoes", "headgear", "uniform"],
+          fieldLabels,
         );
         Object.assign(allChanges, result);
         for (const [key, val] of Object.entries(result)) {
           allDescriptions.push(
-            `змінив «${getLabel(key)}» з «${val.old ?? ""}» на «${val.new ?? ""}»`,
+            `змінив «${key}» з «${val.old ?? ""}» на «${val.new ?? ""}»`,
           );
         }
       }

@@ -3,21 +3,13 @@
 import { prisma } from "@root/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { logCreate, logUpdate, logDelete } from "@root/lib/audit";
-import { auth } from "@root/lib/auth";
-import { redirect } from "next/navigation";
+import { requireModerator } from "@root/lib/auth-guards";
+import { compareFields } from "@root/lib/diff";
 import { PURPOSE_LABELS } from "@/components/shared/fuel/constants";
 import { createVehicleSchema, createFuelRecordSchema } from "@root/lib/schemas/fuel";
 import type { CreateVehicleData, CreateFuelRecordData } from "@root/lib/schemas/fuel";
 
-async function requireModerator() {
-  const session = await auth();
-  if (!session?.user || (session.user.role !== "admin" && session.user.role !== "moderator")) {
-    redirect("/");
-  }
-  return session;
-}
-
-const fieldLabels: Record<string, string> = {
+export const fieldLabels: Record<string, string> = {
   brand: "Марка",
   model: "Модель",
   licensePlate: "Держномер",
@@ -38,37 +30,6 @@ const fieldLabels: Record<string, string> = {
   supplier: "Постачальник",
   purpose: "Призначення",
 };
-
-function getLabel(key: string): string {
-  return fieldLabels[key] ?? key;
-}
-
-type Changes = Record<string, { old: string | null; new: string | null }>;
-
-function compareFields<T extends Record<string, unknown>>(
-  oldData: T,
-  newData: T,
-  fields: string[],
-  valueLabels?: Record<string, Record<string, string>>,
-): Changes {
-  const changes: Changes = {};
-  for (const field of fields) {
-    const oldVal = oldData[field];
-    const newVal = newData[field];
-    const oldStr = oldVal == null ? "" : String(oldVal);
-    const newStr = newVal == null ? "" : String(newVal);
-    if (oldStr !== newStr) {
-      let displayOld: string | null = oldStr || null;
-      let displayNew: string | null = newStr || null;
-      if (valueLabels?.[field]) {
-        displayOld = valueLabels[field][displayOld ?? ""] ?? displayOld;
-        displayNew = valueLabels[field][displayNew ?? ""] ?? displayNew;
-      }
-      changes[getLabel(field)] = { old: displayOld, new: displayNew };
-    }
-  }
-  return changes;
-}
 
 function parseVehicle(rawData: CreateVehicleData) {
   const parsed = createVehicleSchema.safeParse(rawData);
@@ -118,6 +79,7 @@ export async function updateVehicle(id: number, rawData: CreateVehicleData) {
         oldVehicle,
         data,
         ["brand", "model", "licensePlate", "type", "year", "vin", "fuelType", "tankCapacity", "unit", "notes"],
+        fieldLabels,
       );
 
       const descriptions = Object.entries(changes).map(
@@ -214,6 +176,7 @@ export async function updateFuelRecord(id: number, rawData: CreateFuelRecordData
         oldRecord,
         data,
         ["date", "fuelType", "liters", "pricePerLiter", "totalCost", "mileage", "driverName", "invoiceNumber", "supplier", "purpose"],
+        fieldLabels,
         { purpose: PURPOSE_LABELS },
       );
 
