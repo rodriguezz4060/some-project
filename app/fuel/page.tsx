@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, Fuel, Receipt, BarChart3, ListOrdered } from "lucide-react";
+import { Plus, Fuel, Receipt, BarChart3, ListOrdered, Car, Wrench, Archive } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -100,10 +100,22 @@ export default async function FuelMain() {
 
       <div className="space-y-4">
         <Tabs defaultValue="active">
-          <TabsList>
-            <TabsTrigger value="active">Активні ({activeVehicles.length})</TabsTrigger>
-            <TabsTrigger value="repair">В ремонті ({repairVehicles.length})</TabsTrigger>
-            <TabsTrigger value="decommissioned">Вибули ({decommissionedVehicles.length})</TabsTrigger>
+          <TabsList variant="line" className="w-full justify-start gap-0 border-b border-border bg-transparent px-0">
+            <TabsTrigger value="active" className="data-active:border-b-primary data-active:text-primary rounded-none border-b-2 border-transparent px-4 pb-2 pt-0 text-sm font-medium transition-colors hover:text-foreground">
+              <Car className="size-4 mr-1.5" />
+              Активні
+              <span className="ml-1.5 inline-flex items-center justify-center rounded-full bg-success/15 text-success text-[11px] font-semibold min-w-[18px] h-[18px] px-1">{activeVehicles.length}</span>
+            </TabsTrigger>
+            <TabsTrigger value="repair" className="data-active:border-b-amber-500 data-active:text-amber-500 rounded-none border-b-2 border-transparent px-4 pb-2 pt-0 text-sm font-medium transition-colors hover:text-foreground">
+              <Wrench className="size-4 mr-1.5" />
+              В ремонті
+              <span className="ml-1.5 inline-flex items-center justify-center rounded-full bg-warning/15 text-warning text-[11px] font-semibold min-w-[18px] h-[18px] px-1">{repairVehicles.length}</span>
+            </TabsTrigger>
+            <TabsTrigger value="decommissioned" className="data-active:border-b-muted-foreground data-active:text-muted-foreground rounded-none border-b-2 border-transparent px-4 pb-2 pt-0 text-sm font-medium transition-colors hover:text-foreground">
+              <Archive className="size-4 mr-1.5" />
+              Вибули
+              <span className="ml-1.5 inline-flex items-center justify-center rounded-full bg-muted text-muted-foreground text-[11px] font-semibold min-w-[18px] h-[18px] px-1">{decommissionedVehicles.length}</span>
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="active">
             <VehicleListClient vehicles={activeVehicles} canManage={canManage} />

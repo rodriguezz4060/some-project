@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Fuel, Gauge, Palette, Edit, Wrench, Archive } from "lucide-react";
+import { Fuel, Gauge, Palette, Edit, Wrench, Archive, RotateCcw } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ const statusIcons: Record<string, React.ReactNode> = {
 
 const nextStatus: Record<string, VehicleStatus> = {
   active: "repair",
-  repair: "decommissioned",
+  repair: "active",
   decommissioned: "active",
 };
 
@@ -65,7 +65,7 @@ export function VehicleCard({ vehicle, onStatusChange, canManage }: Props) {
               </Link>
               {onStatusChange && (
                 <Button variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-foreground" onClick={() => onStatusChange(vehicle.id, nextStatus[vehicle.status])}>
-                  {vehicle.status === "active" ? <Wrench className="size-4" /> : vehicle.status === "repair" ? <Archive className="size-4" /> : <Fuel className="size-4" />}
+                  {vehicle.status === "active" ? <Wrench className="size-4" /> : <RotateCcw className="size-4" />}
                 </Button>
               )}
             </div>
