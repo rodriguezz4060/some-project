@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { logCreate, logUpdate, logDelete } from "@root/lib/audit";
 import { requireModerator } from "@root/lib/auth-guards";
 import { compareFields } from "@root/lib/diff";
+import { buildChangeLines, formatDescription } from "@root/lib/audit-helpers";
 import { bzvpSchema, type BzvpData } from "@root/lib/schemas/bzvp";
 
 const fieldLabels: Record<string, string> = {
@@ -115,20 +116,12 @@ export async function updateBzvp(id: number, rawData: BzvpData) {
       );
 
       if (Object.keys(changes).length > 0) {
-        const descriptions: string[] = [];
-        for (const [key, val] of Object.entries(changes)) {
-          descriptions.push(
-            `змінив «${key}» з «${val.old ?? ""}» на «${val.new ?? ""}»`,
-          );
-        }
-
-        let description: string;
-        if (descriptions.length <= 3) {
-          description = `Зміни в картці БЗВП «${person.fullName}»: ${descriptions.join("; ")}`;
-        } else {
-          description = `Зміни в картці БЗВП «${person.fullName}»: ${descriptions.slice(0, 3).join("; ")} та ще ${descriptions.length - 3} змін`;
-        }
-
+        const descriptions = buildChangeLines(changes);
+        const description = formatDescription(
+          descriptions,
+          "Зміни в картці БЗВП",
+          person.fullName,
+        );
         logUpdate("BzvpPersonnel", id, description, changes, userId);
       }
     }

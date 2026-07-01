@@ -1,6 +1,3 @@
-"use client";
-
-import { memo } from "react";
 import {
   Card,
   CardContent,
@@ -15,7 +12,7 @@ import { MilitaryInfoGrid } from "./info-grid";
 import { MilitaryContactBlock } from "./contact-block";
 import { MilitaryDetailsButton } from "./details-button";
 
-export const MilitaryCard = memo(function MilitaryCard({
+export function MilitaryCard({
   id,
   fullName,
   rank,
@@ -61,4 +58,4 @@ export const MilitaryCard = memo(function MilitaryCard({
       </CardFooter>
     </Card>
   );
-});
+}

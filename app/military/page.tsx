@@ -1,5 +1,6 @@
 import { MilitaryFilterBar } from "@/components/shared/military/dashboard/roster/military-filter-bar";
 import { MilitaryCardGrid } from "@/components/shared/military/dashboard/roster/military-card-grid";
+import { MilitaryCard } from "@/components/shared/military/dashboard/roster/military-card";
 import { getFilteredMilitary } from "@root/lib/data/military";
 import type { StatusType } from "@/components/shared/military/types";
 
@@ -42,7 +43,11 @@ export default async function MilitaryMain({
         totalDbCount={totalCount}
       />
 
-      <MilitaryCardGrid personnel={filtered} />
+      <MilitaryCardGrid>
+        {filtered.map((person) => (
+          <MilitaryCard key={person.id} {...person} />
+        ))}
+      </MilitaryCardGrid>
     </div>
   );
 }

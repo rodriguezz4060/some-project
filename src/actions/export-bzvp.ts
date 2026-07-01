@@ -11,6 +11,7 @@ export async function exportBzvpData(
   await requireModerator();
 
   const data = await prisma.bzvpPersonnel.findMany({
+    take: 5000,
     where: {
       ...(createdFrom || createdTo
         ? {

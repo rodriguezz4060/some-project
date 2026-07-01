@@ -1,27 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, Children } from "react";
 import { ChevronDown } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@root/lib/utils";
-import type { MilitaryPersonnel } from "../../types";
-import { MilitaryCard } from "./military-card";
 
 const ITEMS_PER_PAGE = 8;
 
 interface Props {
-  personnel: MilitaryPersonnel[];
+  children: React.ReactNode;
 }
 
-export function MilitaryCardGrid({ personnel }: Props) {
+export function MilitaryCardGrid({ children }: Props) {
   const { state } = useSidebar();
   const isSidebarCollapsed = state === "collapsed";
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
 
-  const hasMore = visibleCount < personnel.length;
-  const visibleItems = personnel.slice(0, visibleCount);
+  const items = useMemo(() => Children.toArray(children), [children]);
+  const hasMore = visibleCount < items.length;
+  const visibleItems = items.slice(0, visibleCount);
 
-  if (personnel.length === 0) {
+  if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <div className="rounded-full bg-muted p-4 mb-4" />
@@ -36,9 +35,7 @@ export function MilitaryCardGrid({ personnel }: Props) {
   return (
     <div className="space-y-6">
       <div className={cn("grid gap-6 auto-rows-fr grid-cols-1 sm:grid-cols-2 lg:grid-cols-3", isSidebarCollapsed && "xl:grid-cols-4")}>
-        {visibleItems.map((person) => (
-          <MilitaryCard key={person.id} {...person} />
-        ))}
+        {visibleItems}
       </div>
 
       {hasMore && (
@@ -53,19 +50,19 @@ export function MilitaryCardGrid({ personnel }: Props) {
             <ChevronDown className="size-4" />
             Завантажити ще
             <span className="text-xs text-muted-foreground/60">
-              ({personnel.length - visibleCount})
+              ({items.length - visibleCount})
             </span>
           </button>
           <span className="text-xs text-muted-foreground/50">
-            Показано {visibleCount} з {personnel.length}
+            Показано {visibleCount} з {items.length}
           </span>
         </div>
       )}
 
-      {!hasMore && personnel.length > ITEMS_PER_PAGE && (
+      {!hasMore && items.length > ITEMS_PER_PAGE && (
         <div className="text-center pt-2">
           <span className="text-xs text-muted-foreground/50">
-            Завантажено всі {personnel.length} записів
+            Завантажено всі {items.length} записів
           </span>
         </div>
       )}

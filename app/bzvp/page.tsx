@@ -1,5 +1,6 @@
 import { BzvpFilterBar } from "@/components/shared/bzvp/roster/bzvp-filter-bar";
 import { BzvpCardGrid } from "@/components/shared/bzvp/roster/bzvp-card-grid";
+import { BzvpCard } from "@/components/shared/bzvp/roster/bzvp-card";
 import { getFilteredBzvp } from "@root/lib/data/bzvp";
 import type { BzvpStatus } from "@/components/shared/bzvp/types";
 
@@ -43,7 +44,11 @@ export default async function BzvpPage({
         shownCount={shownCount}
       />
 
-      <BzvpCardGrid personnel={filtered} />
+      <BzvpCardGrid>
+        {filtered.map((person) => (
+          <BzvpCard key={person.id} {...person} />
+        ))}
+      </BzvpCardGrid>
     </div>
   );
 }

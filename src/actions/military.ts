@@ -6,6 +6,7 @@ import { logCreate, logUpdate, logDelete } from "@root/lib/audit";
 import { requireModerator } from "@root/lib/auth-guards";
 import { parseDate } from "@root/lib/utils/dates";
 import { compareFields, compareItemArrays, type Changes } from "@root/lib/diff";
+import { buildChangeLines, formatDescription } from "@root/lib/audit-helpers";
 import { createMilitarySchema } from "@root/lib/schemas/military";
 import type { CreateMilitaryData } from "@root/lib/schemas/military";
 
@@ -56,6 +57,33 @@ function autoFillEndDates(history: { startDate: string; endDate?: string | null 
       entry.endDate = sorted[i + 1].startDate;
     }
   });
+}
+
+async function syncItems<TData extends Record<string, unknown>>(
+  deleteMany: (ids: number[]) => Promise<unknown>,
+  createMany: (data: TData[]) => Promise<unknown>,
+  update: (id: number, data: Partial<TData>) => Promise<unknown>,
+  oldItems: ({ id: number } & Record<string, unknown>)[],
+  newItems: TData[],
+) {
+  const newIds = new Set(newItems.map((item) => item.id).filter(Boolean) as number[]);
+  const toDelete = oldItems.filter((item) => !newIds.has(item.id)).map((item) => item.id);
+
+  if (toDelete.length > 0) {
+    await deleteMany(toDelete);
+  }
+
+  for (const item of newItems) {
+    const { id: itemId, ...fields } = item;
+    if (itemId && oldItems.some((o) => o.id === itemId)) {
+      await update(itemId as number, fields as Partial<TData>);
+    }
+  }
+
+  const toCreate = newItems.filter((item) => !item.id);
+  if (toCreate.length > 0) {
+    await createMany(toCreate);
+  }
 }
 
 export async function createMilitary(rawData: CreateMilitaryData) {
@@ -112,33 +140,6 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
     const { medicalRecords, achievements, equipment, positionHistory, clothingSizes, ...flat } = data;
 
     const person = await prisma.militaryPersonnel.update({ where: { id }, data: flat });
-
-    async function syncItems<TData extends Record<string, unknown>>(
-      deleteMany: (ids: number[]) => Promise<unknown>,
-      createMany: (data: TData[]) => Promise<unknown>,
-      update: (id: number, data: Partial<TData>) => Promise<unknown>,
-      oldItems: ({ id: number } & Record<string, unknown>)[],
-      newItems: TData[],
-    ) {
-      const newIds = new Set(newItems.map((item) => item.id).filter(Boolean) as number[]);
-      const toDelete = oldItems.filter((item) => !newIds.has(item.id)).map((item) => item.id);
-
-      if (toDelete.length > 0) {
-        await deleteMany(toDelete);
-      }
-
-      for (const item of newItems) {
-        const { id: itemId, ...fields } = item;
-        if (itemId && oldItems.some((o) => o.id === itemId)) {
-          await update(itemId as number, fields as Partial<TData>);
-        }
-      }
-
-      const toCreate = newItems.filter((item) => !item.id);
-      if (toCreate.length > 0) {
-        await createMany(toCreate);
-      }
-    }
 
     if (medicalRecords && oldPerson) {
       const withFk = medicalRecords.map((r) => ({ ...r, personnelId: id }));
@@ -202,12 +203,8 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
         ["fullName", "rank", "position", "unit", "status", "birthDate", "phone", "email", "experience", "missions", "lastActiveDays"],
         fieldLabels,
       );
-      for (const [key, val] of Object.entries(mainFieldChanges)) {
-        allChanges[key] = val;
-        allDescriptions.push(
-          `змінив «${key}» з «${val.old ?? ""}» на «${val.new ?? ""}»`,
-        );
-      }
+      Object.assign(allChanges, mainFieldChanges);
+      allDescriptions.push(...buildChangeLines(mainFieldChanges));
 
       if (medicalRecords) {
         const result = compareItemArrays(
@@ -254,30 +251,24 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
       }
 
       if (clothingSizes && oldPerson.clothingSizes) {
-        const result = compareFields(
+        const clothingChanges = compareFields(
           oldPerson.clothingSizes as Record<string, unknown>,
           clothingSizes as Record<string, unknown>,
           ["height", "chest", "waist", "shoes", "headgear", "uniform"],
           fieldLabels,
         );
-        Object.assign(allChanges, result);
-        for (const [key, val] of Object.entries(result)) {
-          allDescriptions.push(
-            `змінив «${key}» з «${val.old ?? ""}» на «${val.new ?? ""}»`,
-          );
-        }
+        Object.assign(allChanges, clothingChanges);
+        allDescriptions.push(...buildChangeLines(clothingChanges));
       }
     }
 
     const fullName = person.fullName;
-    let description: string;
-    if (allDescriptions.length === 0) {
-      description = `Вніс зміни в анкету «${fullName}» (без змін у даних)`;
-    } else if (allDescriptions.length <= 3) {
-      description = `Зміни в картці «${fullName}»: ${allDescriptions.join("; ")}`;
-    } else {
-      description = `Зміни в картці «${fullName}»: ${allDescriptions.slice(0, 3).join("; ")} та ще ${allDescriptions.length - 3} змін`;
-    }
+    const description = formatDescription(
+      allDescriptions,
+      "Зміни в картці",
+      fullName,
+      `Вніс зміни в анкету «${fullName}» (без змін у даних)`,
+    );
 
     if (Object.keys(allChanges).length > 0) {
       logUpdate("MilitaryPersonnel", id, description, allChanges, userId);

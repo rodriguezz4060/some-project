@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { logCreate, logUpdate, logDelete } from "@root/lib/audit";
 import { requireModerator } from "@root/lib/auth-guards";
 import { compareFields } from "@root/lib/diff";
+import { buildChangeLines, formatDescription } from "@root/lib/audit-helpers";
 import { PURPOSE_LABELS, VEHICLE_TYPE_LABELS, VEHICLE_STATUS_LABELS } from "@/components/shared/fuel/constants";
 import { createVehicleSchema, createFuelRecordSchema } from "@root/lib/schemas/fuel";
 import type { CreateVehicleData, CreateFuelRecordData } from "@root/lib/schemas/fuel";
@@ -85,18 +86,13 @@ export async function updateVehicle(id: number, rawData: CreateVehicleData) {
         fieldLabels,
       );
 
-      const descriptions = Object.entries(changes).map(
-        ([key, val]) => `змінив «${key}» з «${val.old ?? ""}» на «${val.new ?? ""}»`,
+      const descriptions = buildChangeLines(changes);
+      const description = formatDescription(
+        descriptions,
+        "Оновлено авто",
+        `${vehicle.brand} ${vehicle.model}`,
+        `Оновив дані авто «${vehicle.brand} ${vehicle.model}» (без змін)`,
       );
-
-      let description: string;
-      if (descriptions.length === 0) {
-        description = `Оновив дані авто «${vehicle.brand} ${vehicle.model}» (без змін)`;
-      } else if (descriptions.length <= 3) {
-        description = `Оновлено авто «${vehicle.brand} ${vehicle.model}»: ${descriptions.join("; ")}`;
-      } else {
-        description = `Оновлено авто «${vehicle.brand} ${vehicle.model}»: ${descriptions.slice(0, 3).join("; ")} та ще ${descriptions.length - 3} змін`;
-      }
 
       logUpdate("Vehicle", id, description, changes, userId);
     }
@@ -186,21 +182,15 @@ export async function updateFuelRecord(id: number, rawData: CreateFuelRecordData
         { purpose: PURPOSE_LABELS },
       );
 
-      const descriptions = Object.entries(changes).map(
-        ([key, val]) => `змінив «${key}» з «${val.old ?? ""}» на «${val.new ?? ""}»`,
-      );
-
+      const descriptions = buildChangeLines(changes);
       const vehicle = oldRecord.vehicle;
       const vehicleName = vehicle ? `${vehicle.brand} ${vehicle.model} (${vehicle.licensePlate})` : `#${data.vehicleId}`;
-
-      let description: string;
-      if (descriptions.length === 0) {
-        description = `Оновив заправку №${id} для ${vehicleName} (без змін)`;
-      } else if (descriptions.length <= 3) {
-        description = `Оновлено заправку №${id} (${vehicleName}): ${descriptions.join("; ")}`;
-      } else {
-        description = `Оновлено заправку №${id} (${vehicleName}): ${descriptions.slice(0, 3).join("; ")} та ще ${descriptions.length - 3} змін`;
-      }
+      const description = formatDescription(
+        descriptions,
+        `Оновлено заправку №${id}`,
+        vehicleName,
+        `Оновив заправку №${id} для ${vehicleName} (без змін)`,
+      );
 
       logUpdate("FuelRecord", id, description, changes, userId);
     }
