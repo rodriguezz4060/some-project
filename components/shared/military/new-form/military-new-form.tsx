@@ -35,12 +35,12 @@ import type { CreateMilitaryData } from "@root/lib/schemas/military";
 const ALL_STATUSES = ["active", "on-mission", "wounded", "vacation", "reserve"] as const;
 const RANK_OPTIONS = ["лейтенант", "старший лейтенант", "капітан", "майор", "полковник", "сержант"];
 
-function ArraySection<T extends Record<string, unknown>>({ title, fields, onAdd, remove, renderItem }: { title: string; fields: { id: string }[]; onAdd: (value: T | T[]) => void; remove: (index: number) => void; renderItem: (index: number) => React.ReactNode }) {
+function ArraySection<T extends Record<string, unknown>>({ title, fields, onAdd, remove, renderItem, defaultItem }: { title: string; fields: { id: string }[]; onAdd: (value: T | T[]) => void; remove: (index: number) => void; renderItem: (index: number) => React.ReactNode; defaultItem?: T }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-foreground/80">{title}</h3>
-        <Button type="button" variant="outline" size="sm" onClick={() => onAdd({} as T)} className="gap-1">
+        <Button type="button" variant="outline" size="sm" onClick={() => onAdd(defaultItem ?? ({} as T))} className="gap-1">
           <Plus className="size-3.5" /> Додати
         </Button>
       </div>
@@ -70,6 +70,27 @@ const DEFAULTS: CreateMilitaryData = {
   clothingSizes: { height: "", chest: "", waist: "", shoes: "", headgear: "", uniform: "" },
 };
 
+function toDateInput(date: string): string {
+  if (!date) return "";
+  const m = date.match(/^(\d{2})\.(\d{4})$/);
+  return m ? `${m[2]}-${m[1]}-01` : date;
+}
+
+function fromDateInput(value: string): string {
+  if (!value) return "";
+  const d = new Date(value);
+  return `${String(d.getMonth() + 1).padStart(2, "0")}.${d.getFullYear()}`;
+}
+
+function parseDate(dateStr: string): number {
+  if (!dateStr) return 0;
+  const iso = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (iso) return new Date(+iso[1], +iso[2] - 1, +iso[3]).getTime();
+  const ukr = dateStr.match(/^(\d{2})\.(\d{4})$/);
+  if (ukr) return new Date(+ukr[2], +ukr[1] - 1, 1).getTime();
+  return new Date(dateStr).getTime() || 0;
+}
+
 function getDefaultValues(person?: MilitaryPersonnel): CreateMilitaryData {
   if (!person) return { ...DEFAULTS };
   return {
@@ -89,7 +110,9 @@ function getDefaultValues(person?: MilitaryPersonnel): CreateMilitaryData {
     medicalRecords: person.medicalRecords?.map((r) => ({ ...r, notes: r.notes ?? "" })) ?? [],
     achievements: person.achievements?.map((a) => ({ ...a, description: a.description ?? "" })) ?? [],
     equipment: person.equipment?.map((e) => ({ ...e, serialNumber: e.serialNumber ?? "" })) ?? [],
-    positionHistory: person.positionHistory?.map((p) => ({ ...p, endDate: p.endDate ?? "" })) ?? [],
+    positionHistory: [...(person.positionHistory ?? [])]
+      .sort((a, b) => parseDate(b.startDate) - parseDate(a.startDate))
+      .map((p) => ({ ...p, endDate: p.endDate ?? "" })),
     clothingSizes: person.clothingSizes
       ? { height: person.clothingSizes.height ?? "", chest: person.clothingSizes.chest ?? "", waist: person.clothingSizes.waist ?? "", shoes: person.clothingSizes.shoes ?? "", headgear: person.clothingSizes.headgear ?? "", uniform: person.clothingSizes.uniform ?? "" }
       : { height: "", chest: "", waist: "", shoes: "", headgear: "", uniform: "" },
@@ -189,6 +212,7 @@ export function MilitaryForm({ initialData }: Props) {
               fields={posField.fields}
               onAdd={posField.prepend}
               remove={posField.remove}
+              defaultItem={{ position: "", unit: "", startDate: "", endDate: "" }}
               renderItem={(i) => (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
                   <FormField control={form.control} name={`positionHistory.${i}.position`} render={({ field, fieldState }) => (
@@ -198,10 +222,10 @@ export function MilitaryForm({ initialData }: Props) {
                     <FormItem><FormLabel>Підрозділ</FormLabel><FormControl><Input {...field} value={field.value ?? ""} placeholder="72 ОМБр" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name={`positionHistory.${i}.startDate`} render={({ field, fieldState }) => (
-                    <FormItem><FormLabel>Дата початку</FormLabel><FormControl><Input {...field} value={field.value ?? ""} placeholder="ММ.РРРР" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Дата початку</FormLabel><FormControl><div className="flex items-center gap-1.5"><Input type="date" {...field} value={toDateInput(field.value ?? "")} onChange={(e) => field.onChange(fromDateInput(e.target.value))} className={cn("flex-1", fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} />{field.value && <button type="button" onClick={() => field.onChange("")} className="flex items-center justify-center size-7 shrink-0 rounded-md border border-input bg-background hover:bg-muted transition-colors cursor-pointer"><X className="size-3.5 text-muted-foreground/60" /></button>}</div></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name={`positionHistory.${i}.endDate`} render={({ field, fieldState }) => (
-                    <FormItem><FormLabel>Дата закінчення</FormLabel><FormControl><Input {...field} value={field.value ?? ""} placeholder="ММ.РРРР" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Дата закінчення</FormLabel><FormControl><div className="flex items-center gap-1.5"><Input type="date" {...field} value={toDateInput(field.value ?? "")} onChange={(e) => field.onChange(fromDateInput(e.target.value))} className={cn("flex-1", fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} />{field.value && <button type="button" onClick={() => field.onChange("")} className="flex items-center justify-center size-7 shrink-0 rounded-md border border-input bg-background hover:bg-muted transition-colors cursor-pointer"><X className="size-3.5 text-muted-foreground/60" /></button>}</div></FormControl><FormMessage /></FormItem>
                   )} />
                 </div>
               )}
