@@ -9,7 +9,7 @@ import { PURPOSE_LABELS } from "@/components/shared/fuel/constants";
 import { createVehicleSchema, createFuelRecordSchema } from "@root/lib/schemas/fuel";
 import type { CreateVehicleData, CreateFuelRecordData } from "@root/lib/schemas/fuel";
 
-export const fieldLabels: Record<string, string> = {
+const fieldLabels: Record<string, string> = {
   brand: "Марка",
   model: "Модель",
   licensePlate: "Держномер",

@@ -9,7 +9,7 @@ import { compareFields, compareItemArrays, type Changes } from "@root/lib/diff";
 import { createMilitarySchema } from "@root/lib/schemas/military";
 import type { CreateMilitaryData } from "@root/lib/schemas/military";
 
-export const fieldLabels: Record<string, string> = {
+const fieldLabels: Record<string, string> = {
   fullName: "ПІБ",
   rank: "Звання",
   position: "Посада",

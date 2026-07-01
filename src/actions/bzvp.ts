@@ -7,7 +7,7 @@ import { requireModerator } from "@root/lib/auth-guards";
 import { compareFields } from "@root/lib/diff";
 import { bzvpSchema, type BzvpData } from "@root/lib/schemas/bzvp";
 
-export const fieldLabels: Record<string, string> = {
+const fieldLabels: Record<string, string> = {
   fullName: "ПІБ",
   rank: "Звання",
   birthDate: "Дата народження",
