@@ -3,27 +3,18 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useFieldArray } from "react-hook-form";
-import { cn, createZodResolver } from "@root/lib/utils";
-import { Save, Loader2, Plus, X } from "lucide-react";
+import { createZodResolver } from "@root/lib/utils";
+import { Save, Loader2 } from "lucide-react";
+import { ArraySection } from "@/components/shared/array-section";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  FormProvider,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
+import { FormProvider } from "@/components/ui/form";
 import { TextField, NumberField, SelectField } from "@/components/shared/form-fields";
+import { PositionFormFields } from "./position-form-fields";
+import { MedicalFormFields } from "./medical-form-fields";
+import { AchievementFormFields } from "./achievement-form-fields";
+import { EquipmentFormFields } from "./equipment-form-fields";
+import { ClothingSizesFields } from "./clothing-sizes-fields";
 import { toast } from "sonner";
 import { createMilitary, updateMilitary } from "@root/actions/military";
 import { createMilitarySchema } from "@root/lib/schemas/military";
@@ -33,31 +24,6 @@ import type { CreateMilitaryData } from "@root/lib/schemas/military";
 
 const ALL_STATUSES = ["active", "on-mission", "wounded", "vacation", "reserve"] as const;
 const RANK_OPTIONS = ["лейтенант", "старший лейтенант", "капітан", "майор", "полковник", "сержант"];
-
-function ArraySection<T extends Record<string, unknown>>({ title, fields, onAdd, remove, renderItem, defaultItem }: { title: string; fields: { id: string }[]; onAdd: (value: T | T[]) => void; remove: (index: number) => void; renderItem: (index: number) => React.ReactNode; defaultItem?: T }) {
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-foreground/80">{title}</h3>
-        <Button type="button" variant="outline" size="sm" onClick={() => onAdd(defaultItem ?? ({} as T))} className="gap-1">
-          <Plus className="size-3.5" /> Додати
-        </Button>
-      </div>
-      {fields.map((field, index) => (
-        <div key={field.id} className="relative border border-border/40 rounded-lg p-4 pt-7">
-          <button
-            type="button"
-            onClick={() => remove(index)}
-            className="absolute top-2 right-2 text-muted-foreground hover:text-foreground cursor-pointer"
-          >
-            <X className="size-4" />
-          </button>
-          {renderItem(index)}
-        </div>
-      ))}
-    </div>
-  );
-}
 
 const DEFAULTS: CreateMilitaryData = {
   fullName: "", rank: "сержант", position: "", unit: "",
@@ -69,7 +35,7 @@ const DEFAULTS: CreateMilitaryData = {
   clothingSizes: { height: "", chest: "", waist: "", shoes: "", headgear: "", uniform: "" },
 };
 
-import { toDateInput, fromDateInput, parseDate } from "@root/lib/utils/dates";
+import { parseDate } from "@root/lib/utils/dates";
 
 function getDefaultValues(person?: MilitaryPersonnel): CreateMilitaryData {
   if (!person) return { ...DEFAULTS };
@@ -193,22 +159,7 @@ export function MilitaryForm({ initialData }: Props) {
               onAdd={posField.prepend}
               remove={posField.remove}
               defaultItem={{ position: "", unit: "", startDate: "", endDate: "" }}
-              renderItem={(i) => (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-                  <FormField control={form.control} name={`positionHistory.${i}.position`} render={({ field, fieldState }) => (
-                    <FormItem><FormLabel>Посада</FormLabel><FormControl><Input {...field} value={field.value ?? ""} placeholder="Командир взводу" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-                  )} />
-                  <FormField control={form.control} name={`positionHistory.${i}.unit`} render={({ field, fieldState }) => (
-                    <FormItem><FormLabel>Підрозділ</FormLabel><FormControl><Input {...field} value={field.value ?? ""} placeholder="72 ОМБр" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-                  )} />
-                  <FormField control={form.control} name={`positionHistory.${i}.startDate`} render={({ field, fieldState }) => (
-                    <FormItem><FormLabel>Дата початку</FormLabel><FormControl><div className="flex items-center gap-1.5"><Input type="date" {...field} value={toDateInput(field.value ?? "")} onChange={(e) => field.onChange(fromDateInput(e.target.value))} className={cn("flex-1", fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} />{field.value && <button type="button" onClick={() => field.onChange("")} className="flex items-center justify-center size-7 shrink-0 rounded-md border border-input bg-background hover:bg-muted transition-colors cursor-pointer"><X className="size-3.5 text-muted-foreground/60" /></button>}</div></FormControl><FormMessage /></FormItem>
-                  )} />
-                  <FormField control={form.control} name={`positionHistory.${i}.endDate`} render={({ field, fieldState }) => (
-                    <FormItem><FormLabel>Дата закінчення</FormLabel><FormControl><div className="flex items-center gap-1.5"><Input type="date" {...field} value={toDateInput(field.value ?? "")} onChange={(e) => field.onChange(fromDateInput(e.target.value))} className={cn("flex-1", fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} />{field.value && <button type="button" onClick={() => field.onChange("")} className="flex items-center justify-center size-7 shrink-0 rounded-md border border-input bg-background hover:bg-muted transition-colors cursor-pointer"><X className="size-3.5 text-muted-foreground/60" /></button>}</div></FormControl><FormMessage /></FormItem>
-                  )} />
-                </div>
-              )}
+              renderItem={(i) => <PositionFormFields control={form.control} index={i} />}
             />
           </CardContent>
         </Card>
@@ -223,22 +174,7 @@ export function MilitaryForm({ initialData }: Props) {
               fields={medField.fields}
               onAdd={medField.append}
               remove={medField.remove}
-              renderItem={(i) => (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-                  <FormField control={form.control} name={`medicalRecords.${i}.condition`} render={({ field, fieldState }) => (
-                    <FormItem><FormLabel>Діагноз</FormLabel><FormControl><Input {...field} value={field.value ?? ""} placeholder="Захворювання / травма" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-                  )} />
-                  <FormField control={form.control} name={`medicalRecords.${i}.status`} render={({ field }) => (
-                    <FormItem><FormLabel>Статус</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="w-full"><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="active">Активний</SelectItem><SelectItem value="resolved">Вирішено</SelectItem></SelectContent></Select><FormMessage /></FormItem>
-                  )} />
-                  <FormField control={form.control} name={`medicalRecords.${i}.diagnosisDate`} render={({ field, fieldState }) => (
-                    <FormItem><FormLabel>Дата діагнозу</FormLabel><FormControl><Input type="date" {...field} value={field.value ?? ""} className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-                  )} />
-                  <FormField control={form.control} name={`medicalRecords.${i}.notes`} render={({ field, fieldState }) => (
-                    <FormItem><FormLabel>Нотатки</FormLabel><FormControl><Input {...field} value={field.value ?? ""} placeholder="..." className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-                  )} />
-                </div>
-              )}
+              renderItem={(i) => <MedicalFormFields control={form.control} index={i} />}
             />
           </CardContent>
         </Card>
@@ -253,22 +189,7 @@ export function MilitaryForm({ initialData }: Props) {
               fields={achField.fields}
               onAdd={achField.append}
               remove={achField.remove}
-              renderItem={(i) => (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-                  <FormField control={form.control} name={`achievements.${i}.name`} render={({ field, fieldState }) => (
-                    <FormItem><FormLabel>Назва</FormLabel><FormControl><Input {...field} value={field.value ?? ""} placeholder="Орден «За мужність»" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-                  )} />
-                  <FormField control={form.control} name={`achievements.${i}.type`} render={({ field }) => (
-                    <FormItem><FormLabel>Тип</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="w-full"><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="medal">Медаль</SelectItem><SelectItem value="commendation">Відзнака</SelectItem><SelectItem value="certificate">Грамота</SelectItem></SelectContent></Select><FormMessage /></FormItem>
-                  )} />
-                  <FormField control={form.control} name={`achievements.${i}.date`} render={({ field, fieldState }) => (
-                    <FormItem><FormLabel>Дата</FormLabel><FormControl><Input type="date" {...field} value={field.value ?? ""} className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-                  )} />
-                  <FormField control={form.control} name={`achievements.${i}.description`} render={({ field, fieldState }) => (
-                    <FormItem><FormLabel>Опис</FormLabel><FormControl><Input {...field} value={field.value ?? ""} placeholder="..." className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-                  )} />
-                </div>
-              )}
+              renderItem={(i) => <AchievementFormFields control={form.control} index={i} />}
             />
           </CardContent>
         </Card>
@@ -283,22 +204,7 @@ export function MilitaryForm({ initialData }: Props) {
               fields={eqField.fields}
               onAdd={eqField.append}
               remove={eqField.remove}
-              renderItem={(i) => (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-                  <FormField control={form.control} name={`equipment.${i}.name`} render={({ field, fieldState }) => (
-                    <FormItem><FormLabel>Назва</FormLabel><FormControl><Input {...field} value={field.value ?? ""} placeholder="M4A1" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-                  )} />
-                  <FormField control={form.control} name={`equipment.${i}.type`} render={({ field }) => (
-                    <FormItem><FormLabel>Тип</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="w-full"><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="weapon">Зброя</SelectItem><SelectItem value="armor">Броня</SelectItem><SelectItem value="gear">Спорядження</SelectItem></SelectContent></Select><FormMessage /></FormItem>
-                  )} />
-                  <FormField control={form.control} name={`equipment.${i}.serialNumber`} render={({ field, fieldState }) => (
-                    <FormItem><FormLabel>Серійний номер</FormLabel><FormControl><Input {...field} value={field.value ?? ""} placeholder="SN-123456" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-                  )} />
-                  <FormField control={form.control} name={`equipment.${i}.issuedDate`} render={({ field, fieldState }) => (
-                    <FormItem><FormLabel>Дата видачі</FormLabel><FormControl><Input type="date" {...field} value={field.value ?? ""} className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-                  )} />
-                </div>
-              )}
+              renderItem={(i) => <EquipmentFormFields control={form.control} index={i} />}
             />
           </CardContent>
         </Card>
@@ -307,25 +213,8 @@ export function MilitaryForm({ initialData }: Props) {
           <CardHeader>
             <CardTitle>Розміри</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4">
-            <FormField control={form.control} name="clothingSizes.height" render={({ field, fieldState }) => (
-              <FormItem><FormLabel>Зріст (см)</FormLabel><FormControl><Input {...field} value={field.value ?? ""} placeholder="180" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-            )} />
-            <FormField control={form.control} name="clothingSizes.chest" render={({ field, fieldState }) => (
-              <FormItem><FormLabel>Обхват грудей (см)</FormLabel><FormControl><Input {...field} value={field.value ?? ""} placeholder="96" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-            )} />
-            <FormField control={form.control} name="clothingSizes.waist" render={({ field, fieldState }) => (
-              <FormItem><FormLabel>Обхват талії (см)</FormLabel><FormControl><Input {...field} value={field.value ?? ""} placeholder="80" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-            )} />
-            <FormField control={form.control} name="clothingSizes.shoes" render={({ field, fieldState }) => (
-              <FormItem><FormLabel>Розмір взуття</FormLabel><FormControl><Input {...field} value={field.value ?? ""} placeholder="43" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-            )} />
-            <FormField control={form.control} name="clothingSizes.headgear" render={({ field, fieldState }) => (
-              <FormItem><FormLabel>Головний убір</FormLabel><FormControl><Input {...field} value={field.value ?? ""} placeholder="56" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-            )} />
-            <FormField control={form.control} name="clothingSizes.uniform" render={({ field, fieldState }) => (
-              <FormItem><FormLabel>Форма одягу</FormLabel><FormControl><Input {...field} value={field.value ?? ""} placeholder="48/4" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-            )} />
+          <CardContent>
+            <ClothingSizesFields control={form.control} />
           </CardContent>
         </Card>
 
