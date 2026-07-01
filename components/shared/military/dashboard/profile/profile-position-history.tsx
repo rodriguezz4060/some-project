@@ -9,9 +9,22 @@ export function ProfilePositionHistory({ history }: Props) {
     return null;
   }
 
+  function parseDate(dateStr: string): number {
+    if (!dateStr) return 0;
+    const iso = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (iso) return new Date(+iso[1], +iso[2] - 1, +iso[3]).getTime();
+    const ukr = dateStr.match(/^(\d{2})\.(\d{4})$/);
+    if (ukr) return new Date(+ukr[2], +ukr[1] - 1, 1).getTime();
+    return new Date(dateStr).getTime() || 0;
+  }
+
+  const sorted = [...history].sort(
+    (a, b) => parseDate(b.startDate) - parseDate(a.startDate),
+  );
+
   return (
     <div className="relative space-y-0">
-      {history.map((entry, i) => {
+      {sorted.map((entry, i) => {
         const isCurrent = !entry.endDate;
         return (
           <div key={entry.position + entry.startDate} className="relative flex gap-4 pb-4 last:pb-0">

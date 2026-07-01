@@ -65,7 +65,7 @@ export async function getMilitaryPersonnelById(id: number): Promise<MilitaryPers
       medicalRecords: true,
       achievements: true,
       equipment: true,
-      positionHistory: true,
+      positionHistory: { orderBy: { startDate: "desc" } },
       clothingSizes: true,
     },
   });
@@ -81,7 +81,7 @@ export async function getAllMilitary(): Promise<MilitaryPersonnel[]> {
       medicalRecords: true,
       achievements: true,
       equipment: true,
-      positionHistory: true,
+      positionHistory: { orderBy: { startDate: "desc" } },
       clothingSizes: true,
     },
   });

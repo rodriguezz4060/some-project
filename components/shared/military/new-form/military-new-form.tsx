@@ -35,12 +35,12 @@ import type { CreateMilitaryData } from "@root/lib/schemas/military";
 const ALL_STATUSES = ["active", "on-mission", "wounded", "vacation", "reserve"] as const;
 const RANK_OPTIONS = ["лейтенант", "старший лейтенант", "капітан", "майор", "полковник", "сержант"];
 
-function ArraySection<T extends Record<string, unknown>>({ title, fields, append, remove, renderItem }: { title: string; fields: { id: string }[]; append: (value: T | T[]) => void; remove: (index: number) => void; renderItem: (index: number) => React.ReactNode }) {
+function ArraySection<T extends Record<string, unknown>>({ title, fields, onAdd, remove, renderItem }: { title: string; fields: { id: string }[]; onAdd: (value: T | T[]) => void; remove: (index: number) => void; renderItem: (index: number) => React.ReactNode }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-foreground/80">{title}</h3>
-        <Button type="button" variant="outline" size="sm" onClick={() => append({} as T)} className="gap-1">
+        <Button type="button" variant="outline" size="sm" onClick={() => onAdd({} as T)} className="gap-1">
           <Plus className="size-3.5" /> Додати
         </Button>
       </div>
@@ -187,7 +187,7 @@ export function MilitaryForm({ initialData }: Props) {
             <ArraySection
               title="Історія посад"
               fields={posField.fields}
-              append={posField.append}
+              onAdd={posField.prepend}
               remove={posField.remove}
               renderItem={(i) => (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
@@ -198,10 +198,10 @@ export function MilitaryForm({ initialData }: Props) {
                     <FormItem><FormLabel>Підрозділ</FormLabel><FormControl><Input {...field} value={field.value ?? ""} placeholder="72 ОМБр" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name={`positionHistory.${i}.startDate`} render={({ field, fieldState }) => (
-                    <FormItem><FormLabel>Дата початку</FormLabel><FormControl><Input type="date" {...field} value={field.value ?? ""} className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Дата початку</FormLabel><FormControl><Input {...field} value={field.value ?? ""} placeholder="ММ.РРРР" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name={`positionHistory.${i}.endDate`} render={({ field, fieldState }) => (
-                    <FormItem><FormLabel>Дата закінчення</FormLabel><FormControl><Input type="date" {...field} value={field.value ?? ""} className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Дата закінчення</FormLabel><FormControl><Input {...field} value={field.value ?? ""} placeholder="ММ.РРРР" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
                   )} />
                 </div>
               )}
@@ -217,7 +217,7 @@ export function MilitaryForm({ initialData }: Props) {
             <ArraySection
               title="Медичні записи"
               fields={medField.fields}
-              append={medField.append}
+              onAdd={medField.append}
               remove={medField.remove}
               renderItem={(i) => (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
@@ -247,7 +247,7 @@ export function MilitaryForm({ initialData }: Props) {
             <ArraySection
               title="Нагороди та відзнаки"
               fields={achField.fields}
-              append={achField.append}
+              onAdd={achField.append}
               remove={achField.remove}
               renderItem={(i) => (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
@@ -277,7 +277,7 @@ export function MilitaryForm({ initialData }: Props) {
             <ArraySection
               title="Спорядження та зброя"
               fields={eqField.fields}
-              append={eqField.append}
+              onAdd={eqField.append}
               remove={eqField.remove}
               renderItem={(i) => (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">

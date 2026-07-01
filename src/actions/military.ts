@@ -79,9 +79,9 @@ function compareFields(
   return changes;
 }
 
-function compareItemArrays(
-  oldItems: Record<string, unknown>[],
-  newItems: Record<string, unknown>[],
+function compareItemArrays<T extends Record<string, unknown>>(
+  oldItems: T[],
+  newItems: T[],
   label: string,
 ): { changes: Changes; descriptions: string[] } {
   const changes: Changes = {};
@@ -116,9 +116,28 @@ function compareItemArrays(
   return { changes, descriptions };
 }
 
+function parseDate(dateStr: string): number {
+  if (!dateStr) return 0;
+  const iso = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (iso) return new Date(+iso[1], +iso[2] - 1, +iso[3]).getTime();
+  const ukr = dateStr.match(/^(\d{2})\.(\d{4})$/);
+  if (ukr) return new Date(+ukr[2], +ukr[1] - 1, 1).getTime();
+  return new Date(dateStr).getTime() || 0;
+}
+
+function autoFillEndDates(history: { startDate: string; endDate?: string | null }[]): void {
+  const sorted = [...history].sort((a, b) => parseDate(a.startDate) - parseDate(b.startDate));
+  sorted.forEach((entry, i) => {
+    if (!entry.endDate && i < sorted.length - 1) {
+      entry.endDate = sorted[i + 1].startDate;
+    }
+  });
+}
+
 export async function createMilitary(rawData: CreateMilitaryData) {
   await requireModerator();
   const data = parseMilitary(rawData);
+  if (data.positionHistory) autoFillEndDates(data.positionHistory);
   const { medicalRecords, achievements, equipment, positionHistory, clothingSizes, ...flat } = data;
 
   try {
@@ -149,6 +168,7 @@ export async function createMilitary(rawData: CreateMilitaryData) {
 export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
   await requireModerator();
   const data = parseMilitary(rawData);
+  if (data.positionHistory) autoFillEndDates(data.positionHistory);
 
   try {
     const oldPerson = await prisma.militaryPersonnel.findUnique({
@@ -228,8 +248,8 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
 
       if (medicalRecords) {
         const result = compareItemArrays(
-          oldPerson.medicalRecords as unknown as Record<string, unknown>[],
-          medicalRecords as unknown as Record<string, unknown>[],
+          oldPerson.medicalRecords,
+          medicalRecords,
           "Медицина",
         );
         Object.assign(allChanges, result.changes);
@@ -238,8 +258,8 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
 
       if (achievements) {
         const result = compareItemArrays(
-          oldPerson.achievements as unknown as Record<string, unknown>[],
-          achievements as unknown as Record<string, unknown>[],
+          oldPerson.achievements,
+          achievements,
           "Нагороди",
         );
         Object.assign(allChanges, result.changes);
@@ -248,8 +268,8 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
 
       if (equipment) {
         const result = compareItemArrays(
-          oldPerson.equipment as unknown as Record<string, unknown>[],
-          equipment as unknown as Record<string, unknown>[],
+          oldPerson.equipment,
+          equipment,
           "Спорядження",
         );
         Object.assign(allChanges, result.changes);
@@ -258,8 +278,8 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
 
       if (positionHistory) {
         const result = compareItemArrays(
-          oldPerson.positionHistory as unknown as Record<string, unknown>[],
-          positionHistory as unknown as Record<string, unknown>[],
+          oldPerson.positionHistory,
+          positionHistory,
           "Історія посад",
         );
         Object.assign(allChanges, result.changes);
