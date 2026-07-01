@@ -16,6 +16,14 @@ export const VEHICLE_TYPE_LABELS: Record<VehicleType, string> = {
   bus: "Автобус",
 };
 
+export const PURPOSE_LABELS: Record<string, string> = {
+  combat: "Бойове завдання",
+  rotation: "Планова заміна",
+  logistics: "Господарчі потреби",
+  training: "Навчання",
+  other: "Інше",
+};
+
 export const VEHICLE_TYPE_OPTIONS = Object.entries(VEHICLE_TYPE_LABELS).map(
   ([value, label]) => ({ value, label }),
 );

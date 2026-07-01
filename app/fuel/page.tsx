@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Plus, Fuel, Receipt, BarChart3, ListOrdered } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VehicleCard } from "@/components/shared/fuel/vehicle-card";
 import { getVehicles, getVehicleStats } from "@root/lib/data/fuel";
@@ -49,7 +50,11 @@ export default async function FuelMain() {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <Separator />
+
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold tracking-tight">Загальна статистика</h2>
+        <div className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -83,9 +88,14 @@ export default async function FuelMain() {
             <p className="text-2xl font-bold">{stats.totalRecords}</p>
           </CardContent>
         </Card>
+        </div>
       </div>
 
-      {vehicles.length === 0 ? (
+      <Separator />
+
+      <div>
+        <h2 className="text-lg font-semibold tracking-tight mb-4">Автомобілі</h2>
+        {vehicles.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="rounded-full bg-muted p-4 mb-4">
             <Fuel className="size-8 text-muted-foreground" />
@@ -110,6 +120,7 @@ export default async function FuelMain() {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }

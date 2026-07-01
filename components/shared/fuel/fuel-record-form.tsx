@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cn } from "@root/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -42,11 +42,11 @@ export function FuelRecordForm({ vehicles, initialData, preselectedVehicleId }: 
   const [loading, setLoading] = useState(false);
 
   const form = useForm<CreateFuelRecordData>({
-    resolver: zodResolver(createFuelRecordSchema),
+    resolver: zodResolver(createFuelRecordSchema) as unknown as Resolver<CreateFuelRecordData>,
     defaultValues: {
       vehicleId: initialData?.vehicleId ?? preselectedVehicleId ?? 0,
       date: initialData?.date ?? new Date().toISOString().split("T")[0],
-      fuelType: initialData?.fuelType ?? "",
+      fuelType: initialData?.fuelType ?? undefined,
       liters: initialData?.liters ?? 0,
       pricePerLiter: initialData?.pricePerLiter ?? undefined,
       totalCost: initialData?.totalCost ?? undefined,
@@ -108,7 +108,7 @@ export function FuelRecordForm({ vehicles, initialData, preselectedVehicleId }: 
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
         <Card>
           <CardHeader>
             <CardTitle>{isEdit ? "Редагувати заправку" : "Нова заправка"}</CardTitle>

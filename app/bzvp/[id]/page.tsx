@@ -98,11 +98,16 @@ export default async function BzvpProfilePage({
             >
               {statusInfo.label}
             </Badge>
-            <Button variant="outline" size="icon" className="size-8" asChild>
-              <Link href={`/bzvp/${person.id}/edit`}>
-                <Pencil className="size-4" />
-              </Link>
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" size="sm" asChild>
+                  <Link href={`/bzvp/${person.id}/edit`}>
+                    <Pencil className="size-4" />
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Редагувати</TooltipContent>
+            </Tooltip>
             <DeletePersonnelDialog
               personnelId={person.id}
               fullName={person.fullName}

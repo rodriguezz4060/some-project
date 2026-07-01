@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Pencil } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@root/lib/utils";
@@ -57,11 +58,16 @@ export default async function PersonnelProfilePage({
             >
               {statusInfo.label}
             </Badge>
-            <Button variant="outline" size="icon" className="size-8" asChild>
-              <Link href={`/military/${person.id}/edit`}>
-                <Pencil className="size-4" />
-              </Link>
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" size="sm" asChild>
+                  <Link href={`/military/${person.id}/edit`}>
+                    <Pencil className="size-4" />
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Редагувати</TooltipContent>
+            </Tooltip>
             <DeletePersonnelDialog
               personnelId={person.id}
               fullName={person.fullName}

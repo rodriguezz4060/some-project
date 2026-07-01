@@ -53,6 +53,14 @@ function getLabel(key: string): string {
   return fieldLabels[key] ?? key;
 }
 
+function parseMilitary(rawData: CreateMilitaryData) {
+  const parsed = createMilitarySchema.safeParse(rawData);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues.map((i) => i.message).join("; "));
+  }
+  return parsed.data;
+}
+
 function compareFields(
   oldData: Record<string, unknown>,
   newData: Record<string, unknown>,
@@ -108,263 +116,266 @@ function compareItemArrays(
   return { changes, descriptions };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function replaceRelation(delegate: any, personnelId: number, items: Record<string, unknown>[]) {
-  await delegate.deleteMany({ where: { personnelId } });
-  if (items.length > 0) {
-    await delegate.createMany({ data: items });
-  }
-}
-
 export async function createMilitary(rawData: CreateMilitaryData) {
   await requireModerator();
-  const parsed = createMilitarySchema.safeParse(rawData);
-  if (!parsed.success) {
-    throw new Error(parsed.error.issues.map((i) => i.message).join("; "));
+  const data = parseMilitary(rawData);
+
+  try {
+    const person = await prisma.militaryPersonnel.create({
+      data: {
+        fullName: data.fullName,
+        rank: data.rank,
+        position: data.position,
+        unit: data.unit,
+        status: data.status,
+        birthDate: data.birthDate,
+        photo: data.photo,
+        experience: data.experience,
+        missions: data.missions,
+        phone: data.phone,
+        email: data.email,
+        lastActiveDays: data.lastActiveDays,
+        medicalRecords: data.medicalRecords?.length
+          ? { createMany: { data: data.medicalRecords } }
+          : undefined,
+        achievements: data.achievements?.length
+          ? { createMany: { data: data.achievements } }
+          : undefined,
+        equipment: data.equipment?.length
+          ? { createMany: { data: data.equipment } }
+          : undefined,
+        positionHistory: data.positionHistory?.length
+          ? { createMany: { data: data.positionHistory } }
+          : undefined,
+        clothingSizes: data.clothingSizes
+          ? { create: { ...data.clothingSizes } }
+          : undefined,
+      },
+    });
+
+    await logCreate(
+      "MilitaryPersonnel",
+      person.id,
+      `Створив анкету військовослужбовця «${person.fullName}»`,
+    );
+
+    revalidatePath("/military");
+    return { id: person.id, fullName: person.fullName };
+  } catch {
+    throw new Error("Помилка при збереженні");
   }
-  const data = parsed.data;
-  const person = await prisma.militaryPersonnel.create({
-    data: {
-      fullName: data.fullName,
-      rank: data.rank,
-      position: data.position,
-      unit: data.unit,
-      status: data.status,
-      birthDate: data.birthDate,
-      photo: data.photo || null,
-      experience: data.experience ?? null,
-      missions: data.missions ?? null,
-      phone: data.phone || null,
-      email: data.email || null,
-      lastActiveDays: data.lastActiveDays ?? null,
-      medicalRecords: data.medicalRecords?.length
-        ? { createMany: { data: data.medicalRecords.map((r) => ({ ...r, notes: r.notes || null })) } }
-        : undefined,
-      achievements: data.achievements?.length
-        ? { createMany: { data: data.achievements.map((a) => ({ ...a, description: a.description || null })) } }
-        : undefined,
-      equipment: data.equipment?.length
-        ? { createMany: { data: data.equipment.map((e) => ({ ...e, serialNumber: e.serialNumber || null })) } }
-        : undefined,
-      positionHistory: data.positionHistory?.length
-        ? { createMany: { data: data.positionHistory.map((p) => ({ ...p, endDate: p.endDate || null })) } }
-        : undefined,
-      clothingSizes: data.clothingSizes
-        ? { create: { ...data.clothingSizes } }
-        : undefined,
-    },
-  });
-
-  await logCreate(
-    "MilitaryPersonnel",
-    person.id,
-    `Створив анкету військовослужбовця «${person.fullName}»`,
-  );
-
-  revalidatePath("/military");
-  return { id: person.id, fullName: person.fullName };
 }
 
 export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
   await requireModerator();
-  const parsed = createMilitarySchema.safeParse(rawData);
-  if (!parsed.success) {
-    throw new Error(parsed.error.issues.map((i) => i.message).join("; "));
-  }
-  const data = parsed.data;
-  const oldPerson = await prisma.militaryPersonnel.findUnique({
-    where: { id },
-    include: {
-      equipment: true,
-      medicalRecords: true,
-      achievements: true,
-      positionHistory: true,
-      clothingSizes: true,
-    },
-  });
+  const data = parseMilitary(rawData);
 
-  const person = await prisma.militaryPersonnel.update({
-    where: { id },
-    data: {
-      fullName: data.fullName,
-      rank: data.rank,
-      position: data.position,
-      unit: data.unit,
-      status: data.status,
-      birthDate: data.birthDate,
-      photo: data.photo || null,
-      experience: data.experience ?? null,
-      missions: data.missions ?? null,
-      phone: data.phone || null,
-      email: data.email || null,
-      lastActiveDays: data.lastActiveDays ?? null,
-    },
-  });
-
-  const allChanges: Changes = {};
-  const allDescriptions: string[] = [];
-
-  if (oldPerson) {
-    const mainFieldChanges = compareFields(
-      oldPerson as unknown as Record<string, unknown>,
-      data as unknown as Record<string, unknown>,
-      ["fullName", "rank", "position", "unit", "status", "birthDate", "phone", "email", "experience", "missions", "lastActiveDays"],
-    );
-    for (const [key, val] of Object.entries(mainFieldChanges)) {
-      allChanges[key] = val;
-      allDescriptions.push(
-        `змінив «${getLabel(key)}» з «${val.old ?? ""}» на «${val.new ?? ""}»`,
-      );
-    }
-  }
-
-  if (data.medicalRecords) {
-    await replaceRelation(
-      prisma.medicalRecord,
-      id,
-      data.medicalRecords.map((r) => ({
-        personnelId: id,
-        condition: r.condition,
-        diagnosisDate: r.diagnosisDate,
-        status: r.status,
-        notes: r.notes || null,
-      })),
-    );
-
-    if (oldPerson) {
-      const result = compareItemArrays(
-        oldPerson.medicalRecords as unknown as Record<string, unknown>[],
-        data.medicalRecords as unknown as Record<string, unknown>[],
-        "Медицина",
-      );
-      Object.assign(allChanges, result.changes);
-      allDescriptions.push(...result.descriptions);
-    }
-  }
-
-  if (data.achievements) {
-    await replaceRelation(
-      prisma.achievement,
-      id,
-      data.achievements.map((a) => ({
-        personnelId: id,
-        name: a.name,
-        date: a.date,
-        type: a.type,
-        description: a.description || null,
-      })),
-    );
-
-    if (oldPerson) {
-      const result = compareItemArrays(
-        oldPerson.achievements as unknown as Record<string, unknown>[],
-        data.achievements as unknown as Record<string, unknown>[],
-        "Нагороди",
-      );
-      Object.assign(allChanges, result.changes);
-      allDescriptions.push(...result.descriptions);
-    }
-  }
-
-  if (data.equipment) {
-    await replaceRelation(
-      prisma.equipment,
-      id,
-      data.equipment.map((e) => ({
-        personnelId: id,
-        name: e.name,
-        type: e.type,
-        serialNumber: e.serialNumber || null,
-        issuedDate: e.issuedDate,
-      })),
-    );
-
-    if (oldPerson) {
-      const result = compareItemArrays(
-        oldPerson.equipment as unknown as Record<string, unknown>[],
-        data.equipment as unknown as Record<string, unknown>[],
-        "Спорядження",
-      );
-      Object.assign(allChanges, result.changes);
-      allDescriptions.push(...result.descriptions);
-    }
-  }
-
-  if (data.positionHistory) {
-    await replaceRelation(
-      prisma.positionEntry,
-      id,
-      data.positionHistory.map((p) => ({
-        personnelId: id,
-        position: p.position,
-        unit: p.unit,
-        startDate: p.startDate,
-        endDate: p.endDate || null,
-      })),
-    );
-
-    if (oldPerson) {
-      const result = compareItemArrays(
-        oldPerson.positionHistory as unknown as Record<string, unknown>[],
-        data.positionHistory as unknown as Record<string, unknown>[],
-        "Історія посад",
-      );
-      Object.assign(allChanges, result.changes);
-      allDescriptions.push(...result.descriptions);
-    }
-  }
-
-  if (data.clothingSizes) {
-    await prisma.clothingSizes.upsert({
-      where: { personnelId: id },
-      update: { ...data.clothingSizes },
-      create: { personnelId: id, ...data.clothingSizes },
+  try {
+    const oldPerson = await prisma.militaryPersonnel.findUnique({
+      where: { id },
+      include: {
+        equipment: true,
+        medicalRecords: true,
+        achievements: true,
+        positionHistory: true,
+        clothingSizes: true,
+      },
     });
 
-    if (oldPerson?.clothingSizes) {
-      const result = compareFields(
-        oldPerson.clothingSizes as unknown as Record<string, unknown>,
-        data.clothingSizes as unknown as Record<string, unknown>,
-        ["height", "chest", "waist", "shoes", "headgear", "uniform"],
+    const person = await prisma.militaryPersonnel.update({
+      where: { id },
+      data: {
+        fullName: data.fullName,
+        rank: data.rank,
+        position: data.position,
+        unit: data.unit,
+        status: data.status,
+        birthDate: data.birthDate,
+        photo: data.photo,
+        experience: data.experience,
+        missions: data.missions,
+        phone: data.phone,
+        email: data.email,
+        lastActiveDays: data.lastActiveDays,
+      },
+    });
+
+    const allChanges: Changes = {};
+    const allDescriptions: string[] = [];
+
+    if (oldPerson) {
+      const mainFieldChanges = compareFields(
+        oldPerson as unknown as Record<string, unknown>,
+        data as unknown as Record<string, unknown>,
+        ["fullName", "rank", "position", "unit", "status", "birthDate", "phone", "email", "experience", "missions", "lastActiveDays"],
       );
-      Object.assign(allChanges, result);
-      for (const [key, val] of Object.entries(result)) {
+      for (const [key, val] of Object.entries(mainFieldChanges)) {
+        allChanges[key] = val;
         allDescriptions.push(
           `змінив «${getLabel(key)}» з «${val.old ?? ""}» на «${val.new ?? ""}»`,
         );
       }
     }
-  }
 
-  const fullName = person.fullName;
-  let description: string;
-  if (allDescriptions.length === 0) {
-    description = `Вніс зміни в анкету «${fullName}» (без змін у даних)`;
-  } else if (allDescriptions.length <= 3) {
-    description = `Зміни в картці «${fullName}»: ${allDescriptions.join("; ")}`;
-  } else {
-    description = `Зміни в картці «${fullName}»: ${allDescriptions.slice(0, 3).join("; ")} та ще ${allDescriptions.length - 3} змін`;
-  }
+    if (data.medicalRecords) {
+      await prisma.medicalRecord.deleteMany({ where: { personnelId: id } });
+      if (data.medicalRecords.length > 0) {
+        await prisma.medicalRecord.createMany({
+          data: data.medicalRecords.map((r) => ({
+            personnelId: id,
+            condition: r.condition,
+            diagnosisDate: r.diagnosisDate,
+            status: r.status,
+            notes: r.notes,
+          })),
+        });
+      }
 
-  if (Object.keys(allChanges).length > 0) {
-    await logUpdate("MilitaryPersonnel", id, description, allChanges);
-  }
+      if (oldPerson) {
+        const result = compareItemArrays(
+          oldPerson.medicalRecords as unknown as Record<string, unknown>[],
+          data.medicalRecords as unknown as Record<string, unknown>[],
+          "Медицина",
+        );
+        Object.assign(allChanges, result.changes);
+        allDescriptions.push(...result.descriptions);
+      }
+    }
 
-  revalidatePath("/military");
-  revalidatePath(`/military/${id}`);
-  return { id: person.id, fullName: person.fullName };
+    if (data.achievements) {
+      await prisma.achievement.deleteMany({ where: { personnelId: id } });
+      if (data.achievements.length > 0) {
+        await prisma.achievement.createMany({
+          data: data.achievements.map((a) => ({
+            personnelId: id,
+            name: a.name,
+            date: a.date,
+            type: a.type,
+            description: a.description,
+          })),
+        });
+      }
+
+      if (oldPerson) {
+        const result = compareItemArrays(
+          oldPerson.achievements as unknown as Record<string, unknown>[],
+          data.achievements as unknown as Record<string, unknown>[],
+          "Нагороди",
+        );
+        Object.assign(allChanges, result.changes);
+        allDescriptions.push(...result.descriptions);
+      }
+    }
+
+    if (data.equipment) {
+      await prisma.equipment.deleteMany({ where: { personnelId: id } });
+      if (data.equipment.length > 0) {
+        await prisma.equipment.createMany({
+          data: data.equipment.map((e) => ({
+            personnelId: id,
+            name: e.name,
+            type: e.type,
+            serialNumber: e.serialNumber,
+            issuedDate: e.issuedDate,
+          })),
+        });
+      }
+
+      if (oldPerson) {
+        const result = compareItemArrays(
+          oldPerson.equipment as unknown as Record<string, unknown>[],
+          data.equipment as unknown as Record<string, unknown>[],
+          "Спорядження",
+        );
+        Object.assign(allChanges, result.changes);
+        allDescriptions.push(...result.descriptions);
+      }
+    }
+
+    if (data.positionHistory) {
+      await prisma.positionEntry.deleteMany({ where: { personnelId: id } });
+      if (data.positionHistory.length > 0) {
+        await prisma.positionEntry.createMany({
+          data: data.positionHistory.map((p) => ({
+            personnelId: id,
+            position: p.position,
+            unit: p.unit,
+            startDate: p.startDate,
+            endDate: p.endDate,
+          })),
+        });
+      }
+
+      if (oldPerson) {
+        const result = compareItemArrays(
+          oldPerson.positionHistory as unknown as Record<string, unknown>[],
+          data.positionHistory as unknown as Record<string, unknown>[],
+          "Історія посад",
+        );
+        Object.assign(allChanges, result.changes);
+        allDescriptions.push(...result.descriptions);
+      }
+    }
+
+    if (data.clothingSizes) {
+      await prisma.clothingSizes.upsert({
+        where: { personnelId: id },
+        update: { ...data.clothingSizes },
+        create: { personnelId: id, ...data.clothingSizes },
+      });
+
+      if (oldPerson?.clothingSizes) {
+        const result = compareFields(
+          oldPerson.clothingSizes as unknown as Record<string, unknown>,
+          data.clothingSizes as unknown as Record<string, unknown>,
+          ["height", "chest", "waist", "shoes", "headgear", "uniform"],
+        );
+        Object.assign(allChanges, result);
+        for (const [key, val] of Object.entries(result)) {
+          allDescriptions.push(
+            `змінив «${getLabel(key)}» з «${val.old ?? ""}» на «${val.new ?? ""}»`,
+          );
+        }
+      }
+    }
+
+    const fullName = person.fullName;
+    let description: string;
+    if (allDescriptions.length === 0) {
+      description = `Вніс зміни в анкету «${fullName}» (без змін у даних)`;
+    } else if (allDescriptions.length <= 3) {
+      description = `Зміни в картці «${fullName}»: ${allDescriptions.join("; ")}`;
+    } else {
+      description = `Зміни в картці «${fullName}»: ${allDescriptions.slice(0, 3).join("; ")} та ще ${allDescriptions.length - 3} змін`;
+    }
+
+    if (Object.keys(allChanges).length > 0) {
+      await logUpdate("MilitaryPersonnel", id, description, allChanges);
+    }
+
+    revalidatePath("/military");
+    revalidatePath(`/military/${id}`);
+    return { id: person.id, fullName: person.fullName };
+  } catch {
+    throw new Error("Помилка при збереженні");
+  }
 }
 
 export async function deleteMilitary(id: number) {
   await requireModerator();
-  const person = await prisma.militaryPersonnel.delete({ where: { id } });
 
-  await logDelete(
-    "MilitaryPersonnel",
-    id,
-    `Видалив анкету військовослужбовця «${person.fullName}»`,
-  );
+  try {
+    const person = await prisma.militaryPersonnel.delete({ where: { id } });
 
-  revalidatePath("/military");
-  return { id: person.id, fullName: person.fullName };
+    await logDelete(
+      "MilitaryPersonnel",
+      id,
+      `Видалив анкету військовослужбовця «${person.fullName}»`,
+    );
+
+    revalidatePath("/military");
+    return { id: person.id, fullName: person.fullName };
+  } catch {
+    throw new Error("Помилка при видаленні");
+  }
 }

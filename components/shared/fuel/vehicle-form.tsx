@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cn } from "@root/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -41,15 +41,15 @@ export function VehicleForm({ initialData }: Props) {
   const [loading, setLoading] = useState(false);
 
   const form = useForm<CreateVehicleData>({
-    resolver: zodResolver(createVehicleSchema),
+    resolver: zodResolver(createVehicleSchema) as unknown as Resolver<CreateVehicleData>,
     defaultValues: {
       brand: initialData?.brand ?? "",
       model: initialData?.model ?? "",
       licensePlate: initialData?.licensePlate ?? "",
-      type: initialData?.type ?? "",
+      type: initialData?.type ?? undefined,
       year: initialData?.year ?? undefined,
       vin: initialData?.vin ?? undefined,
-      fuelType: initialData?.fuelType ?? "",
+      fuelType: initialData?.fuelType ?? undefined,
       tankCapacity: initialData?.tankCapacity ?? undefined,
       unit: initialData?.unit ?? "",
       notes: initialData?.notes ?? undefined,
@@ -95,7 +95,7 @@ export function VehicleForm({ initialData }: Props) {
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
         <Card>
           <CardHeader>
             <CardTitle>{isEdit ? "Редагувати автомобіль" : "Новий автомобіль"}</CardTitle>

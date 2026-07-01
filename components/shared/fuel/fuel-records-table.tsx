@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { FUEL_TYPE_LABELS } from "./constants";
+import { FUEL_TYPE_LABELS, PURPOSE_LABELS } from "./constants";
 import type { FuelRecord } from "./types";
 
 interface Props {
@@ -71,8 +71,8 @@ export function FuelRecordsTable({ records, canManage, onDelete }: Props) {
               <TableCell>{r.totalCost ? `${r.totalCost.toFixed(2)} грн` : "—"}</TableCell>
               <TableCell>{r.mileage ? `${r.mileage.toLocaleString()} км` : "—"}</TableCell>
               <TableCell>{r.driverName}</TableCell>
-              <TableCell className="max-w-[120px] truncate" title={r.purpose ?? ""}>
-                {r.purpose ?? "—"}
+              <TableCell className="max-w-[120px] truncate" title={PURPOSE_LABELS[r.purpose ?? ""] ?? r.purpose ?? ""}>
+                {PURPOSE_LABELS[r.purpose ?? ""] ?? r.purpose ?? "—"}
               </TableCell>
               {canManage && (
                 <TableCell>

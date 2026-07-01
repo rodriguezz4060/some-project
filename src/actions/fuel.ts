@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { logCreate, logUpdate, logDelete } from "@root/lib/audit";
 import { auth } from "@root/lib/auth";
 import { redirect } from "next/navigation";
+import { PURPOSE_LABELS } from "@/components/shared/fuel/constants";
 import { createVehicleSchema, createFuelRecordSchema } from "@root/lib/schemas/fuel";
 import type { CreateVehicleData, CreateFuelRecordData } from "@root/lib/schemas/fuel";
 
@@ -13,6 +14,7 @@ async function requireModerator() {
   if (!session?.user || (session.user.role !== "admin" && session.user.role !== "moderator")) {
     redirect("/");
   }
+  return session;
 }
 
 const fieldLabels: Record<string, string> = {
@@ -61,229 +63,263 @@ function compareFields(
   return changes;
 }
 
+function parseVehicle(rawData: CreateVehicleData) {
+  const parsed = createVehicleSchema.safeParse(rawData);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues.map((i) => i.message).join("; "));
+  }
+  return parsed.data;
+}
+
+function parseFuelRecord(rawData: CreateFuelRecordData) {
+  const parsed = createFuelRecordSchema.safeParse(rawData);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues.map((i) => i.message).join("; "));
+  }
+  return parsed.data;
+}
+
 // ── Vehicles ──
 
 export async function createVehicle(rawData: CreateVehicleData) {
   await requireModerator();
-  const parsed = createVehicleSchema.safeParse(rawData);
-  if (!parsed.success) {
-    throw new Error(parsed.error.issues.map((i) => i.message).join("; "));
+  const data = parseVehicle(rawData);
+
+  try {
+    const vehicle = await prisma.vehicle.create({
+      data: {
+        brand: data.brand,
+        model: data.model,
+        licensePlate: data.licensePlate,
+        type: data.type,
+        year: data.year,
+        vin: data.vin,
+        fuelType: data.fuelType,
+        tankCapacity: data.tankCapacity,
+        unit: data.unit,
+        notes: data.notes,
+      },
+    });
+
+    await logCreate("Vehicle", vehicle.id, `Додав авто «${vehicle.brand} ${vehicle.model}» (${vehicle.licensePlate}), тип: ${getLabel(vehicle.type)}, підрозділ: ${vehicle.unit}`);
+
+    revalidatePath("/fuel");
+    return { id: vehicle.id, brand: vehicle.brand, model: vehicle.model, licensePlate: vehicle.licensePlate };
+  } catch {
+    throw new Error("Помилка при збереженні");
   }
-  const data = parsed.data;
-
-  const vehicle = await prisma.vehicle.create({
-    data: {
-      brand: data.brand,
-      model: data.model,
-      licensePlate: data.licensePlate,
-      type: data.type,
-      year: data.year ?? null,
-      vin: data.vin || null,
-      fuelType: data.fuelType,
-      tankCapacity: data.tankCapacity ?? null,
-      unit: data.unit,
-      notes: data.notes || null,
-    },
-  });
-
-  await logCreate("Vehicle", vehicle.id, `Додав авто «${vehicle.brand} ${vehicle.model}» (${vehicle.licensePlate}), тип: ${getLabel(vehicle.type)}, підрозділ: ${vehicle.unit}`);
-
-  revalidatePath("/fuel");
-  return { id: vehicle.id, brand: vehicle.brand, model: vehicle.model, licensePlate: vehicle.licensePlate };
 }
 
 export async function updateVehicle(id: number, rawData: CreateVehicleData) {
   await requireModerator();
-  const parsed = createVehicleSchema.safeParse(rawData);
-  if (!parsed.success) {
-    throw new Error(parsed.error.issues.map((i) => i.message).join("; "));
-  }
-  const data = parsed.data;
+  const data = parseVehicle(rawData);
 
-  const oldVehicle = await prisma.vehicle.findUnique({ where: { id } });
+  try {
+    const oldVehicle = await prisma.vehicle.findUnique({ where: { id } });
 
-  const vehicle = await prisma.vehicle.update({
-    where: { id },
-    data: {
-      brand: data.brand,
-      model: data.model,
-      licensePlate: data.licensePlate,
-      type: data.type,
-      year: data.year ?? null,
-      vin: data.vin || null,
-      fuelType: data.fuelType,
-      tankCapacity: data.tankCapacity ?? null,
-      unit: data.unit,
-      notes: data.notes || null,
-    },
-  });
+    const vehicle = await prisma.vehicle.update({
+      where: { id },
+      data: {
+        brand: data.brand,
+        model: data.model,
+        licensePlate: data.licensePlate,
+        type: data.type,
+        year: data.year,
+        vin: data.vin,
+        fuelType: data.fuelType,
+        tankCapacity: data.tankCapacity,
+        unit: data.unit,
+        notes: data.notes,
+      },
+    });
 
-  if (oldVehicle) {
-    const changes = compareFields(
-      oldVehicle as unknown as Record<string, unknown>,
-      data as unknown as Record<string, unknown>,
-      ["brand", "model", "licensePlate", "type", "year", "vin", "fuelType", "tankCapacity", "unit", "notes"],
-    );
+    if (oldVehicle) {
+      const changes = compareFields(
+        oldVehicle as unknown as Record<string, unknown>,
+        data as unknown as Record<string, unknown>,
+        ["brand", "model", "licensePlate", "type", "year", "vin", "fuelType", "tankCapacity", "unit", "notes"],
+      );
 
-    const descriptions = Object.entries(changes).map(
-      ([key, val]) => `змінив «${key}» з «${val.old ?? ""}» на «${val.new ?? ""}»`,
-    );
+      const descriptions = Object.entries(changes).map(
+        ([key, val]) => `змінив «${key}» з «${val.old ?? ""}» на «${val.new ?? ""}»`,
+      );
 
-    let description: string;
-    if (descriptions.length === 0) {
-      description = `Оновив дані авто «${vehicle.brand} ${vehicle.model}» (без змін)`;
-    } else if (descriptions.length <= 3) {
-      description = `Оновлено авто «${vehicle.brand} ${vehicle.model}»: ${descriptions.join("; ")}`;
-    } else {
-      description = `Оновлено авто «${vehicle.brand} ${vehicle.model}»: ${descriptions.slice(0, 3).join("; ")} та ще ${descriptions.length - 3} змін`;
+      let description: string;
+      if (descriptions.length === 0) {
+        description = `Оновив дані авто «${vehicle.brand} ${vehicle.model}» (без змін)`;
+      } else if (descriptions.length <= 3) {
+        description = `Оновлено авто «${vehicle.brand} ${vehicle.model}»: ${descriptions.join("; ")}`;
+      } else {
+        description = `Оновлено авто «${vehicle.brand} ${vehicle.model}»: ${descriptions.slice(0, 3).join("; ")} та ще ${descriptions.length - 3} змін`;
+      }
+
+      await logUpdate("Vehicle", id, description, changes);
     }
 
-    await logUpdate("Vehicle", id, description, changes);
+    revalidatePath("/fuel");
+    revalidatePath(`/fuel/vehicles/${id}`);
+    return { id: vehicle.id, brand: vehicle.brand, model: vehicle.model, licensePlate: vehicle.licensePlate };
+  } catch {
+    throw new Error("Помилка при збереженні");
   }
-
-  revalidatePath("/fuel");
-  revalidatePath(`/fuel/vehicles/${id}`);
-  return { id: vehicle.id, brand: vehicle.brand, model: vehicle.model, licensePlate: vehicle.licensePlate };
 }
 
 export async function deleteVehicle(id: number) {
   await requireModerator();
 
-  const vehicle = await prisma.vehicle.delete({ where: { id } });
+  try {
+    const vehicle = await prisma.vehicle.delete({ where: { id } });
 
-  await logDelete("Vehicle", id, `Видалив авто «${vehicle.brand} ${vehicle.model}» (${vehicle.licensePlate}), підрозділ: ${vehicle.unit}`);
+    await logDelete("Vehicle", id, `Видалив авто «${vehicle.brand} ${vehicle.model}» (${vehicle.licensePlate}), підрозділ: ${vehicle.unit}`);
 
-  revalidatePath("/fuel");
-  return { id: vehicle.id };
+    revalidatePath("/fuel");
+    return { id: vehicle.id };
+  } catch {
+    throw new Error("Помилка при видаленні");
+  }
 }
 
 // ── Fuel Records ──
 
 export async function createFuelRecord(rawData: CreateFuelRecordData) {
-  await requireModerator();
-  const parsed = createFuelRecordSchema.safeParse(rawData);
-  if (!parsed.success) {
-    throw new Error(parsed.error.issues.map((i) => i.message).join("; "));
-  }
-  const data = parsed.data;
-
-  const session = await auth();
+  const session = await requireModerator();
+  const data = parseFuelRecord(rawData);
   let userId = Number(session?.user?.id);
   if (!userId || !(await prisma.user.findUnique({ where: { id: userId } }))) {
     const user = await prisma.user.findFirst({ orderBy: { id: "asc" } });
     userId = user?.id ?? 1;
   }
 
-  const vehicle = await prisma.vehicle.findUnique({
-    where: { id: data.vehicleId },
-    select: { brand: true, model: true, licensePlate: true },
-  });
+  try {
+    const vehicle = await prisma.vehicle.findUnique({
+      where: { id: data.vehicleId },
+      select: { brand: true, model: true, licensePlate: true },
+    });
 
-  const record = await prisma.fuelRecord.create({
-    data: {
-      vehicleId: data.vehicleId,
-      date: data.date,
-      fuelType: data.fuelType,
-      liters: data.liters,
-      pricePerLiter: data.pricePerLiter ?? null,
-      totalCost: data.totalCost ?? null,
-      mileage: data.mileage ?? null,
-      driverName: data.driverName,
-      invoiceNumber: data.invoiceNumber || null,
-      supplier: data.supplier || null,
-      purpose: data.purpose || null,
-      createdById: userId,
-    },
-  });
+    const record = await prisma.fuelRecord.create({
+      data: {
+        vehicleId: data.vehicleId,
+        date: data.date,
+        fuelType: data.fuelType,
+        liters: data.liters,
+        pricePerLiter: data.pricePerLiter,
+        totalCost: data.totalCost,
+        mileage: data.mileage,
+        driverName: data.driverName,
+        invoiceNumber: data.invoiceNumber,
+        supplier: data.supplier,
+        purpose: data.purpose,
+        createdById: userId,
+      },
+    });
 
-  const vehicleName = vehicle ? `${vehicle.brand} ${vehicle.model} (${vehicle.licensePlate})` : `#${data.vehicleId}`;
-  await logCreate("FuelRecord", record.id, `Заправка: ${data.liters.toFixed(1)} л на ${vehicleName}, водій «${data.driverName}»`);
+    const vehicleName = vehicle ? `${vehicle.brand} ${vehicle.model} (${vehicle.licensePlate})` : `#${data.vehicleId}`;
+    await logCreate("FuelRecord", record.id, `Заправка: ${data.liters.toFixed(1)} л на ${vehicleName}, водій «${data.driverName}»`);
 
-  revalidatePath("/fuel");
-  revalidatePath(`/fuel/vehicles/${data.vehicleId}`);
-  revalidatePath("/fuel/records");
-  return { id: record.id };
+    revalidatePath("/fuel");
+    revalidatePath(`/fuel/vehicles/${data.vehicleId}`);
+    revalidatePath("/fuel/records");
+    return { id: record.id };
+  } catch {
+    throw new Error("Помилка при збереженні");
+  }
 }
 
 export async function updateFuelRecord(id: number, rawData: CreateFuelRecordData) {
   await requireModerator();
-  const parsed = createFuelRecordSchema.safeParse(rawData);
-  if (!parsed.success) {
-    throw new Error(parsed.error.issues.map((i) => i.message).join("; "));
-  }
-  const data = parsed.data;
+  const data = parseFuelRecord(rawData);
 
-  const oldRecord = await prisma.fuelRecord.findUnique({
-    where: { id },
-    include: { vehicle: { select: { brand: true, model: true, licensePlate: true } } },
-  });
+  try {
+    const oldRecord = await prisma.fuelRecord.findUnique({
+      where: { id },
+      include: { vehicle: { select: { brand: true, model: true, licensePlate: true } } },
+    });
 
-  const vehicle = await prisma.vehicle.findUnique({
-    where: { id: data.vehicleId },
-    select: { brand: true, model: true, licensePlate: true },
-  });
+    const vehicle = await prisma.vehicle.findUnique({
+      where: { id: data.vehicleId },
+      select: { brand: true, model: true, licensePlate: true },
+    });
 
-  const record = await prisma.fuelRecord.update({
-    where: { id },
-    data: {
-      vehicleId: data.vehicleId,
-      date: data.date,
-      fuelType: data.fuelType,
-      liters: data.liters,
-      pricePerLiter: data.pricePerLiter ?? null,
-      totalCost: data.totalCost ?? null,
-      mileage: data.mileage ?? null,
-      driverName: data.driverName,
-      invoiceNumber: data.invoiceNumber || null,
-      supplier: data.supplier || null,
-      purpose: data.purpose || null,
-    },
-  });
+    const record = await prisma.fuelRecord.update({
+      where: { id },
+      data: {
+        vehicleId: data.vehicleId,
+        date: data.date,
+        fuelType: data.fuelType,
+        liters: data.liters,
+        pricePerLiter: data.pricePerLiter,
+        totalCost: data.totalCost,
+        mileage: data.mileage,
+        driverName: data.driverName,
+        invoiceNumber: data.invoiceNumber,
+        supplier: data.supplier,
+        purpose: data.purpose,
+      },
+    });
 
-  if (oldRecord) {
-    const changes = compareFields(
-      oldRecord as unknown as Record<string, unknown>,
-      data as unknown as Record<string, unknown>,
-      ["date", "fuelType", "liters", "pricePerLiter", "totalCost", "mileage", "driverName", "invoiceNumber", "supplier", "purpose"],
-    );
+    if (oldRecord) {
+      const allFields = ["date", "fuelType", "liters", "pricePerLiter", "totalCost", "mileage", "driverName", "invoiceNumber", "supplier", "purpose"];
+      const changes: Changes = {};
+      for (const field of allFields) {
+        const oldVal = (oldRecord as Record<string, unknown>)[field];
+        const newVal = (data as Record<string, unknown>)[field];
+        const oldStr = oldVal == null ? "" : String(oldVal);
+        const newStr = newVal == null ? "" : String(newVal);
+        if (oldStr !== newStr) {
+          let displayOld = oldStr || null;
+          let displayNew = newStr || null;
+          if (field === "purpose") {
+            displayOld = PURPOSE_LABELS[displayOld ?? ""] ?? displayOld;
+            displayNew = PURPOSE_LABELS[displayNew ?? ""] ?? displayNew;
+          }
+          changes[getLabel(field)] = { old: displayOld, new: displayNew };
+        }
+      }
 
-    const descriptions = Object.entries(changes).map(
-      ([key, val]) => `змінив «${key}» з «${val.old ?? ""}» на «${val.new ?? ""}»`,
-    );
+      const descriptions = Object.entries(changes).map(
+        ([key, val]) => `змінив «${key}» з «${val.old ?? ""}» на «${val.new ?? ""}»`,
+      );
 
-    const vehicleName = vehicle ? `${vehicle.brand} ${vehicle.model} (${vehicle.licensePlate})` : `#${data.vehicleId}`;
+      const vehicleName = vehicle ? `${vehicle.brand} ${vehicle.model} (${vehicle.licensePlate})` : `#${data.vehicleId}`;
 
-    let description: string;
-    if (descriptions.length === 0) {
-      description = `Оновив заправку №${id} для ${vehicleName} (без змін)`;
-    } else if (descriptions.length <= 3) {
-      description = `Оновлено заправку №${id} (${vehicleName}): ${descriptions.join("; ")}`;
-    } else {
-      description = `Оновлено заправку №${id} (${vehicleName}): ${descriptions.slice(0, 3).join("; ")} та ще ${descriptions.length - 3} змін`;
+      let description: string;
+      if (descriptions.length === 0) {
+        description = `Оновив заправку №${id} для ${vehicleName} (без змін)`;
+      } else if (descriptions.length <= 3) {
+        description = `Оновлено заправку №${id} (${vehicleName}): ${descriptions.join("; ")}`;
+      } else {
+        description = `Оновлено заправку №${id} (${vehicleName}): ${descriptions.slice(0, 3).join("; ")} та ще ${descriptions.length - 3} змін`;
+      }
+
+      await logUpdate("FuelRecord", id, description, changes);
     }
 
-    await logUpdate("FuelRecord", id, description, changes);
+    revalidatePath("/fuel");
+    revalidatePath(`/fuel/vehicles/${data.vehicleId}`);
+    revalidatePath("/fuel/records");
+    return { id: record.id };
+  } catch {
+    throw new Error("Помилка при збереженні");
   }
-
-  revalidatePath("/fuel");
-  revalidatePath(`/fuel/vehicles/${data.vehicleId}`);
-  revalidatePath("/fuel/records");
-  return { id: record.id };
 }
 
 export async function deleteFuelRecord(id: number) {
   await requireModerator();
 
-  const record = await prisma.fuelRecord.delete({
-    where: { id },
-    include: { vehicle: { select: { brand: true, model: true, licensePlate: true } } },
-  });
+  try {
+    const record = await prisma.fuelRecord.delete({
+      where: { id },
+      include: { vehicle: { select: { brand: true, model: true, licensePlate: true } } },
+    });
 
-  const vehicleName = `${record.vehicle.brand} ${record.vehicle.model} (${record.vehicle.licensePlate})`;
-  await logDelete("FuelRecord", id, `Видалив заправку: ${record.liters.toFixed(1)} л на ${vehicleName}, водій «${record.driverName}»`);
+    const vehicleName = `${record.vehicle.brand} ${record.vehicle.model} (${record.vehicle.licensePlate})`;
+    await logDelete("FuelRecord", id, `Видалив заправку: ${record.liters.toFixed(1)} л на ${vehicleName}, водій «${record.driverName}»`);
 
-  revalidatePath("/fuel");
-  revalidatePath(`/fuel/vehicles/${record.vehicleId}`);
-  revalidatePath("/fuel/records");
-  return { id: record.id };
+    revalidatePath("/fuel");
+    revalidatePath(`/fuel/vehicles/${record.vehicleId}`);
+    revalidatePath("/fuel/records");
+    return { id: record.id };
+  } catch {
+    throw new Error("Помилка при видаленні");
+  }
 }

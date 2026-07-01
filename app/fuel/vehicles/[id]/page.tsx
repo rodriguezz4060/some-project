@@ -4,6 +4,7 @@ import { ArrowLeft, Plus, Fuel, Receipt, Gauge } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { FuelRecordsTable } from "@/components/shared/fuel/fuel-records-table";
 import { getVehicleById } from "@root/lib/data/fuel";
 import { FUEL_TYPE_LABELS, VEHICLE_TYPE_LABELS } from "@/components/shared/fuel/constants";
@@ -75,8 +76,12 @@ export default async function VehicleDetailPage({
         )}
       </div>
 
+      <Separator />
+
       {summary && (
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold tracking-tight">Статистика</h2>
+          <div className="grid gap-4 sm:grid-cols-3">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -111,10 +116,13 @@ export default async function VehicleDetailPage({
             </CardContent>
           </Card>
         </div>
+      </div>
       )}
 
+      <Separator />
+
       <div>
-        <h2 className="text-lg font-semibold mb-4">Історія заправок</h2>
+        <h2 className="text-lg font-semibold tracking-tight mb-4">Історія заправок</h2>
         <FuelRecordsTable records={vehicle.fuelRecords ?? []} canManage={canManage} />
       </div>
     </div>

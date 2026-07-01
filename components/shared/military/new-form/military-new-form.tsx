@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cn } from "@root/lib/utils";
 import { Save, Loader2, Plus, X } from "lucide-react";
@@ -34,15 +34,12 @@ import type { CreateMilitaryData } from "@root/lib/schemas/military";
 const ALL_STATUSES = ["active", "on-mission", "wounded", "vacation", "reserve"] as const;
 const RANK_OPTIONS = ["лейтенант", "старший лейтенант", "капітан", "майор", "полковник", "сержант"];
 
-const emptyClothingSizes = { height: "", chest: "", waist: "", shoes: "", headgear: "", uniform: "" };
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function ArraySection({ title, fields, append, remove, renderItem }: { title: string; fields: { id: string }[]; append: (value: any) => void; remove: (index: number) => void; renderItem: (index: number) => React.ReactNode }) {
+function ArraySection<T extends Record<string, unknown>>({ title, fields, append, remove, renderItem }: { title: string; fields: { id: string }[]; append: (value: T | T[]) => void; remove: (index: number) => void; renderItem: (index: number) => React.ReactNode }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-foreground/80">{title}</h3>
-        <Button type="button" variant="outline" size="sm" onClick={() => append({})} className="gap-1">
+        <Button type="button" variant="outline" size="sm" onClick={() => append({} as T)} className="gap-1">
           <Plus className="size-3.5" /> Додати
         </Button>
       </div>
@@ -71,17 +68,17 @@ function getDefaultValues(person?: MilitaryPersonnel): CreateMilitaryData {
       unit: "",
       status: "active",
       birthDate: "",
-      photo: undefined,
+      photo: "",
       experience: undefined,
       missions: undefined,
-      phone: undefined,
-      email: undefined,
+      phone: "",
+      email: "",
       lastActiveDays: undefined,
       medicalRecords: [],
       achievements: [],
       equipment: [],
       positionHistory: [],
-      clothingSizes: {},
+      clothingSizes: { height: "", chest: "", waist: "", shoes: "", headgear: "", uniform: "" },
     };
   }
   return {
@@ -91,17 +88,19 @@ function getDefaultValues(person?: MilitaryPersonnel): CreateMilitaryData {
     unit: person.unit,
     status: person.status,
     birthDate: person.birthDate,
-    photo: person.photo ?? undefined,
+    photo: person.photo ?? "",
     experience: person.experience ?? undefined,
     missions: person.missions ?? undefined,
-    phone: person.phone ?? undefined,
-    email: person.email ?? undefined,
+    phone: person.phone ?? "",
+    email: person.email ?? "",
     lastActiveDays: person.lastActiveDays ?? undefined,
-    medicalRecords: person.medicalRecords?.map((r) => ({ ...r, notes: r.notes ?? undefined })) ?? [],
-    achievements: person.achievements?.map((a) => ({ ...a, description: a.description ?? undefined })) ?? [],
-    equipment: person.equipment?.map((e) => ({ ...e, serialNumber: e.serialNumber ?? undefined })) ?? [],
-    positionHistory: person.positionHistory?.map((p) => ({ ...p, endDate: p.endDate ?? undefined })) ?? [],
-    clothingSizes: person.clothingSizes ? { ...emptyClothingSizes, ...person.clothingSizes } : {},
+    medicalRecords: person.medicalRecords?.map((r) => ({ ...r, notes: r.notes ?? "" })) ?? [],
+    achievements: person.achievements?.map((a) => ({ ...a, description: a.description ?? "" })) ?? [],
+    equipment: person.equipment?.map((e) => ({ ...e, serialNumber: e.serialNumber ?? "" })) ?? [],
+    positionHistory: person.positionHistory?.map((p) => ({ ...p, endDate: p.endDate ?? "" })) ?? [],
+    clothingSizes: person.clothingSizes
+      ? { height: "", chest: "", waist: "", shoes: "", headgear: "", uniform: "", ...person.clothingSizes }
+      : { height: "", chest: "", waist: "", shoes: "", headgear: "", uniform: "" },
   };
 }
 
@@ -115,7 +114,7 @@ export function MilitaryForm({ initialData }: Props) {
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<CreateMilitaryData>({
-    resolver: zodResolver(createMilitarySchema),
+    resolver: zodResolver(createMilitarySchema) as unknown as Resolver<CreateMilitaryData>,
     defaultValues: getDefaultValues(initialData),
   });
 
@@ -235,7 +234,7 @@ export function MilitaryForm({ initialData }: Props) {
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="space-y-6">
         <Card>
           <CardHeader>
             <CardTitle>Основна інформація</CardTitle>
