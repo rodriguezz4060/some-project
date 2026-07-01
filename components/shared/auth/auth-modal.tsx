@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { useSession } from "next-auth/react";
 import { LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,11 +10,11 @@ import { UserMenu } from "./user-menu";
 
 export function AuthModal() {
   const { data: session, status } = useSession();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
   if (status === "loading" && !mounted) return null;
 

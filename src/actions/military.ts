@@ -162,7 +162,8 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
       },
     });
 
-    const { medicalRecords: _, achievements: _a, equipment: _e, positionHistory: _p, clothingSizes: _c, ...flat } = data;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { medicalRecords, achievements, equipment, positionHistory, clothingSizes, ...flat } = data;
     const person = await prisma.militaryPersonnel.update({ where: { id }, data: flat });
 
     const allChanges: Changes = {};
