@@ -162,9 +162,53 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
       },
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { medicalRecords, achievements, equipment, positionHistory, clothingSizes, ...flat } = data;
+
     const person = await prisma.militaryPersonnel.update({ where: { id }, data: flat });
+
+    if (medicalRecords) {
+      await prisma.medicalRecord.deleteMany({ where: { personnelId: id } });
+      if (medicalRecords.length > 0) {
+        await prisma.medicalRecord.createMany({
+          data: medicalRecords.map((r) => ({ personnelId: id, ...r })),
+        });
+      }
+    }
+
+    if (achievements) {
+      await prisma.achievement.deleteMany({ where: { personnelId: id } });
+      if (achievements.length > 0) {
+        await prisma.achievement.createMany({
+          data: achievements.map((a) => ({ personnelId: id, ...a })),
+        });
+      }
+    }
+
+    if (equipment) {
+      await prisma.equipment.deleteMany({ where: { personnelId: id } });
+      if (equipment.length > 0) {
+        await prisma.equipment.createMany({
+          data: equipment.map((e) => ({ personnelId: id, ...e })),
+        });
+      }
+    }
+
+    if (positionHistory) {
+      await prisma.positionEntry.deleteMany({ where: { personnelId: id } });
+      if (positionHistory.length > 0) {
+        await prisma.positionEntry.createMany({
+          data: positionHistory.map((p) => ({ personnelId: id, ...p })),
+        });
+      }
+    }
+
+    if (clothingSizes) {
+      await prisma.clothingSizes.upsert({
+        where: { personnelId: id },
+        update: { ...clothingSizes },
+        create: { personnelId: id, ...clothingSizes },
+      });
+    }
 
     const allChanges: Changes = {};
     const allDescriptions: string[] = [];
@@ -181,95 +225,51 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
           `змінив «${getLabel(key)}» з «${val.old ?? ""}» на «${val.new ?? ""}»`,
         );
       }
-    }
 
-    if (data.medicalRecords) {
-      await prisma.medicalRecord.deleteMany({ where: { personnelId: id } });
-      if (data.medicalRecords.length > 0) {
-        await prisma.medicalRecord.createMany({
-          data: data.medicalRecords.map((r) => ({ personnelId: id, ...r })),
-        });
-      }
-
-      if (oldPerson) {
+      if (medicalRecords) {
         const result = compareItemArrays(
           oldPerson.medicalRecords as unknown as Record<string, unknown>[],
-          data.medicalRecords as unknown as Record<string, unknown>[],
+          medicalRecords as unknown as Record<string, unknown>[],
           "Медицина",
         );
         Object.assign(allChanges, result.changes);
         allDescriptions.push(...result.descriptions);
       }
-    }
 
-    if (data.achievements) {
-      await prisma.achievement.deleteMany({ where: { personnelId: id } });
-      if (data.achievements.length > 0) {
-        await prisma.achievement.createMany({
-          data: data.achievements.map((a) => ({ personnelId: id, ...a })),
-        });
-      }
-
-      if (oldPerson) {
+      if (achievements) {
         const result = compareItemArrays(
           oldPerson.achievements as unknown as Record<string, unknown>[],
-          data.achievements as unknown as Record<string, unknown>[],
+          achievements as unknown as Record<string, unknown>[],
           "Нагороди",
         );
         Object.assign(allChanges, result.changes);
         allDescriptions.push(...result.descriptions);
       }
-    }
 
-    if (data.equipment) {
-      await prisma.equipment.deleteMany({ where: { personnelId: id } });
-      if (data.equipment.length > 0) {
-        await prisma.equipment.createMany({
-          data: data.equipment.map((e) => ({ personnelId: id, ...e })),
-        });
-      }
-
-      if (oldPerson) {
+      if (equipment) {
         const result = compareItemArrays(
           oldPerson.equipment as unknown as Record<string, unknown>[],
-          data.equipment as unknown as Record<string, unknown>[],
+          equipment as unknown as Record<string, unknown>[],
           "Спорядження",
         );
         Object.assign(allChanges, result.changes);
         allDescriptions.push(...result.descriptions);
       }
-    }
 
-    if (data.positionHistory) {
-      await prisma.positionEntry.deleteMany({ where: { personnelId: id } });
-      if (data.positionHistory.length > 0) {
-        await prisma.positionEntry.createMany({
-          data: data.positionHistory.map((p) => ({ personnelId: id, ...p })),
-        });
-      }
-
-      if (oldPerson) {
+      if (positionHistory) {
         const result = compareItemArrays(
           oldPerson.positionHistory as unknown as Record<string, unknown>[],
-          data.positionHistory as unknown as Record<string, unknown>[],
+          positionHistory as unknown as Record<string, unknown>[],
           "Історія посад",
         );
         Object.assign(allChanges, result.changes);
         allDescriptions.push(...result.descriptions);
       }
-    }
 
-    if (data.clothingSizes) {
-      await prisma.clothingSizes.upsert({
-        where: { personnelId: id },
-        update: { ...data.clothingSizes },
-        create: { personnelId: id, ...data.clothingSizes },
-      });
-
-      if (oldPerson?.clothingSizes) {
+      if (clothingSizes && oldPerson.clothingSizes) {
         const result = compareFields(
           oldPerson.clothingSizes as unknown as Record<string, unknown>,
-          data.clothingSizes as unknown as Record<string, unknown>,
+          clothingSizes as unknown as Record<string, unknown>,
           ["height", "chest", "waist", "shoes", "headgear", "uniform"],
         );
         Object.assign(allChanges, result);

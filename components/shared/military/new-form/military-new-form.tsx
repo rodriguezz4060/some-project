@@ -192,13 +192,13 @@ export function MilitaryForm({ initialData }: Props) {
               renderItem={(i) => (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
                   <FormField control={form.control} name={`positionHistory.${i}.position`} render={({ field, fieldState }) => (
-                    <FormItem><FormLabel>Посада</FormLabel><FormControl><Input {...field} placeholder="Командир взводу" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Посада</FormLabel><FormControl><Input {...field} value={field.value ?? ""} placeholder="Командир взводу" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name={`positionHistory.${i}.unit`} render={({ field, fieldState }) => (
-                    <FormItem><FormLabel>Підрозділ</FormLabel><FormControl><Input {...field} placeholder="72 ОМБр" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Підрозділ</FormLabel><FormControl><Input {...field} value={field.value ?? ""} placeholder="72 ОМБр" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name={`positionHistory.${i}.startDate`} render={({ field, fieldState }) => (
-                    <FormItem><FormLabel>Дата початку</FormLabel><FormControl><Input type="date" {...field} className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Дата початку</FormLabel><FormControl><Input type="date" {...field} value={field.value ?? ""} className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name={`positionHistory.${i}.endDate`} render={({ field, fieldState }) => (
                     <FormItem><FormLabel>Дата закінчення</FormLabel><FormControl><Input type="date" {...field} value={field.value ?? ""} className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
@@ -222,13 +222,13 @@ export function MilitaryForm({ initialData }: Props) {
               renderItem={(i) => (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
                   <FormField control={form.control} name={`medicalRecords.${i}.condition`} render={({ field, fieldState }) => (
-                    <FormItem><FormLabel>Діагноз</FormLabel><FormControl><Input {...field} placeholder="Захворювання / травма" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Діагноз</FormLabel><FormControl><Input {...field} value={field.value ?? ""} placeholder="Захворювання / травма" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name={`medicalRecords.${i}.status`} render={({ field }) => (
                     <FormItem><FormLabel>Статус</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="w-full"><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="active">Активний</SelectItem><SelectItem value="resolved">Вирішено</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name={`medicalRecords.${i}.diagnosisDate`} render={({ field, fieldState }) => (
-                    <FormItem><FormLabel>Дата діагнозу</FormLabel><FormControl><Input type="date" {...field} className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Дата діагнозу</FormLabel><FormControl><Input type="date" {...field} value={field.value ?? ""} className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name={`medicalRecords.${i}.notes`} render={({ field, fieldState }) => (
                     <FormItem><FormLabel>Нотатки</FormLabel><FormControl><Input {...field} value={field.value ?? ""} placeholder="..." className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
@@ -252,13 +252,13 @@ export function MilitaryForm({ initialData }: Props) {
               renderItem={(i) => (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
                   <FormField control={form.control} name={`achievements.${i}.name`} render={({ field, fieldState }) => (
-                    <FormItem><FormLabel>Назва</FormLabel><FormControl><Input {...field} placeholder="Орден «За мужність»" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Назва</FormLabel><FormControl><Input {...field} value={field.value ?? ""} placeholder="Орден «За мужність»" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name={`achievements.${i}.type`} render={({ field }) => (
                     <FormItem><FormLabel>Тип</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="w-full"><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="medal">Медаль</SelectItem><SelectItem value="commendation">Відзнака</SelectItem><SelectItem value="certificate">Грамота</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name={`achievements.${i}.date`} render={({ field, fieldState }) => (
-                    <FormItem><FormLabel>Дата</FormLabel><FormControl><Input type="date" {...field} className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Дата</FormLabel><FormControl><Input type="date" {...field} value={field.value ?? ""} className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name={`achievements.${i}.description`} render={({ field, fieldState }) => (
                     <FormItem><FormLabel>Опис</FormLabel><FormControl><Input {...field} value={field.value ?? ""} placeholder="..." className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
@@ -282,7 +282,7 @@ export function MilitaryForm({ initialData }: Props) {
               renderItem={(i) => (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
                   <FormField control={form.control} name={`equipment.${i}.name`} render={({ field, fieldState }) => (
-                    <FormItem><FormLabel>Назва</FormLabel><FormControl><Input {...field} placeholder="M4A1" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Назва</FormLabel><FormControl><Input {...field} value={field.value ?? ""} placeholder="M4A1" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name={`equipment.${i}.type`} render={({ field }) => (
                     <FormItem><FormLabel>Тип</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="w-full"><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="weapon">Зброя</SelectItem><SelectItem value="armor">Броня</SelectItem><SelectItem value="gear">Спорядження</SelectItem></SelectContent></Select><FormMessage /></FormItem>
@@ -291,7 +291,7 @@ export function MilitaryForm({ initialData }: Props) {
                     <FormItem><FormLabel>Серійний номер</FormLabel><FormControl><Input {...field} value={field.value ?? ""} placeholder="SN-123456" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name={`equipment.${i}.issuedDate`} render={({ field, fieldState }) => (
-                    <FormItem><FormLabel>Дата видачі</FormLabel><FormControl><Input type="date" {...field} className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Дата видачі</FormLabel><FormControl><Input type="date" {...field} value={field.value ?? ""} className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
                   )} />
                 </div>
               )}
