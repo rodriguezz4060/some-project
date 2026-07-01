@@ -105,9 +105,12 @@ src/
     prisma.ts                 # Prisma client
     utils.ts                  # cn() та інші утиліти
     audit.ts                  # система аудиту (лог дій)
+    audit-helpers.ts          # формування описів змін (аудит)
     middleware-auth.ts         # NextAuth для Edge middleware (без провайдерів)
     detection-colors.ts        # кольори для детекції
+    diff.ts                   # порівняння полів для аудиту
     data/                     # дані для фільтрів/довідників
+    schemas/                  # Zod-схеми для валідації форм
 hooks/                        # кастомні React хуки (use-collapsed, use-debounce, use-mobile)
 types/
   next-auth.d.ts               # розширення типів NextAuth (role, id)

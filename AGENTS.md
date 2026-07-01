@@ -89,6 +89,25 @@ Each feature module (military, bzvp, fuel) follows:
 - Card sorting: `orderBy: { createdAt: "desc" }` (newest first)
 - `prisma/seed.ts` — 10 military + 10 bzvp + 3 users + vehicles + fuel records
 
+## Оптимізації (виконані)
+
+- **Адмін-дашборд**: 4× count → 1× groupBy + parallel findMany (`app/admin/page.tsx`)
+- **Audit logs**: fire-and-forget (`logCreate/Update/Delete` без `await`)
+- **BZVP import**: batch — findMany + createMany замість per-row запитів
+- **`audit-helpers.ts`**: централізовані `buildChangeLines` + `formatDescription` замість дубльованого коду в action-файлах
+- **`tsconfig.json`**: ES2017 → ES2022
+- **Картки**: `MilitaryCard` + `BzvpCard` — Server Components; `MilitaryCardGrid` + `BzvpCardGrid` — приймають `children`
+- **`@react-pdf/renderer`**, **`photoswipe`**, **`recharts`**: динамічний імпорт через `next/dynamic({ ssr: false })`
+- **`export-bzvp.ts`**: `take: 5000` для запобігання out-of-memory
+
+## Code conventions (оновлено)
+
+- **`createZodResolver<T>(schema)`** — з `@root/lib/utils`; використовувати для react-hook-form + Zod 4
+- **Audit описи змін** — використовувати `buildChangeLines` + `formatDescription` з `@root/lib/audit-helpers`
+- **НЕ використовувати** `import * as React` — заміняти на named imports (`useState`, `useEffect`, etc.)
+- **Синхронізація вкладених записів**: `syncItems()` (module-level в `military.ts`) — передавати лямбди, не `.bind()`
+- **Картки-списки**: рендерити на сервері, передавати як `children` у client-обгортки
+
 ## Notes
 
 - Locale is Ukrainian (`lang="ua"`, Cyrillic font subset, UI text in Ukrainian).
