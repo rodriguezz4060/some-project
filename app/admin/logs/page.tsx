@@ -56,6 +56,12 @@ export default async function AdminLogsPage({ searchParams }: PageProps) {
   const entityType = typeof sp.entityType === "string" && sp.entityType !== " " ? sp.entityType : undefined;
   const userEmail = typeof sp.userEmail === "string" && sp.userEmail !== " " ? sp.userEmail : undefined;
 
+  const pageParams = new URLSearchParams();
+  if (action) pageParams.set("action", action);
+  if (entityType) pageParams.set("entityType", entityType);
+  if (userEmail) pageParams.set("userEmail", userEmail);
+  const querySuffix = pageParams.toString();
+
   const { logs, total, totalPages } = await getAuditLogs(page, 20, {
     action,
     entityType,
@@ -209,7 +215,7 @@ export default async function AdminLogsPage({ searchParams }: PageProps) {
           <div className="flex items-center gap-2">
             {page > 1 && (
               <Button variant="outline" size="sm" asChild>
-                <Link href={`/admin/logs?page=${page - 1}${action ? `&action=${action}` : ""}${entityType ? `&entityType=${entityType}` : ""}${userEmail ? `&userEmail=${userEmail}` : ""}`}>
+                <Link href={`/admin/logs?page=${page - 1}${querySuffix ? `&${querySuffix}` : ""}`}>
                   <ChevronLeft className="size-4" />
                   Попередня
                 </Link>
@@ -217,7 +223,7 @@ export default async function AdminLogsPage({ searchParams }: PageProps) {
             )}
             {page < totalPages && (
               <Button variant="outline" size="sm" asChild>
-                <Link href={`/admin/logs?page=${page + 1}${action ? `&action=${action}` : ""}${entityType ? `&entityType=${entityType}` : ""}${userEmail ? `&userEmail=${userEmail}` : ""}`}>
+                <Link href={`/admin/logs?page=${page + 1}${querySuffix ? `&${querySuffix}` : ""}`}>
                   Наступна
                   <ChevronRight className="size-4" />
                 </Link>

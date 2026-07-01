@@ -13,7 +13,7 @@ export function AuthModal() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    queueMicrotask(() => setMounted(true));
+    setMounted(true);
   }, []);
 
   if (status === "loading" && !mounted) return null;
