@@ -23,6 +23,7 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
+import { TextField, NumberField, SelectField } from "@/components/shared/form-fields";
 import { toast } from "sonner";
 import { createFuelRecord, updateFuelRecord } from "@root/actions/fuel";
 import { createFuelRecordSchema } from "@root/lib/schemas/fuel";
@@ -116,15 +117,11 @@ export function FuelRecordForm({ vehicles, initialData, preselectedVehicleId }: 
               <FormField control={form.control} name="vehicleId" render={({ field, fieldState }) => (
                 <FormItem><FormLabel>Автомобіль</FormLabel><FormControl><Select onValueChange={(v) => field.onChange(Number(v))} value={field.value ? String(field.value) : undefined}><SelectTrigger className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")}><SelectValue placeholder="Оберіть автомобіль" /></SelectTrigger><SelectContent>{vehicles.map((v) => (<SelectItem key={v.id} value={String(v.id)}>{v.brand} {v.model} — {v.licensePlate}</SelectItem>))}</SelectContent></Select></FormControl><FormMessage /></FormItem>
               )} />
-              <FormField control={form.control} name="date" render={({ field, fieldState }) => (
-                <FormItem><FormLabel>Дата</FormLabel><FormControl><Input type="date" {...field} className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-              )} />
+              <TextField control={form.control} name="date" label="Дата" type="date" />
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <FormField control={form.control} name="fuelType" render={({ field, fieldState }) => (
-                <FormItem><FormLabel>Тип пального</FormLabel><FormControl><Select onValueChange={field.onChange} value={field.value}><SelectTrigger className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")}><SelectValue placeholder="Оберіть пальне" /></SelectTrigger><SelectContent>{FUEL_TYPE_OPTIONS.map((opt) => (<SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>))}</SelectContent></Select></FormControl><FormMessage /></FormItem>
-              )} />
+              <SelectField control={form.control} name="fuelType" label="Тип пального" options={FUEL_TYPE_OPTIONS} placeholder="Оберіть пальне" />
               <FormField control={form.control} name="liters" render={({ field, fieldState }) => (
                 <FormItem><FormLabel>Кількість літрів</FormLabel><FormControl><Input type="number" step="0.01" value={field.value ?? ""} onChange={(e) => { const v = Number(e.target.value); field.onChange(v || undefined); autoCalculateTotal(v, watchedPpl ?? 0); }} placeholder="20.0" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
               )} />
@@ -134,30 +131,18 @@ export function FuelRecordForm({ vehicles, initialData, preselectedVehicleId }: 
               <FormField control={form.control} name="pricePerLiter" render={({ field, fieldState }) => (
                 <FormItem><FormLabel>Ціна за літр</FormLabel><FormControl><Input type="number" step="0.01" value={field.value ?? ""} onChange={(e) => { const v = Number(e.target.value); field.onChange(v || undefined); autoCalculateTotal(watchedLiters ?? 0, v); }} placeholder="53.50" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
               )} />
-              <FormField control={form.control} name="totalCost" render={({ field, fieldState }) => (
-                <FormItem><FormLabel>Загальна вартість</FormLabel><FormControl><Input type="number" step="0.01" value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)} placeholder="1070.00" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-              )} />
-              <FormField control={form.control} name="mileage" render={({ field, fieldState }) => (
-                <FormItem><FormLabel>Пробіг (км)</FormLabel><FormControl><Input type="number" value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)} placeholder="125000" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-              )} />
+              <NumberField control={form.control} name="totalCost" label="Загальна вартість" placeholder="1070.00" step="0.01" />
+              <NumberField control={form.control} name="mileage" label="Пробіг (км)" placeholder="125000" />
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <FormField control={form.control} name="driverName" render={({ field, fieldState }) => (
-                <FormItem><FormLabel>Водій</FormLabel><FormControl><Input {...field} placeholder="ПІБ водія" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-              )} />
-              <FormField control={form.control} name="purpose" render={({ field, fieldState }) => (
-                <FormItem><FormLabel>Призначення</FormLabel><FormControl><Select onValueChange={field.onChange} value={field.value ?? ""}><SelectTrigger className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")}><SelectValue placeholder="Мета" /></SelectTrigger><SelectContent><SelectItem value="combat">Бойове завдання</SelectItem><SelectItem value="rotation">Планова заміна</SelectItem><SelectItem value="logistics">Господарчі потреби</SelectItem><SelectItem value="training">Навчання</SelectItem><SelectItem value="other">Інше</SelectItem></SelectContent></Select></FormControl><FormMessage /></FormItem>
-              )} />
+              <TextField control={form.control} name="driverName" label="Водій" placeholder="ПІБ водія" />
+              <SelectField control={form.control} name="purpose" label="Призначення" placeholder="Мета" options={[{ value: "combat", label: "Бойове завдання" }, { value: "rotation", label: "Планова заміна" }, { value: "logistics", label: "Господарчі потреби" }, { value: "training", label: "Навчання" }, { value: "other", label: "Інше" }]} />
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <FormField control={form.control} name="invoiceNumber" render={({ field, fieldState }) => (
-                <FormItem><FormLabel>Номер накладної</FormLabel><FormControl><Input {...field} value={field.value ?? ""} className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-              )} />
-              <FormField control={form.control} name="supplier" render={({ field, fieldState }) => (
-                <FormItem><FormLabel>Постачальник</FormLabel><FormControl><Input {...field} value={field.value ?? ""} className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-              )} />
+              <TextField control={form.control} name="invoiceNumber" label="Номер накладної" placeholder="" />
+              <TextField control={form.control} name="supplier" label="Постачальник" placeholder="" />
             </div>
 
             <div className="flex gap-3 pt-2">

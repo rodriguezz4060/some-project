@@ -119,37 +119,17 @@ function compareItemArrays(
 export async function createMilitary(rawData: CreateMilitaryData) {
   await requireModerator();
   const data = parseMilitary(rawData);
+  const { medicalRecords, achievements, equipment, positionHistory, clothingSizes, ...flat } = data;
 
   try {
     const person = await prisma.militaryPersonnel.create({
       data: {
-        fullName: data.fullName,
-        rank: data.rank,
-        position: data.position,
-        unit: data.unit,
-        status: data.status,
-        birthDate: data.birthDate,
-        photo: data.photo,
-        experience: data.experience,
-        missions: data.missions,
-        phone: data.phone,
-        email: data.email,
-        lastActiveDays: data.lastActiveDays,
-        medicalRecords: data.medicalRecords?.length
-          ? { createMany: { data: data.medicalRecords } }
-          : undefined,
-        achievements: data.achievements?.length
-          ? { createMany: { data: data.achievements } }
-          : undefined,
-        equipment: data.equipment?.length
-          ? { createMany: { data: data.equipment } }
-          : undefined,
-        positionHistory: data.positionHistory?.length
-          ? { createMany: { data: data.positionHistory } }
-          : undefined,
-        clothingSizes: data.clothingSizes
-          ? { create: { ...data.clothingSizes } }
-          : undefined,
+        ...flat,
+        medicalRecords: medicalRecords?.length ? { createMany: { data: medicalRecords } } : undefined,
+        achievements: achievements?.length ? { createMany: { data: achievements } } : undefined,
+        equipment: equipment?.length ? { createMany: { data: equipment } } : undefined,
+        positionHistory: positionHistory?.length ? { createMany: { data: positionHistory } } : undefined,
+        clothingSizes: clothingSizes ? { create: { ...clothingSizes } } : undefined,
       },
     });
 
@@ -182,23 +162,8 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
       },
     });
 
-    const person = await prisma.militaryPersonnel.update({
-      where: { id },
-      data: {
-        fullName: data.fullName,
-        rank: data.rank,
-        position: data.position,
-        unit: data.unit,
-        status: data.status,
-        birthDate: data.birthDate,
-        photo: data.photo,
-        experience: data.experience,
-        missions: data.missions,
-        phone: data.phone,
-        email: data.email,
-        lastActiveDays: data.lastActiveDays,
-      },
-    });
+    const { medicalRecords: _, achievements: _a, equipment: _e, positionHistory: _p, clothingSizes: _c, ...flat } = data;
+    const person = await prisma.militaryPersonnel.update({ where: { id }, data: flat });
 
     const allChanges: Changes = {};
     const allDescriptions: string[] = [];
@@ -221,13 +186,7 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
       await prisma.medicalRecord.deleteMany({ where: { personnelId: id } });
       if (data.medicalRecords.length > 0) {
         await prisma.medicalRecord.createMany({
-          data: data.medicalRecords.map((r) => ({
-            personnelId: id,
-            condition: r.condition,
-            diagnosisDate: r.diagnosisDate,
-            status: r.status,
-            notes: r.notes,
-          })),
+          data: data.medicalRecords.map((r) => ({ personnelId: id, ...r })),
         });
       }
 
@@ -246,13 +205,7 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
       await prisma.achievement.deleteMany({ where: { personnelId: id } });
       if (data.achievements.length > 0) {
         await prisma.achievement.createMany({
-          data: data.achievements.map((a) => ({
-            personnelId: id,
-            name: a.name,
-            date: a.date,
-            type: a.type,
-            description: a.description,
-          })),
+          data: data.achievements.map((a) => ({ personnelId: id, ...a })),
         });
       }
 
@@ -271,13 +224,7 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
       await prisma.equipment.deleteMany({ where: { personnelId: id } });
       if (data.equipment.length > 0) {
         await prisma.equipment.createMany({
-          data: data.equipment.map((e) => ({
-            personnelId: id,
-            name: e.name,
-            type: e.type,
-            serialNumber: e.serialNumber,
-            issuedDate: e.issuedDate,
-          })),
+          data: data.equipment.map((e) => ({ personnelId: id, ...e })),
         });
       }
 
@@ -296,13 +243,7 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
       await prisma.positionEntry.deleteMany({ where: { personnelId: id } });
       if (data.positionHistory.length > 0) {
         await prisma.positionEntry.createMany({
-          data: data.positionHistory.map((p) => ({
-            personnelId: id,
-            position: p.position,
-            unit: p.unit,
-            startDate: p.startDate,
-            endDate: p.endDate,
-          })),
+          data: data.positionHistory.map((p) => ({ personnelId: id, ...p })),
         });
       }
 

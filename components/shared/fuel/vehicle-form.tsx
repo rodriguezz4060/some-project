@@ -4,26 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { cn } from "@root/lib/utils";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  FormProvider,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
+import { FormProvider } from "@/components/ui/form";
+import { cn } from "@root/lib/utils";
+import { Input } from "@/components/ui/input";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { TextField, NumberField, SelectField, TextareaField } from "@/components/shared/form-fields";
 import { toast } from "sonner";
 import { createVehicle, updateVehicle } from "@root/actions/fuel";
 import { createVehicleSchema } from "@root/lib/schemas/fuel";
@@ -102,47 +90,29 @@ export function VehicleForm({ initialData }: Props) {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid gap-4 sm:grid-cols-2">
-              <FormField control={form.control} name="brand" render={({ field, fieldState }) => (
-                <FormItem><FormLabel>Марка</FormLabel><FormControl><Input {...field} placeholder="Наприклад: Ford" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-              )} />
-              <FormField control={form.control} name="model" render={({ field, fieldState }) => (
-                <FormItem><FormLabel>Модель</FormLabel><FormControl><Input {...field} placeholder="Наприклад: Transit" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-              )} />
+              <TextField control={form.control} name="brand" label="Марка" placeholder="Наприклад: Ford" />
+              <TextField control={form.control} name="model" label="Модель" placeholder="Наприклад: Transit" />
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <FormField control={form.control} name="licensePlate" render={({ field, fieldState }) => (
-                <FormItem><FormLabel>Держномер</FormLabel><FormControl><Input {...field} placeholder="Наприклад: АА1234ВВ" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-              )} />
-              <FormField control={form.control} name="type" render={({ field, fieldState }) => (
-                <FormItem><FormLabel>Тип</FormLabel><FormControl><Select onValueChange={field.onChange} value={field.value}><SelectTrigger className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")}><SelectValue placeholder="Оберіть тип" /></SelectTrigger><SelectContent>{VEHICLE_TYPE_OPTIONS.map((opt) => (<SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>))}</SelectContent></Select></FormControl><FormMessage /></FormItem>
-              )} />
+              <TextField control={form.control} name="licensePlate" label="Держномер" placeholder="Наприклад: АА1234ВВ" />
+              <SelectField control={form.control} name="type" label="Тип" options={VEHICLE_TYPE_OPTIONS} placeholder="Оберіть тип" />
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <FormField control={form.control} name="fuelType" render={({ field, fieldState }) => (
-                <FormItem><FormLabel>Тип пального</FormLabel><FormControl><Select onValueChange={field.onChange} value={field.value}><SelectTrigger className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")}><SelectValue placeholder="Оберіть пальне" /></SelectTrigger><SelectContent>{FUEL_TYPE_OPTIONS.map((opt) => (<SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>))}</SelectContent></Select></FormControl><FormMessage /></FormItem>
-              )} />
-              <FormField control={form.control} name="unit" render={({ field, fieldState }) => (
-                <FormItem><FormLabel>Підрозділ</FormLabel><FormControl><Input {...field} placeholder="Назва роти/підрозділу" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-              )} />
+              <SelectField control={form.control} name="fuelType" label="Тип пального" options={FUEL_TYPE_OPTIONS} placeholder="Оберіть пальне" />
+              <TextField control={form.control} name="unit" label="Підрозділ" placeholder="Назва роти/підрозділу" />
             </div>
 
             <div className="grid gap-4 sm:grid-cols-3">
-              <FormField control={form.control} name="year" render={({ field, fieldState }) => (
-                <FormItem><FormLabel>Рік випуску</FormLabel><FormControl><Input type="number" value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)} placeholder="2023" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-              )} />
-              <FormField control={form.control} name="tankCapacity" render={({ field, fieldState }) => (
-                <FormItem><FormLabel>Об&apos;єм баку (л)</FormLabel><FormControl><Input type="number" value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)} placeholder="80" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-              )} />
-              <FormField control={form.control} name="vin" render={({ field, fieldState }) => (
-                <FormItem><FormLabel>VIN-код</FormLabel><FormControl><Input {...field} value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value.toUpperCase())} placeholder="VIN" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
-              )} />
+              <NumberField control={form.control} name="year" label="Рік випуску" placeholder="2023" />
+              <NumberField control={form.control} name="tankCapacity" label="Об'єм баку (л)" placeholder="80" />
             </div>
 
-            <FormField control={form.control} name="notes" render={({ field, fieldState }) => (
-              <FormItem><FormLabel>Примітки</FormLabel><FormControl><Textarea {...field} value={field.value ?? ""} placeholder="Додаткова інформація..." rows={3} className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
+            <FormField control={form.control} name="vin" render={({ field, fieldState }) => (
+              <FormItem><FormLabel>VIN-код</FormLabel><FormControl><Input {...field} value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value.toUpperCase())} placeholder="VIN" className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} /></FormControl><FormMessage /></FormItem>
             )} />
+            <TextareaField control={form.control} name="notes" label="Примітки" placeholder="Додаткова інформація..." />
 
             <div className="flex gap-3 pt-2">
               <Button type="submit" disabled={loading}>

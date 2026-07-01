@@ -24,6 +24,7 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
+import { TextField, NumberField, SelectField } from "@/components/shared/form-fields";
 import { toast } from "sonner";
 import { createMilitary, updateMilitary } from "@root/actions/military";
 import { createMilitarySchema } from "@root/lib/schemas/military";
@@ -59,29 +60,20 @@ function ArraySection<T extends Record<string, unknown>>({ title, fields, append
   );
 }
 
+const DEFAULTS: CreateMilitaryData = {
+  fullName: "", rank: "сержант", position: "", unit: "",
+  status: "active", birthDate: "", photo: "",
+  experience: undefined, missions: undefined, phone: "",
+  email: "", lastActiveDays: undefined,
+  medicalRecords: [], achievements: [], equipment: [],
+  positionHistory: [],
+  clothingSizes: { height: "", chest: "", waist: "", shoes: "", headgear: "", uniform: "" },
+};
+
 function getDefaultValues(person?: MilitaryPersonnel): CreateMilitaryData {
-  if (!person) {
-    return {
-      fullName: "",
-      rank: "сержант",
-      position: "",
-      unit: "",
-      status: "active",
-      birthDate: "",
-      photo: "",
-      experience: undefined,
-      missions: undefined,
-      phone: "",
-      email: "",
-      lastActiveDays: undefined,
-      medicalRecords: [],
-      achievements: [],
-      equipment: [],
-      positionHistory: [],
-      clothingSizes: { height: "", chest: "", waist: "", shoes: "", headgear: "", uniform: "" },
-    };
-  }
+  if (!person) return { ...DEFAULTS };
   return {
+    ...DEFAULTS,
     fullName: person.fullName,
     rank: person.rank,
     position: person.position,
@@ -99,7 +91,7 @@ function getDefaultValues(person?: MilitaryPersonnel): CreateMilitaryData {
     equipment: person.equipment?.map((e) => ({ ...e, serialNumber: e.serialNumber ?? "" })) ?? [],
     positionHistory: person.positionHistory?.map((p) => ({ ...p, endDate: p.endDate ?? "" })) ?? [],
     clothingSizes: person.clothingSizes
-      ? { height: "", chest: "", waist: "", shoes: "", headgear: "", uniform: "", ...person.clothingSizes }
+      ? { height: person.clothingSizes.height ?? "", chest: person.clothingSizes.chest ?? "", waist: person.clothingSizes.waist ?? "", shoes: person.clothingSizes.shoes ?? "", headgear: person.clothingSizes.headgear ?? "", uniform: person.clothingSizes.uniform ?? "" }
       : { height: "", chest: "", waist: "", shoes: "", headgear: "", uniform: "" },
   };
 }
@@ -164,74 +156,6 @@ export function MilitaryForm({ initialData }: Props) {
     }
   }
 
-  function InputField(name: "fullName" | "rank" | "position" | "unit" | "status" | "birthDate" | "photo" | "phone" | "email", label: string, opts?: { placeholder?: string; type?: string }) {
-    return (
-      <FormField
-        control={form.control}
-        name={name}
-        render={({ field, fieldState }) => (
-          <FormItem>
-            <FormLabel>{label}</FormLabel>
-            <FormControl>
-              <Input {...field} value={field.value ?? ""} type={opts?.type ?? "text"} placeholder={opts?.placeholder} className={cn("placeholder:text-muted-foreground/40", fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-    );
-  }
-
-  function NumberField(name: "experience" | "missions" | "lastActiveDays", label: string) {
-    return (
-      <FormField
-        control={form.control}
-        name={name}
-        render={({ field, fieldState }) => (
-          <FormItem>
-            <FormLabel>{label}</FormLabel>
-            <FormControl>
-              <Input
-                type="number"
-                value={field.value ?? ""}
-                onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                className={cn("placeholder:text-muted-foreground/40", fieldState.invalid && "border-destructive ring-3 ring-destructive/20")}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-    );
-  }
-
-  function SelectField(name: "rank" | "status", label: string, options: readonly string[], getLabel?: (v: string) => string) {
-    return (
-      <FormField
-        control={form.control}
-        name={name}
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>{label}</FormLabel>
-            <Select onValueChange={field.onChange} value={field.value ?? ""}>
-              <FormControl>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {options.map((o) => (
-                  <SelectItem key={o} value={o}>{getLabel ? getLabel(o) : o}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-    );
-  }
-
   return (
     <FormProvider {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="space-y-6">
@@ -240,18 +164,18 @@ export function MilitaryForm({ initialData }: Props) {
             <CardTitle>Основна інформація</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-            {SelectField("rank", "Військове звання", RANK_OPTIONS)}
-            {InputField("fullName", "ПІБ", { placeholder: "Ковальчук Андрій Петрович" })}
-            {InputField("position", "Посада", { placeholder: "Командир взводу" })}
-            {InputField("unit", "Підрозділ", { placeholder: "72 ОМБр" })}
-            {SelectField("status", "Статус", ALL_STATUSES, (s) => statusConfig[s as keyof typeof statusConfig]?.label ?? s)}
-            {InputField("birthDate", "Дата народження", { type: "date" })}
-            {InputField("photo", "Фото (URL)", { placeholder: "https://example.com/photo.jpg" })}
-            {InputField("phone", "Номер телефону", { placeholder: "+380 50 111 22 33", type: "tel" })}
-            {InputField("email", "Email", { placeholder: "andriy@example.com", type: "email" })}
-            {NumberField("missions", "Кількість місій")}
-            {NumberField("experience", "Досвід (років)")}
-            {NumberField("lastActiveDays", "Днів з останньої активності")}
+            <SelectField control={form.control} name="rank" label="Військове звання" options={RANK_OPTIONS} />
+            <TextField control={form.control} name="fullName" label="ПІБ" placeholder="Ковальчук Андрій Петрович" />
+            <TextField control={form.control} name="position" label="Посада" placeholder="Командир взводу" />
+            <TextField control={form.control} name="unit" label="Підрозділ" placeholder="72 ОМБр" />
+            <SelectField control={form.control} name="status" label="Статус" options={ALL_STATUSES.map((s) => ({ value: s, label: statusConfig[s]?.label ?? s }))} />
+            <TextField control={form.control} name="birthDate" label="Дата народження" type="date" />
+            <TextField control={form.control} name="photo" label="Фото (URL)" placeholder="https://example.com/photo.jpg" />
+            <TextField control={form.control} name="phone" label="Номер телефону" placeholder="+380 50 111 22 33" type="tel" />
+            <TextField control={form.control} name="email" label="Email" placeholder="andriy@example.com" type="email" />
+            <NumberField control={form.control} name="missions" label="Кількість місій" />
+            <NumberField control={form.control} name="experience" label="Досвід (років)" />
+            <NumberField control={form.control} name="lastActiveDays" label="Днів з останньої активності" />
           </CardContent>
         </Card>
 

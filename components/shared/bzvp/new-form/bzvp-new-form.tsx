@@ -9,24 +9,9 @@ import { Save, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  FormProvider,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
+import { FormProvider } from "@/components/ui/form";
+import { TextField, TextareaField, SelectField } from "@/components/shared/form-fields";
 import { toast } from "sonner";
 import { createBzvp, updateBzvp } from "@root/actions/bzvp";
 import { bzvpSchema } from "@root/lib/schemas/bzvp";
@@ -120,30 +105,6 @@ export function BzvpForm({ initialData }: Props) {
     }
   }
 
-  function field(name: keyof FormValues, label: string, opts?: { placeholder?: string; type?: string; multiline?: boolean }) {
-    return (
-      <FormField
-        control={form.control}
-        name={name}
-        render={({ field: f, fieldState }) => (
-          <FormItem>
-            <FormLabel>{label}</FormLabel>
-            <FormControl>
-              {opts?.multiline ? (
-                <Textarea {...f} value={f.value ?? ""} placeholder={opts?.placeholder} rows={3}
-                  className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} />
-              ) : (
-                <Input {...f} value={f.value ?? ""} type={opts?.type ?? "text"} placeholder={opts?.placeholder}
-                  className={cn("placeholder:text-muted-foreground/40", fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} />
-              )}
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-    );
-  }
-
   return (
     <FormProvider {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="space-y-6">
@@ -152,40 +113,17 @@ export function BzvpForm({ initialData }: Props) {
             <CardTitle>Основна інформація та документи</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field: f, fieldState }) => (
-                <FormItem>
-                  <FormLabel>Статус</FormLabel>
-                  <Select onValueChange={f.onChange} value={f.value ?? ""}>
-                    <FormControl>
-                      <SelectTrigger className={cn(fieldState.invalid && "border-destructive ring-3 ring-destructive/20")}>
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {BZVP_STATUSES.map((s) => (
-                        <SelectItem key={s} value={s}>
-                          {BZVP_STATUS_CONFIG[s].label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {field("rank", "Військове звання", { placeholder: "старший солдат" })}
-            {field("fullName", "ПІБ", { placeholder: "Ковальчук Андрій Петрович" })}
-            {field("birthDate", "Дата народження", { type: "date" })}
-            {field("birthPlace", "Місце народження", { placeholder: "м. Житомир" })}
-            {field("photo", "Фото (URL)", { placeholder: "https://example.com/photo.jpg" })}
-            {field("passport", "Серія та номер паспорту", { placeholder: "АА 123456" })}
-            {field("passportIssued", "Коли і ким виданий паспорт", { placeholder: "12.04.2016, Житомирським РУП" })}
-            {field("tin", "ІПН", { placeholder: "3000512345" })}
-            {field("militaryId", "№ військового квитка", { placeholder: "МК 789012" })}
-            {field("militaryIdIssued", "Коли та ким виданий військовий квиток", { placeholder: "15.06.2018, Житомирським РТЦК" })}
+            <SelectField control={form.control} name="status" label="Статус" options={BZVP_STATUSES.map((s) => ({ value: s, label: BZVP_STATUS_CONFIG[s].label }))} />
+            <TextField control={form.control} name="rank" label="Військове звання" placeholder="старший солдат" />
+            <TextField control={form.control} name="fullName" label="ПІБ" placeholder="Ковальчук Андрій Петрович" />
+            <TextField control={form.control} name="birthDate" label="Дата народження" type="date" />
+            <TextField control={form.control} name="birthPlace" label="Місце народження" placeholder="м. Житомир" />
+            <TextField control={form.control} name="photo" label="Фото (URL)" placeholder="https://example.com/photo.jpg" />
+            <TextField control={form.control} name="passport" label="Серія та номер паспорту" placeholder="АА 123456" />
+            <TextField control={form.control} name="passportIssued" label="Коли і ким виданий паспорт" placeholder="12.04.2016, Житомирським РУП" />
+            <TextField control={form.control} name="tin" label="ІПН" placeholder="3000512345" />
+            <TextField control={form.control} name="militaryId" label="№ військового квитка" placeholder="МК 789012" />
+            <TextField control={form.control} name="militaryIdIssued" label="Коли та ким виданий військовий квиток" placeholder="15.06.2018, Житомирським РТЦК" />
 
             <div className="space-y-3">
               <div className="flex items-center gap-2 pt-1">
@@ -201,7 +139,7 @@ export function BzvpForm({ initialData }: Props) {
                   УБД (учасник бойових дій)
                 </Label>
               </div>
-              {ubdWatched === "Так" && field("ubdDate", "Дата видачі посвідчення УБД", { type: "date" })}
+              {ubdWatched === "Так" && <TextField control={form.control} name="ubdDate" label="Дата видачі посвідчення УБД" type="date" />}
             </div>
           </CardContent>
         </Card>
@@ -211,21 +149,21 @@ export function BzvpForm({ initialData }: Props) {
             <CardTitle>Служба, адреси, правовий статус та сім&apos;я</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-            {field("arrivalDate", "Дата прибуття", { placeholder: "ДД.ММ.РРРР" })}
-            {field("trainingPeriod", "Період навчання", { placeholder: "01.03.2025 – 01.06.2025" })}
-            {field("serviceUnit", "Воєнна частина (В/ч)", { placeholder: "72 ОМБр" })}
-            {field("serviceYears", "Роки проходження служби", { placeholder: "2020-2024" })}
-            {field("civilianJob", "Цивільна робота, фах", { placeholder: "Електрик, ТОВ «Енергія»" })}
-            {field("education", "Які навчальні заклади закінчив, у якому році, спеціальність", { placeholder: "Житомирський політехнічний коледж, 2021, електромонтажник", multiline: true })}
-            {field("specialization", "Спеціалізація", { placeholder: "Кулеметник, водій" })}
-            {field("actualAddress", "Фактичне місце проживання", { placeholder: "м. Житомир, вул. Перемоги 15, кв. 42" })}
-            {field("registrationAddress", "Місце прописки", { placeholder: "м. Житомир, вул. Перемоги 15, кв. 42" })}
-            {field("driverLicense", "Посвідчення водія (категорія)", { placeholder: "B, C" })}
-            {field("criminalRecord", "Судимість", { placeholder: "Немає" })}
-            {field("policeRecords", "Приводи в поліцію / адмін-порушення", { placeholder: "Немає" })}
-            {field("family", "Склад сім'ї (члени родини), їх адреса проживання", { placeholder: "Мати: Ковальчук О.М., м. Житомир...", multiline: true })}
-            {field("phone", "Номер телефону (особистий)", { placeholder: "+380 50 111 22 33", type: "tel" })}
-            {field("relativePhones", "Номери телефонів близьких родичів", { placeholder: "Мати: +380 67 111 22 33" })}
+            <TextField control={form.control} name="arrivalDate" label="Дата прибуття" placeholder="ДД.ММ.РРРР" />
+            <TextField control={form.control} name="trainingPeriod" label="Період навчання" placeholder="01.03.2025 – 01.06.2025" />
+            <TextField control={form.control} name="serviceUnit" label="Воєнна частина (В/ч)" placeholder="72 ОМБр" />
+            <TextField control={form.control} name="serviceYears" label="Роки проходження служби" placeholder="2020-2024" />
+            <TextField control={form.control} name="civilianJob" label="Цивільна робота, фах" placeholder="Електрик, ТОВ «Енергія»" />
+            <TextareaField control={form.control} name="education" label="Які навчальні заклади закінчив, у якому році, спеціальність" placeholder="Житомирський політехнічний коледж, 2021, електромонтажник" />
+            <TextField control={form.control} name="specialization" label="Спеціалізація" placeholder="Кулеметник, водій" />
+            <TextField control={form.control} name="actualAddress" label="Фактичне місце проживання" placeholder="м. Житомир, вул. Перемоги 15, кв. 42" />
+            <TextField control={form.control} name="registrationAddress" label="Місце прописки" placeholder="м. Житомир, вул. Перемоги 15, кв. 42" />
+            <TextField control={form.control} name="driverLicense" label="Посвідчення водія (категорія)" placeholder="B, C" />
+            <TextField control={form.control} name="criminalRecord" label="Судимість" placeholder="Немає" />
+            <TextField control={form.control} name="policeRecords" label="Приводи в поліцію / адмін-порушення" placeholder="Немає" />
+            <TextareaField control={form.control} name="family" label="Склад сім'ї (члени родини), їх адреса проживання" placeholder="Мати: Ковальчук О.М., м. Житомир..." />
+            <TextField control={form.control} name="phone" label="Номер телефону (особистий)" placeholder="+380 50 111 22 33" type="tel" />
+            <TextField control={form.control} name="relativePhones" label="Номери телефонів близьких родичів" placeholder="Мати: +380 67 111 22 33" />
           </CardContent>
         </Card>
 
@@ -234,14 +172,14 @@ export function BzvpForm({ initialData }: Props) {
             <CardTitle>Додатково</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-            {field("personalOrder", "Особисте розпорядження", { placeholder: "Без розпоряджень" })}
-            {field("conscription", "Яким РТЦК та СП призваний", { placeholder: "Житомирським РТЦК та СП" })}
-            {field("health", "Стан здоров'я", { placeholder: "Задовільний", multiline: true })}
-            {field("healthComplaints", "Скарги на здоров'я", { placeholder: "Немає", multiline: true })}
-            {field("moralState", "Морально-психологічний стан", { placeholder: "Стабільний, стресостійкий" })}
-            {field("bloodType", "Група крові", { placeholder: "A(II) Rh+" })}
-            {field("shoeSize", "Розмір взуття", { placeholder: "43" })}
-            {field("notes", "Особливі примітки", { placeholder: "...", multiline: true })}
+            <TextField control={form.control} name="personalOrder" label="Особисте розпорядження" placeholder="Без розпоряджень" />
+            <TextField control={form.control} name="conscription" label="Яким РТЦК та СП призваний" placeholder="Житомирським РТЦК та СП" />
+            <TextareaField control={form.control} name="health" label="Стан здоров'я" placeholder="Задовільний" />
+            <TextareaField control={form.control} name="healthComplaints" label="Скарги на здоров'я" placeholder="Немає" />
+            <TextField control={form.control} name="moralState" label="Морально-психологічний стан" placeholder="Стабільний, стресостійкий" />
+            <TextField control={form.control} name="bloodType" label="Група крові" placeholder="A(II) Rh+" />
+            <TextField control={form.control} name="shoeSize" label="Розмір взуття" placeholder="43" />
+            <TextareaField control={form.control} name="notes" label="Особливі примітки" placeholder="..." />
           </CardContent>
         </Card>
 

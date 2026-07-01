@@ -54,7 +54,7 @@ export const createMilitarySchema = z.object({
   experience: optionalNum,
   missions: optionalNum,
   phone: dbString,
-  email: z.email("Невірний формат електронної пошти").nullish().transform((v) => v || null),
+  email: z.email("Невірний формат електронної пошти").or(z.literal("")).nullish().transform((v) => v || null),
   lastActiveDays: optionalNum,
   medicalRecords: z.array(medicalRecordSchema).optional(),
   achievements: z.array(achievementSchema).optional(),
