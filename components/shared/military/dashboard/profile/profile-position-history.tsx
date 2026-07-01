@@ -1,3 +1,5 @@
+import * as React from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import type { PositionEntry } from "../../types";
 
 interface Props {
@@ -23,12 +25,12 @@ export function ProfilePositionHistory({ history }: Props) {
   );
 
   return (
-    <div className="relative space-y-0">
+    <ScrollArea className="h-[320px] pr-4">
+      <div className="space-y-0">
       {sorted.map((entry, i) => {
         const isCurrent = !entry.endDate;
         return (
           <div key={entry.position + entry.startDate} className="relative flex gap-4 pb-4 last:pb-0">
-            {/* Лінія таймлайну */}
             <div className="flex flex-col items-center">
               <div
                 className={`relative z-10 size-3 shrink-0 rounded-full border-2 ${
@@ -42,7 +44,6 @@ export function ProfilePositionHistory({ history }: Props) {
               )}
             </div>
 
-            {/* Контент */}
             <div className="flex-1 pb-2">
               <p className="text-base font-medium">{entry.position}</p>
               <p className="text-xs text-muted-foreground">{entry.unit}</p>
@@ -54,6 +55,7 @@ export function ProfilePositionHistory({ history }: Props) {
           </div>
         );
       })}
-    </div>
+      </div>
+    </ScrollArea>
   );
 }
