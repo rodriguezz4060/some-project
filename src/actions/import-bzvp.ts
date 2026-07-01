@@ -7,6 +7,7 @@ import { logCreate, logUpdate } from "@root/lib/audit";
 import { z } from "zod";
 import { requireModerator } from "@root/lib/auth-guards";
 import { FIELD_LABELS, type BzvpFieldKey } from "@/components/shared/bzvp/fields";
+import type { Prisma } from "@/generated/prisma/client";
 
 const COLUMN_ALIASES: Record<string, string> = {
   "піб": "fullName",
@@ -169,6 +170,49 @@ function validateRow(data: Record<string, string>): { success: boolean; data: Re
   return { success: false, data, errors };
 }
 
+function buildPrismaData(data: Record<string, string>): Prisma.BzvpPersonnelCreateManyInput {
+  return {
+    fullName: data.fullName ?? "",
+    rank: data.rank ?? "",
+    birthDate: data.birthDate ?? "",
+    birthPlace: data.birthPlace || null,
+    photo: data.photo || null,
+    passport: data.passport || null,
+    passportIssued: data.passportIssued || null,
+    tin: data.tin || null,
+    militaryId: data.militaryId || null,
+    militaryIdIssued: data.militaryIdIssued || null,
+    ubd: data.ubd || null,
+    ubdDate: data.ubdDate || null,
+    serviceUnit: data.serviceUnit || null,
+    serviceYears: data.serviceYears || null,
+    civilianJob: data.civilianJob || null,
+    education: data.education || null,
+    actualAddress: data.actualAddress || null,
+    registrationAddress: data.registrationAddress || null,
+    driverLicense: data.driverLicense || null,
+    criminalRecord: data.criminalRecord || null,
+    policeRecords: data.policeRecords || null,
+    family: data.family || null,
+    phone: data.phone || null,
+    relativePhones: data.relativePhones || null,
+    personalOrder: data.personalOrder || null,
+    conscription: data.conscription || null,
+    health: data.health || null,
+    healthComplaints: data.healthComplaints || null,
+    moralState: data.moralState || null,
+    bloodType: data.bloodType || null,
+    shoeSize: data.shoeSize || null,
+    notes: data.notes || null,
+    status: data.status ?? "training",
+    arrivalDate: data.arrivalDate ?? new Date().toISOString().split("T")[0],
+    trainingPeriod: data.trainingPeriod ?? "",
+    specialization: data.specialization || null,
+  };
+}
+
+const DUPLICATE_BATCH = 500;
+
 export interface ParsedRow {
   index: number;
   data: Record<string, string>;
@@ -198,40 +242,59 @@ export async function parseExcelBzvp(formData: FormData): Promise<ParseResult> {
   const sheet = workbook.Sheets[sheetName];
   const rawData: Record<string, unknown>[] = XLSX.utils.sheet_to_json(sheet, { defval: "" });
 
-  const rows: ParsedRow[] = [];
+  const validated = rawData.map((raw, index) => {
+    const mapped = mapRow(raw);
+    const { success, data, errors } = validateRow(mapped);
+    return { index, data, errors, success };
+  });
+
+  const validRows = validated.filter((r) => r.success);
+
+  const duplicateMap = new Map<string, { id: number; fullName: string; birthDate: string }>();
+
+  for (let i = 0; i < validRows.length; i += DUPLICATE_BATCH) {
+    const batch = validRows.slice(i, i + DUPLICATE_BATCH);
+    const existing = await prisma.bzvpPersonnel.findMany({
+      where: {
+        OR: batch.map((r) => ({
+          fullName: r.data.fullName,
+          birthDate: r.data.birthDate,
+        })),
+      },
+      select: { id: true, fullName: true, birthDate: true },
+    });
+    for (const e of existing) {
+      duplicateMap.set(`${e.fullName}|${e.birthDate}`, e);
+    }
+  }
+
   let validCount = 0;
   let errorCount = 0;
   let duplicateCount = 0;
 
-  for (let i = 0; i < rawData.length; i++) {
-    const mapped = mapRow(rawData[i]);
-    const { success, data, errors } = validateRow(mapped);
-
-    let duplicate: { id: number; fullName: string; birthDate: string } | null = null;
-    if (success && data.fullName && data.birthDate) {
-      const existing = await prisma.bzvpPersonnel.findFirst({
-        where: { fullName: data.fullName, birthDate: data.birthDate },
-        select: { id: true, fullName: true, birthDate: true },
-      });
-      if (existing) {
-        duplicate = existing;
-        duplicateCount++;
-      }
-    }
-
-    if (success) {
-      validCount++;
-    } else {
+  const rows: ParsedRow[] = validated.map(({ index, data, errors, success }) => {
+    if (!success) {
       errorCount++;
+      return { index, data, errors, duplicate: null };
+    }
+    validCount++;
+
+    let duplicate: ParsedRow["duplicate"] = null;
+    if (data.fullName && data.birthDate) {
+      const key = `${data.fullName}|${data.birthDate}`;
+      duplicate = duplicateMap.get(key) ?? null;
+      if (duplicate) duplicateCount++;
     }
 
-    rows.push({ index: i, data, errors, duplicate });
-  }
+    return { index, data, errors, duplicate };
+  });
 
   return { rows, totalCount: rows.length, validCount, errorCount, duplicateCount };
 }
 
 type Decision = "skip" | "update" | "add";
+
+const CREATE_BATCH = 100;
 
 export async function importBzvp(
   rows: ParsedRow[],
@@ -243,6 +306,8 @@ export async function importBzvp(
   let imported = 0;
   let skipped = 0;
   let updated = 0;
+
+  const toCreate: Prisma.BzvpPersonnelCreateManyInput[] = [];
 
   for (const row of rows) {
     if (row.errors.length > 0) {
@@ -257,44 +322,7 @@ export async function importBzvp(
       continue;
     }
 
-    const prismaData = {
-      fullName: row.data.fullName ?? "",
-      rank: row.data.rank ?? "",
-      birthDate: row.data.birthDate ?? "",
-      birthPlace: row.data.birthPlace || null,
-      photo: row.data.photo || null,
-      passport: row.data.passport || null,
-      passportIssued: row.data.passportIssued || null,
-      tin: row.data.tin || null,
-      militaryId: row.data.militaryId || null,
-      militaryIdIssued: row.data.militaryIdIssued || null,
-      ubd: row.data.ubd || null,
-      ubdDate: row.data.ubdDate || null,
-      serviceUnit: row.data.serviceUnit || null,
-      serviceYears: row.data.serviceYears || null,
-      civilianJob: row.data.civilianJob || null,
-      education: row.data.education || null,
-      actualAddress: row.data.actualAddress || null,
-      registrationAddress: row.data.registrationAddress || null,
-      driverLicense: row.data.driverLicense || null,
-      criminalRecord: row.data.criminalRecord || null,
-      policeRecords: row.data.policeRecords || null,
-      family: row.data.family || null,
-      phone: row.data.phone || null,
-      relativePhones: row.data.relativePhones || null,
-      personalOrder: row.data.personalOrder || null,
-      conscription: row.data.conscription || null,
-      health: row.data.health || null,
-      healthComplaints: row.data.healthComplaints || null,
-      moralState: row.data.moralState || null,
-      bloodType: row.data.bloodType || null,
-      shoeSize: row.data.shoeSize || null,
-      notes: row.data.notes || null,
-      status: row.data.status ?? "training",
-      arrivalDate: row.data.arrivalDate ?? new Date().toISOString().split("T")[0],
-      trainingPeriod: row.data.trainingPeriod ?? "",
-      specialization: row.data.specialization || null,
-    };
+    const prismaData = buildPrismaData(row.data);
 
     if (decision === "update" && row.duplicate) {
       await prisma.bzvpPersonnel.update({
@@ -310,15 +338,18 @@ export async function importBzvp(
       );
       updated++;
     } else {
-      const person = await prisma.bzvpPersonnel.create({ data: prismaData });
-      logCreate(
-        "BzvpPersonnel",
-        person.id,
-        `Імпортовано: «${person.fullName}»`,
-        userId,
-      );
-      imported++;
+      toCreate.push(prismaData);
     }
+  }
+
+  for (let i = 0; i < toCreate.length; i += CREATE_BATCH) {
+    const batch = toCreate.slice(i, i + CREATE_BATCH);
+    const result = await prisma.bzvpPersonnel.createMany({ data: batch });
+    imported += result.count;
+  }
+
+  if (imported > 0) {
+    logCreate("BzvpPersonnel", 0, `Імпортовано ${imported} анкет БЗВП`, userId);
   }
 
   revalidatePath("/bzvp");
