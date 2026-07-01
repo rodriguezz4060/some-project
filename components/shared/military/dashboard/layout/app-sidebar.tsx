@@ -4,10 +4,7 @@ import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
   IconCalendarClock,
-  IconHelp,
   IconReportAnalytics,
-  IconSearch,
-  IconSettings,
   IconUserCircle,
   IconUsers,
   IconBuildingFortress,
@@ -30,21 +27,6 @@ const navSecondary = [
     title: "Профіль",
     url: "/profile",
     icon: IconUserCircle,
-  },
-  {
-    title: "Налаштування",
-    url: "/military/settings",
-    icon: IconSettings,
-  },
-  {
-    title: "Довідка",
-    url: "#",
-    icon: IconHelp,
-  },
-  {
-    title: "Пошук",
-    url: "#",
-    icon: IconSearch,
   },
 ];
 

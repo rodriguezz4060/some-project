@@ -44,7 +44,7 @@ For the `cn()` utility, prefer `@root/lib/utils` (the prevalent pattern).
 
 ## Key libraries
 
-`@dnd-kit` (drag & drop), `@tanstack/react-table`, `recharts`, `next-themes` (dark mode by default), `zod`, `sonner` (toasts), `vaul` (drawer), `lucide-react` + `@tabler/icons-react` (icons), `class-variance-authority` (variant props), `next-auth` (v5 beta, Credentials + JWT), `bcryptjs` (password hashing), `@prisma/adapter-pg` + `pg` (Postgres driver), `@react-pdf/renderer` (PDF), `xlsx` (Excel import/export), `photoswipe` (image gallery).
+`@dnd-kit` (drag & drop), `@tanstack/react-table`, `recharts`, `next-themes` (dark mode by default), `zod`, `sonner` (toasts), `lucide-react` + `@tabler/icons-react` (icons), `class-variance-authority` (variant props), `next-auth` (v5 beta, Credentials + JWT), `bcryptjs` (password hashing), `@prisma/adapter-pg` + `pg` (Postgres driver), `@react-pdf/renderer` (PDF), `xlsx` (Excel import/export), `photoswipe` (image gallery).
 
 ## Auth system
 

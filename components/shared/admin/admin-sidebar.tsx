@@ -5,8 +5,6 @@ import { useSession } from "next-auth/react";
 import {
   IconDashboard,
   IconHistory,
-  IconHelp,
-  IconSearch,
   IconUserCircle,
   IconUsers,
 } from "@tabler/icons-react";
@@ -24,16 +22,6 @@ const navSecondary = [
     title: "Профіль",
     url: "/profile",
     icon: IconUserCircle,
-  },
-  {
-    title: "Довідка",
-    url: "#",
-    icon: IconHelp,
-  },
-  {
-    title: "Пошук",
-    url: "#",
-    icon: IconSearch,
   },
 ];
 
