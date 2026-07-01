@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { cn } from "@root/lib/utils";
 import type { StatusType } from "../../../types";
 
@@ -13,7 +14,7 @@ interface Props {
   status: StatusType;
 }
 
-export function MilitaryStatusBar({ status }: Props) {
+export const MilitaryStatusBar = memo(function MilitaryStatusBar({ status }: Props) {
   return (
     <div
       className={cn(
@@ -22,4 +23,4 @@ export function MilitaryStatusBar({ status }: Props) {
       )}
     />
   );
-}
+});

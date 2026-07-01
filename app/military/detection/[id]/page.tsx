@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { getPhoto } from "@root/actions/detection";
-import { DetectionCanvas } from "@/components/shared/detection/detection-canvas";
+import { DetectionCanvasWrapper as DetectionCanvas } from "@/components/shared/detection/detection-canvas-wrapper";
 import { FindingsPanel } from "@/components/shared/detection/findings-panel";
 import { DeletePhotoButton } from "@/components/shared/detection/delete-photo-button";
 

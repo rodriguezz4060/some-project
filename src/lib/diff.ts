@@ -26,6 +26,10 @@ export function compareFields<T extends Record<string, unknown>>(
   return changes;
 }
 
+function itemKey(item: Record<string, unknown>): string {
+  return item.id != null ? `id:${item.id}` : `idx:${Math.random()}`;
+}
+
 export function compareItemArrays<T extends Record<string, unknown>>(
   oldItems: T[],
   newItems: T[],
@@ -36,30 +40,38 @@ export function compareItemArrays<T extends Record<string, unknown>>(
   const descriptions: string[] = [];
   const excludeKeys = new Set(["id", "personnelId"]);
 
-  if (oldItems.length < newItems.length) {
-    descriptions.push(`додано ${newItems.length - oldItems.length} записів у «${label}»`);
-  } else if (oldItems.length > newItems.length) {
-    descriptions.push(`видалено ${oldItems.length - newItems.length} записів з «${label}»`);
-  }
+  const oldByKey = new Map(oldItems.map((item) => [itemKey(item), item]));
+  const newByKey = new Map(newItems.map((item) => [itemKey(item), item]));
 
-  const compareCount = Math.min(oldItems.length, newItems.length);
-  for (let i = 0; i < compareCount; i++) {
-    const oldItem = oldItems[i] ?? {};
-    const newItem = newItems[i] ?? {};
+  let added = 0, removed = 0;
+
+  for (const [key, newItem] of newByKey) {
+    const oldItem = oldByKey.get(key);
+    if (!oldItem) {
+      added++;
+      continue;
+    }
     const allKeys = [...new Set([...Object.keys(oldItem), ...Object.keys(newItem)])];
-    for (const key of allKeys) {
-      if (excludeKeys.has(key)) continue;
-      const oldVal = String(oldItem[key] ?? "");
-      const newVal = String(newItem[key] ?? "");
+    for (const field of allKeys) {
+      if (excludeKeys.has(field)) continue;
+      const oldVal = String(oldItem[field] ?? "");
+      const newVal = String(newItem[field] ?? "");
       if (oldVal !== newVal) {
-        const changeKey = `${label} №${i + 1} / ${fieldLabels[key] ?? key}`;
+        const changeKey = `${label} / ${fieldLabels[field] ?? field}`;
         changes[changeKey] = { old: oldVal || null, new: newVal || null };
         descriptions.push(
-          `змінив «${fieldLabels[key] ?? key}» в «${label}» №${i + 1} з «${oldVal}» на «${newVal}»`,
+          `змінив «${fieldLabels[field] ?? field}» в «${label}» з «${oldVal}» на «${newVal}»`,
         );
       }
     }
   }
+
+  for (const key of oldByKey.keys()) {
+    if (!newByKey.has(key)) removed++;
+  }
+
+  if (added > 0) descriptions.push(`додано ${added} записів у «${label}»`);
+  if (removed > 0) descriptions.push(`видалено ${removed} записів з «${label}»`);
 
   return { changes, descriptions };
 }

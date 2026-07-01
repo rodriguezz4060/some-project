@@ -2,6 +2,7 @@ import { prisma } from "@root/lib/prisma";
 import type { Prisma } from "@/generated/prisma/client";
 import type { MilitaryPersonnel, StatusType } from "@/components/shared/military/types";
 
+const MAX_FETCH = 200;
 const SEARCH_FIELDS: (keyof MilitaryPersonnel)[] = [
   "fullName",
   "rank",
@@ -58,6 +59,7 @@ export async function getFilteredMilitary(
     prisma.militaryPersonnel.findMany({
       where,
       orderBy: { createdAt: "desc" },
+      take: MAX_FETCH,
     }),
     prisma.militaryPersonnel.count(),
   ]);
@@ -87,6 +89,7 @@ export async function getMilitaryPersonnelById(id: number): Promise<MilitaryPers
 export async function getAllMilitary(): Promise<MilitaryPersonnel[]> {
   const all = await prisma.militaryPersonnel.findMany({
     orderBy: { createdAt: "desc" },
+    take: MAX_FETCH,
     include: {
       medicalRecords: true,
       achievements: true,

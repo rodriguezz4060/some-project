@@ -8,7 +8,7 @@ import { cn } from "@root/lib/utils";
 import { useCollapsed } from "@/hooks/use-collapsed";
 import { statusConfig, STATUS_SELECTED_CLASSES } from "../../constants";
 import type { StatusType } from "../../types";
-import { MilitarySearchInput } from "./military-search-input";
+import { SearchInput } from "@/components/shared/search-input";
 import { Button } from "@/components/ui/button";
 
 const ALL_STATUSES: StatusType[] = [
@@ -113,7 +113,7 @@ export function MilitaryFilterBar({
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <MilitarySearchInput initialQuery={initialQuery} />
+        <SearchInput initialQuery={initialQuery} basePath="/military" placeholder="Пошук за ім'ям, посадою, підрозділом..." />
         <Button asChild size="sm" className="gap-1.5">
           <Link href="/military/new">
             <Plus className="size-4" />

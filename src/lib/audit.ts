@@ -9,15 +9,7 @@ interface ChangeEntry {
 
 async function resolveUserId(session: Session | null): Promise<number | null> {
   const id = Number(session?.user?.id);
-  if (id && (await prisma.user.findUnique({ where: { id } }))) return id;
-
-  const email = session?.user?.email;
-  if (email) {
-    const user = await prisma.user.findUnique({ where: { email } });
-    if (user) return user.id;
-  }
-
-  return null;
+  return Number.isNaN(id) ? null : id;
 }
 
 async function writeLog(
@@ -51,9 +43,12 @@ export async function logCreate(
   entityType: string,
   entityId: number,
   description: string,
+  userId?: number,
 ) {
-  const session = await auth();
-  const userId = await resolveUserId(session);
+  if (!userId) {
+    const session = await auth();
+    userId = (await resolveUserId(session)) ?? undefined;
+  }
   if (!userId) return;
 
   await writeLog(userId, "CREATE", entityType, entityId, description);
@@ -64,9 +59,12 @@ export async function logUpdate(
   entityId: number,
   description: string,
   changes?: Record<string, ChangeEntry>,
+  userId?: number,
 ) {
-  const session = await auth();
-  const userId = await resolveUserId(session);
+  if (!userId) {
+    const session = await auth();
+    userId = (await resolveUserId(session)) ?? undefined;
+  }
   if (!userId) return;
 
   await writeLog(userId, "UPDATE", entityType, entityId, description, changes);
@@ -76,9 +74,12 @@ export async function logDelete(
   entityType: string,
   entityId: number,
   description: string,
+  userId?: number,
 ) {
-  const session = await auth();
-  const userId = await resolveUserId(session);
+  if (!userId) {
+    const session = await auth();
+    userId = (await resolveUserId(session)) ?? undefined;
+  }
   if (!userId) return;
 
   await writeLog(userId, "DELETE", entityType, entityId, description);

@@ -1,3 +1,4 @@
+import { memo } from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
@@ -5,7 +6,7 @@ interface Props {
   id: number;
 }
 
-export function MilitaryDetailsButton({ id }: Props) {
+export const MilitaryDetailsButton = memo(function MilitaryDetailsButton({ id }: Props) {
   return (
     <Link
       href={`/military/${id}`}
@@ -17,4 +18,4 @@ export function MilitaryDetailsButton({ id }: Props) {
       <ChevronRight className="h-4 w-4 text-muted-foreground group-hover/btn:text-primary group-hover/btn:translate-x-0.5 transition-all" />
     </Link>
   );
-}
+});

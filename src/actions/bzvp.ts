@@ -57,7 +57,8 @@ function parseBzvp(rawData: BzvpData) {
 }
 
 export async function createBzvp(rawData: BzvpData) {
-  await requireModerator();
+  const session = await requireModerator();
+  const userId = Number(session.user.id);
   const data = parseBzvp(rawData);
   const today = new Date().toISOString().split("T")[0];
   const { status, arrivalDate, trainingPeriod, ...rest } = data;
@@ -76,6 +77,7 @@ export async function createBzvp(rawData: BzvpData) {
       "BzvpPersonnel",
       person.id,
       `Створив анкету БЗВП «${person.fullName}»`,
+      userId,
     );
 
     revalidatePath("/bzvp");
@@ -86,7 +88,8 @@ export async function createBzvp(rawData: BzvpData) {
 }
 
 export async function updateBzvp(id: number, rawData: BzvpData) {
-  await requireModerator();
+  const session = await requireModerator();
+  const userId = Number(session.user.id);
   const data = parseBzvp(rawData);
   const { status, arrivalDate, trainingPeriod, ...rest } = data;
 
@@ -126,7 +129,7 @@ export async function updateBzvp(id: number, rawData: BzvpData) {
           description = `Зміни в картці БЗВП «${person.fullName}»: ${descriptions.slice(0, 3).join("; ")} та ще ${descriptions.length - 3} змін`;
         }
 
-        await logUpdate("BzvpPersonnel", id, description, changes);
+        await logUpdate("BzvpPersonnel", id, description, changes, userId);
       }
     }
 
@@ -138,7 +141,8 @@ export async function updateBzvp(id: number, rawData: BzvpData) {
 }
 
 export async function deleteBzvp(id: number) {
-  await requireModerator();
+  const session = await requireModerator();
+  const userId = Number(session.user.id);
 
   try {
     const person = await prisma.bzvpPersonnel.delete({ where: { id } });
@@ -147,6 +151,7 @@ export async function deleteBzvp(id: number) {
       "BzvpPersonnel",
       id,
       `Видалив анкету БЗВП «${person.fullName}»`,
+      userId,
     );
 
     revalidatePath("/bzvp");

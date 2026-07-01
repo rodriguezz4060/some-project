@@ -14,7 +14,7 @@ import {
   STATUS_SELECTED_CLASSES,
 } from "../constants";
 import type { BzvpStatus } from "../types";
-import { BzvpSearchInput } from "./bzvp-search-input";
+import { SearchInput } from "@/components/shared/search-input";
 import { BzvpDateFilter } from "./bzvp-date-filter";
 
 const STORAGE_KEY = "bzvp:filtersCollapsed";
@@ -72,7 +72,7 @@ export function BzvpFilterBar({
   return (
     <div className="mb-6 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <BzvpSearchInput initialQuery={initialQuery} />
+        <SearchInput initialQuery={initialQuery} basePath="/bzvp" placeholder="Пошук за ім'ям, званням, підрозділом..." />
         <div className="flex items-center gap-2">
           <BzvpExportModal />
           <Button asChild variant="outline" size="sm" className="gap-1.5">

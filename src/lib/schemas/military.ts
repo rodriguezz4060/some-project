@@ -6,7 +6,10 @@ const optionalNum = z.number().optional();
 const statusEnum = z.enum(["active", "on-mission", "wounded", "vacation", "reserve"]);
 const rankEnum = z.enum(["старший лейтенант", "капітан", "сержант", "майор", "полковник", "лейтенант"]);
 
+const optionalId = z.number().optional();
+
 export const medicalRecordSchema = z.object({
+  id: optionalId,
   condition: z.string().min(1, "Діагноз обов'язковий"),
   diagnosisDate: z.string().min(1, "Дата діагнозу обов'язкова"),
   status: z.enum(["active", "resolved"]),
@@ -14,6 +17,7 @@ export const medicalRecordSchema = z.object({
 });
 
 export const achievementSchema = z.object({
+  id: optionalId,
   name: z.string().min(1, "Назва обов'язкова"),
   date: z.string().min(1, "Дата обов'язкова"),
   type: z.enum(["medal", "commendation", "certificate"]),
@@ -21,6 +25,7 @@ export const achievementSchema = z.object({
 });
 
 export const equipmentSchema = z.object({
+  id: optionalId,
   name: z.string().min(1, "Назва обов'язкова"),
   type: z.enum(["weapon", "armor", "gear"]),
   serialNumber: dbString,
@@ -28,6 +33,7 @@ export const equipmentSchema = z.object({
 });
 
 export const positionEntrySchema = z.object({
+  id: optionalId,
   position: z.string().min(1, "Посада обов'язкова"),
   unit: z.string().min(1, "Підрозділ обов'язковий"),
   startDate: z.string().min(1, "Дата початку обов'язкова"),

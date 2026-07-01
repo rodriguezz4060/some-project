@@ -59,7 +59,8 @@ function autoFillEndDates(history: { startDate: string; endDate?: string | null 
 }
 
 export async function createMilitary(rawData: CreateMilitaryData) {
-  await requireModerator();
+  const session = await requireModerator();
+  const userId = Number(session.user.id);
   const data = parseMilitary(rawData);
   if (data.positionHistory) autoFillEndDates(data.positionHistory);
   const { medicalRecords, achievements, equipment, positionHistory, clothingSizes, ...flat } = data;
@@ -80,6 +81,7 @@ export async function createMilitary(rawData: CreateMilitaryData) {
       "MilitaryPersonnel",
       person.id,
       `Створив анкету військовослужбовця «${person.fullName}»`,
+      userId,
     );
 
     revalidatePath("/military");
@@ -90,7 +92,8 @@ export async function createMilitary(rawData: CreateMilitaryData) {
 }
 
 export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
-  await requireModerator();
+  const session = await requireModerator();
+  const userId = Number(session.user.id);
   const data = parseMilitary(rawData);
   if (data.positionHistory) autoFillEndDates(data.positionHistory);
 
@@ -110,40 +113,77 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
 
     const person = await prisma.militaryPersonnel.update({ where: { id }, data: flat });
 
-    if (medicalRecords) {
-      await prisma.medicalRecord.deleteMany({ where: { personnelId: id } });
-      if (medicalRecords.length > 0) {
-        await prisma.medicalRecord.createMany({
-          data: medicalRecords.map((r) => ({ personnelId: id, ...r })),
-        });
+    async function syncItems<T extends { id?: number | null }>(
+      deleteMany: (args: { where: { id: { in: number[] } } }) => Promise<unknown>,
+      createMany: (args: { data: Record<string, unknown>[] }) => Promise<unknown>,
+      update: (args: { where: { id: number }; data: Record<string, unknown> }) => Promise<unknown>,
+      oldItems: ({ id: number } & Record<string, unknown>)[],
+      newItems: T[],
+      extraFields: Record<string, unknown>,
+    ) {
+      const newIds = new Set(newItems.map((item) => item.id).filter(Boolean) as number[]);
+      const toDelete = oldItems.filter((item) => !newIds.has(item.id)).map((item) => item.id);
+
+      if (toDelete.length > 0) {
+        await deleteMany({ where: { id: { in: toDelete } } });
+      }
+
+      const toCreate: Record<string, unknown>[] = [];
+      for (const item of newItems) {
+        const { id: itemId, ...fields } = item as Record<string, unknown>;
+        if (itemId && oldItems.some((o) => o.id === itemId)) {
+          await update({ where: { id: itemId as number }, data: fields });
+        } else {
+          toCreate.push({ ...extraFields, ...fields });
+        }
+      }
+      if (toCreate.length > 0) {
+        await createMany({ data: toCreate });
       }
     }
 
-    if (achievements) {
-      await prisma.achievement.deleteMany({ where: { personnelId: id } });
-      if (achievements.length > 0) {
-        await prisma.achievement.createMany({
-          data: achievements.map((a) => ({ personnelId: id, ...a })),
-        });
-      }
+    if (medicalRecords && oldPerson) {
+      await syncItems(
+        prisma.medicalRecord.deleteMany.bind(prisma.medicalRecord),
+        prisma.medicalRecord.createMany.bind(prisma.medicalRecord),
+        prisma.medicalRecord.update.bind(prisma.medicalRecord),
+        oldPerson.medicalRecords,
+        medicalRecords,
+        { personnelId: id },
+      );
     }
 
-    if (equipment) {
-      await prisma.equipment.deleteMany({ where: { personnelId: id } });
-      if (equipment.length > 0) {
-        await prisma.equipment.createMany({
-          data: equipment.map((e) => ({ personnelId: id, ...e })),
-        });
-      }
+    if (achievements && oldPerson) {
+      await syncItems(
+        prisma.achievement.deleteMany.bind(prisma.achievement),
+        prisma.achievement.createMany.bind(prisma.achievement),
+        prisma.achievement.update.bind(prisma.achievement),
+        oldPerson.achievements,
+        achievements,
+        { personnelId: id },
+      );
     }
 
-    if (positionHistory) {
-      await prisma.positionEntry.deleteMany({ where: { personnelId: id } });
-      if (positionHistory.length > 0) {
-        await prisma.positionEntry.createMany({
-          data: positionHistory.map((p) => ({ personnelId: id, ...p })),
-        });
-      }
+    if (equipment && oldPerson) {
+      await syncItems(
+        prisma.equipment.deleteMany.bind(prisma.equipment),
+        prisma.equipment.createMany.bind(prisma.equipment),
+        prisma.equipment.update.bind(prisma.equipment),
+        oldPerson.equipment,
+        equipment,
+        { personnelId: id },
+      );
+    }
+
+    if (positionHistory && oldPerson) {
+      await syncItems(
+        prisma.positionEntry.deleteMany.bind(prisma.positionEntry),
+        prisma.positionEntry.createMany.bind(prisma.positionEntry),
+        prisma.positionEntry.update.bind(prisma.positionEntry),
+        oldPerson.positionHistory,
+        positionHistory,
+        { personnelId: id },
+      );
     }
 
     if (clothingSizes) {
@@ -242,7 +282,7 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
     }
 
     if (Object.keys(allChanges).length > 0) {
-      await logUpdate("MilitaryPersonnel", id, description, allChanges);
+      await logUpdate("MilitaryPersonnel", id, description, allChanges, userId);
     }
 
     revalidatePath("/military");
@@ -254,7 +294,8 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
 }
 
 export async function deleteMilitary(id: number) {
-  await requireModerator();
+  const session = await requireModerator();
+  const userId = Number(session.user.id);
 
   try {
     const person = await prisma.militaryPersonnel.delete({ where: { id } });
@@ -263,6 +304,7 @@ export async function deleteMilitary(id: number) {
       "MilitaryPersonnel",
       id,
       `Видалив анкету військовослужбовця «${person.fullName}»`,
+      userId,
     );
 
     revalidatePath("/military");

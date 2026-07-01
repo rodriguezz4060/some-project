@@ -7,7 +7,8 @@ export async function getVehicles(status?: string): Promise<Vehicle[]> {
     orderBy: { createdAt: "desc" },
     include: {
       fuelRecords: {
-        orderBy: { date: "desc" },
+        orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+        take: 20,
       },
     },
   });
@@ -39,7 +40,8 @@ export async function getVehicleById(id: number): Promise<Vehicle | null> {
     where: { id },
     include: {
       fuelRecords: {
-        orderBy: { date: "desc" },
+        orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+        take: 100,
         include: {
           createdBy: { select: { id: true, name: true } },
         },
@@ -49,8 +51,9 @@ export async function getVehicleById(id: number): Promise<Vehicle | null> {
 
   if (!v) return null;
 
-  const totalLiters = v.fuelRecords.reduce((sum, r) => sum + r.liters, 0);
-  const totalCost = v.fuelRecords.reduce((sum, r) => sum + (r.totalCost ?? 0), 0);
+  const records = v.fuelRecords as FuelRecord[];
+  const totalLiters = records.reduce((sum, r) => sum + r.liters, 0);
+  const totalCost = records.reduce((sum, r) => sum + (r.totalCost ?? 0), 0);
 
   return {
     ...v,
@@ -58,12 +61,12 @@ export async function getVehicleById(id: number): Promise<Vehicle | null> {
     vin: v.vin ?? null,
     tankCapacity: v.tankCapacity ?? null,
     notes: v.notes ?? null,
-    fuelRecords: v.fuelRecords as FuelRecord[],
+    fuelRecords: records,
     _fuelSummary: {
       totalLiters,
       totalCost,
-      recordCount: v.fuelRecords.length,
-      lastRecordDate: v.fuelRecords.length > 0 ? v.fuelRecords[0].date : null,
+      recordCount: records.length,
+      lastRecordDate: records.length > 0 ? records[0].date : null,
     },
   } as Vehicle;
 }
@@ -88,7 +91,8 @@ export async function getFuelRecords(options?: {
 
   const records = await prisma.fuelRecord.findMany({
     where,
-    orderBy: { date: "desc" },
+    orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+    take: 500,
     include: {
       vehicle: { select: { id: true, brand: true, model: true, licensePlate: true } },
       createdBy: { select: { id: true, name: true } },

@@ -47,6 +47,8 @@ model BzvpPersonnel {
   specialization      String?
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
+
+  @@index([status])
 }
 
 model MilitaryPersonnel {
@@ -71,6 +73,8 @@ model MilitaryPersonnel {
   equipment       Equipment[]
   positionHistory PositionEntry[]
   clothingSizes   ClothingSizes?
+
+  @@index([status])
 }
 
 model MedicalRecord {
@@ -205,6 +209,9 @@ model FuelRecord {
   createdBy     User     @relation(fields: [createdById], references: [id])
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  @@index([date])
+  @@index([vehicleId])
 }
 
 model AuditLog {
@@ -217,4 +224,7 @@ model AuditLog {
   description String
   changes     Json?
   createdAt   DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
 }

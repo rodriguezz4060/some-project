@@ -237,7 +237,8 @@ export async function importBzvp(
   rows: ParsedRow[],
   decisions: Record<number, Decision>,
 ) {
-  await requireModerator();
+  const session = await requireModerator();
+  const userId = Number(session.user.id);
 
   let imported = 0;
   let skipped = 0;
@@ -304,6 +305,8 @@ export async function importBzvp(
         "BzvpPersonnel",
         row.duplicate.id,
         `Оновлено з імпорту: «${row.data.fullName}»`,
+        undefined,
+        userId,
       );
       updated++;
     } else {
@@ -312,6 +315,7 @@ export async function importBzvp(
         "BzvpPersonnel",
         person.id,
         `Імпортовано: «${person.fullName}»`,
+        userId,
       );
       imported++;
     }

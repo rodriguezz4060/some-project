@@ -3,16 +3,16 @@
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
-  IconCalendarClock,
-  IconReportAnalytics,
-  IconUserCircle,
-  IconUsers,
-  IconBuildingFortress,
-  IconTargetArrow,
-  IconShieldCheck,
-  IconCamera,
-  IconGasStation,
-} from "@tabler/icons-react";
+  CalendarClock,
+  BarChart3,
+  UserCircle,
+  Users,
+  Landmark,
+  Crosshair,
+  ShieldCheck,
+  Camera,
+  Fuel,
+} from "lucide-react";
 
 import { NavMain } from "@/components/shared/military/dashboard/layout/nav-main";
 import { NavSecondary } from "@/components/shared/military/dashboard/layout/nav-secondary";
@@ -26,7 +26,7 @@ const navSecondary = [
   {
     title: "Профіль",
     url: "/profile",
-    icon: IconUserCircle,
+    icon: UserCircle,
   },
 ];
 
@@ -40,43 +40,43 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     {
       title: "Особовий склад",
       url: "/military",
-      icon: IconUsers,
+      icon: Users,
       isActive: pathname === "/military",
     },
     {
       title: "БЗВП",
       url: "/bzvp",
-      icon: IconTargetArrow,
+      icon: Crosshair,
       isActive: pathname.startsWith("/bzvp"),
     },
     {
       title: "Підрозділи",
       url: "/military/units",
-      icon: IconBuildingFortress,
+      icon: Landmark,
       isActive: pathname.startsWith("/military/units"),
     },
     {
       title: "Графік чергувань",
       url: "/military/schedule",
-      icon: IconCalendarClock,
+      icon: CalendarClock,
       isActive: pathname.startsWith("/military/schedule"),
     },
     {
       title: "Паливо",
       url: "/fuel",
-      icon: IconGasStation,
+      icon: Fuel,
       isActive: pathname.startsWith("/fuel"),
     },
     {
       title: "Звіти",
       url: "/military/reports",
-      icon: IconReportAnalytics,
+      icon: BarChart3,
       isActive: pathname.startsWith("/military/reports"),
     },
     {
       title: "Детекція об'єктів",
       url: "/military/detection",
-      icon: IconCamera,
+      icon: Camera,
       isActive: pathname.startsWith("/military/detection"),
     },
   ];
@@ -84,7 +84,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     navMain.push({
       title: "Адміністрування",
       url: "/admin",
-      icon: IconShieldCheck,
+      icon: ShieldCheck,
       isActive: pathname.startsWith("/admin"),
     });
   }

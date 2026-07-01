@@ -1,3 +1,4 @@
+import { memo } from "react";
 import Link from "next/link";
 import { Fuel, Gauge, Palette, Edit, Wrench, Archive, RotateCcw } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
@@ -32,7 +33,7 @@ const nextStatus: Record<string, VehicleStatus> = {
   decommissioned: "active",
 };
 
-export function VehicleCard({ vehicle, onStatusChange, canManage }: Props) {
+export const VehicleCard = memo(function VehicleCard({ vehicle, onStatusChange, canManage }: Props) {
   const summary = vehicle._fuelSummary;
 
   return (
@@ -117,4 +118,4 @@ export function VehicleCard({ vehicle, onStatusChange, canManage }: Props) {
       )}
     </Card>
   );
-}
+});

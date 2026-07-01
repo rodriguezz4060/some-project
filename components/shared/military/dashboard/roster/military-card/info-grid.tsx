@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Shield, MapPin, Calendar, Activity } from "lucide-react";
 
 interface InfoRowProps {
@@ -6,7 +7,7 @@ interface InfoRowProps {
   value: string;
 }
 
-function InfoRow({ icon, label, value }: InfoRowProps) {
+const InfoRow = memo(function InfoRow({ icon, label, value }: InfoRowProps) {
   return (
     <div className="flex items-center gap-2 text-base">
       <span className="h-4 w-4 text-muted-foreground shrink-0">{icon}</span>
@@ -14,7 +15,7 @@ function InfoRow({ icon, label, value }: InfoRowProps) {
       <span className="font-medium">{value}</span>
     </div>
   );
-}
+});
 
 interface Props {
   position: string;
@@ -23,7 +24,7 @@ interface Props {
   experience?: number | null;
 }
 
-export function MilitaryInfoGrid({ position, unit, birthDate, experience }: Props) {
+export const MilitaryInfoGrid = memo(function MilitaryInfoGrid({ position, unit, birthDate, experience }: Props) {
   return (
     <div className="grid grid-cols-1 gap-2">
       <InfoRow icon={<Shield className="h-4 w-4" />} label="Посада:" value={position} />
@@ -32,4 +33,4 @@ export function MilitaryInfoGrid({ position, unit, birthDate, experience }: Prop
       <InfoRow icon={<Activity className="h-4 w-4" />} label="Досвід:" value={experience != null ? `${experience} років` : "—"} />
     </div>
   );
-}
+});

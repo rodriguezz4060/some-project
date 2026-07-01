@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import {
   Card,
   CardContent,
@@ -22,7 +23,7 @@ function getInitials(name: string) {
     .join("");
 }
 
-export function BzvpCard({
+export const BzvpCard = memo(function BzvpCard({
   id,
   fullName,
   birthDate,
@@ -136,4 +137,4 @@ export function BzvpCard({
       </CardFooter>
     </Card>
   );
-}
+});

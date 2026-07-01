@@ -8,5 +8,5 @@ export const { auth } = NextAuth({
     },
   },
   pages: { signIn: "/" },
-  trustHost: true,
+  trustHost: process.env.NODE_ENV === "development",
 });

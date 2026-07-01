@@ -2,6 +2,7 @@ import { prisma } from "@root/lib/prisma";
 import type { Prisma } from "@/generated/prisma/client";
 import type { BzvpPersonnel, BzvpStatus } from "@/components/shared/bzvp/types";
 
+const MAX_FETCH = 200;
 const SEARCH_FIELDS: (keyof BzvpPersonnel)[] = [
   "fullName",
   "rank",
@@ -44,6 +45,7 @@ export async function getFilteredBzvp(
   const personnel = await prisma.bzvpPersonnel.findMany({
     where,
     orderBy: { createdAt: "desc" },
+    take: MAX_FETCH,
   });
 
   return {

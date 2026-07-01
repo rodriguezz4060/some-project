@@ -3,11 +3,11 @@
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
-  IconDashboard,
-  IconHistory,
-  IconUserCircle,
-  IconUsers,
-} from "@tabler/icons-react";
+  LayoutDashboard,
+  History,
+  UserCircle,
+  Users,
+} from "lucide-react";
 
 import { NavMain } from "@/components/shared/military/dashboard/layout/nav-main";
 import { NavSecondary } from "@/components/shared/military/dashboard/layout/nav-secondary";
@@ -21,7 +21,7 @@ const navSecondary = [
   {
     title: "Профіль",
     url: "/profile",
-    icon: IconUserCircle,
+    icon: UserCircle,
   },
 ];
 
@@ -34,7 +34,7 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
     {
       title: "Дашборд",
       url: "/admin",
-      icon: IconDashboard,
+      icon: LayoutDashboard,
       isActive: pathname === "/admin",
     },
     ...(isAdmin
@@ -42,7 +42,7 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
           {
             title: "Користувачі",
             url: "/admin/users",
-            icon: IconUsers,
+            icon: Users,
             isActive: pathname.startsWith("/admin/users"),
           } as const,
         ]
@@ -50,7 +50,7 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
     {
       title: "Лог дій",
       url: "/admin/logs",
-      icon: IconHistory,
+      icon: History,
       isActive: pathname.startsWith("/admin/logs"),
     },
   ];

@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@root/lib/utils";
@@ -19,7 +20,7 @@ interface Props {
   photo?: string;
 }
 
-export function MilitaryAvatarBlock({ fullName, rank, status, photo }: Props) {
+export const MilitaryAvatarBlock = memo(function MilitaryAvatarBlock({ fullName, rank, status, photo }: Props) {
   const initials = getInitials(fullName);
   const statusInfo = statusConfig[status];
   const StatusIcon = statusIconMap[statusInfo.iconName];
@@ -64,4 +65,4 @@ export function MilitaryAvatarBlock({ fullName, rank, status, photo }: Props) {
       </div>
     </div>
   );
-}
+});

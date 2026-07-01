@@ -1,10 +1,11 @@
+import { memo } from "react";
 import { Star } from "lucide-react";
 
 interface Props {
   missions: number;
 }
 
-export function MilitaryMissionCount({ missions }: Props) {
+export const MilitaryMissionCount = memo(function MilitaryMissionCount({ missions }: Props) {
   return (
     <div className="text-right">
       <div className="flex items-center gap-1 text-base text-muted-foreground">
@@ -14,4 +15,4 @@ export function MilitaryMissionCount({ missions }: Props) {
       </div>
     </div>
   );
-}
+});

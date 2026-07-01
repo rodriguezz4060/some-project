@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Phone, Mail } from "lucide-react";
 
 interface Props {
@@ -5,7 +6,7 @@ interface Props {
   email?: string;
 }
 
-export function MilitaryContactBlock({ phone, email }: Props) {
+export const MilitaryContactBlock = memo(function MilitaryContactBlock({ phone, email }: Props) {
   if (!phone && !email) {
     return null;
   }
@@ -28,4 +29,4 @@ export function MilitaryContactBlock({ phone, email }: Props) {
       </div>
     </div>
   );
-}
+});

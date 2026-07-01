@@ -50,14 +50,15 @@ function parseFuelRecord(rawData: CreateFuelRecordData) {
 // ── Vehicles ──
 
 export async function createVehicle(rawData: CreateVehicleData) {
-  await requireModerator();
+  const session = await requireModerator();
+  const userId = Number(session.user.id);
   const data = parseVehicle(rawData);
 
   try {
     const vehicle = await prisma.vehicle.create({ data });
 
     const typeLabel = VEHICLE_TYPE_LABELS[vehicle.type as keyof typeof VEHICLE_TYPE_LABELS] ?? vehicle.type;
-    await logCreate("Vehicle", vehicle.id, `Додав авто «${vehicle.brand} ${vehicle.model}» (${vehicle.licensePlate}), тип: ${typeLabel}, підрозділ: ${vehicle.unit}`);
+    await logCreate("Vehicle", vehicle.id, `Додав авто «${vehicle.brand} ${vehicle.model}» (${vehicle.licensePlate}), тип: ${typeLabel}, підрозділ: ${vehicle.unit}`, userId);
 
     revalidatePath("/fuel");
     return { id: vehicle.id, brand: vehicle.brand, model: vehicle.model, licensePlate: vehicle.licensePlate };
@@ -67,7 +68,8 @@ export async function createVehicle(rawData: CreateVehicleData) {
 }
 
 export async function updateVehicle(id: number, rawData: CreateVehicleData) {
-  await requireModerator();
+  const session = await requireModerator();
+  const userId = Number(session.user.id);
   const data = parseVehicle(rawData);
 
   try {
@@ -96,7 +98,7 @@ export async function updateVehicle(id: number, rawData: CreateVehicleData) {
         description = `Оновлено авто «${vehicle.brand} ${vehicle.model}»: ${descriptions.slice(0, 3).join("; ")} та ще ${descriptions.length - 3} змін`;
       }
 
-      await logUpdate("Vehicle", id, description, changes);
+      await logUpdate("Vehicle", id, description, changes, userId);
     }
 
     revalidatePath("/fuel");
@@ -108,16 +110,18 @@ export async function updateVehicle(id: number, rawData: CreateVehicleData) {
 }
 
 export async function setVehicleStatus(id: number, status: string) {
-  await requireModerator();
+  const session = await requireModerator();
+  const userId = Number(session.user.id);
 
   try {
-    const vehicle = await prisma.vehicle.findUnique({ where: { id } });
-    if (!vehicle) throw new Error("Авто не знайдено");
-
-    await prisma.vehicle.update({ where: { id }, data: { status } });
+    const vehicle = await prisma.vehicle.update({
+      where: { id },
+      data: { status },
+      select: { id: true, brand: true, model: true },
+    });
 
     const statusLabel = VEHICLE_STATUS_LABELS[status as keyof typeof VEHICLE_STATUS_LABELS] ?? status;
-    await logUpdate("Vehicle", id, `Змінив статус авто «${vehicle.brand} ${vehicle.model}» на «${statusLabel}»`);
+    await logUpdate("Vehicle", id, `Змінив статус авто «${vehicle.brand} ${vehicle.model}» на «${statusLabel}»`, undefined, userId);
 
     revalidatePath("/fuel");
     revalidatePath(`/fuel/vehicles/${id}`);
@@ -131,12 +135,8 @@ export async function setVehicleStatus(id: number, status: string) {
 
 export async function createFuelRecord(rawData: CreateFuelRecordData) {
   const session = await requireModerator();
+  const userId = Number(session.user.id);
   const data = parseFuelRecord(rawData);
-  let userId = Number(session?.user?.id);
-  if (!userId || !(await prisma.user.findUnique({ where: { id: userId } }))) {
-    const user = await prisma.user.findFirst({ orderBy: { id: "asc" } });
-    userId = user?.id ?? 1;
-  }
 
   try {
     const vehicle = await prisma.vehicle.findUnique({
@@ -153,7 +153,7 @@ export async function createFuelRecord(rawData: CreateFuelRecordData) {
     });
 
     const vehicleName = vehicle ? `${vehicle.brand} ${vehicle.model} (${vehicle.licensePlate})` : `#${data.vehicleId}`;
-    await logCreate("FuelRecord", record.id, `Заправка: ${data.liters.toFixed(1)} л на ${vehicleName}, водій «${data.driverName}»`);
+    await logCreate("FuelRecord", record.id, `Заправка: ${data.liters.toFixed(1)} л на ${vehicleName}, водій «${data.driverName}»`, userId);
 
     revalidatePath("/fuel");
     revalidatePath(`/fuel/vehicles/${data.vehicleId}`);
@@ -165,18 +165,14 @@ export async function createFuelRecord(rawData: CreateFuelRecordData) {
 }
 
 export async function updateFuelRecord(id: number, rawData: CreateFuelRecordData) {
-  await requireModerator();
+  const session = await requireModerator();
+  const userId = Number(session.user.id);
   const data = parseFuelRecord(rawData);
 
   try {
     const oldRecord = await prisma.fuelRecord.findUnique({
       where: { id },
       include: { vehicle: { select: { brand: true, model: true, licensePlate: true } } },
-    });
-
-    const vehicle = await prisma.vehicle.findUnique({
-      where: { id: data.vehicleId },
-      select: { brand: true, model: true, licensePlate: true },
     });
 
     const record = await prisma.fuelRecord.update({ where: { id }, data });
@@ -194,6 +190,7 @@ export async function updateFuelRecord(id: number, rawData: CreateFuelRecordData
         ([key, val]) => `змінив «${key}» з «${val.old ?? ""}» на «${val.new ?? ""}»`,
       );
 
+      const vehicle = oldRecord.vehicle;
       const vehicleName = vehicle ? `${vehicle.brand} ${vehicle.model} (${vehicle.licensePlate})` : `#${data.vehicleId}`;
 
       let description: string;
@@ -205,7 +202,7 @@ export async function updateFuelRecord(id: number, rawData: CreateFuelRecordData
         description = `Оновлено заправку №${id} (${vehicleName}): ${descriptions.slice(0, 3).join("; ")} та ще ${descriptions.length - 3} змін`;
       }
 
-      await logUpdate("FuelRecord", id, description, changes);
+      await logUpdate("FuelRecord", id, description, changes, userId);
     }
 
     revalidatePath("/fuel");
@@ -218,7 +215,8 @@ export async function updateFuelRecord(id: number, rawData: CreateFuelRecordData
 }
 
 export async function deleteFuelRecord(id: number) {
-  await requireModerator();
+  const session = await requireModerator();
+  const userId = Number(session.user.id);
 
   try {
     const record = await prisma.fuelRecord.delete({
@@ -227,7 +225,7 @@ export async function deleteFuelRecord(id: number) {
     });
 
     const vehicleName = `${record.vehicle.brand} ${record.vehicle.model} (${record.vehicle.licensePlate})`;
-    await logDelete("FuelRecord", id, `Видалив заправку: ${record.liters.toFixed(1)} л на ${vehicleName}, водій «${record.driverName}»`);
+    await logDelete("FuelRecord", id, `Видалив заправку: ${record.liters.toFixed(1)} л на ${vehicleName}, водій «${record.driverName}»`, userId);
 
     revalidatePath("/fuel");
     revalidatePath(`/fuel/vehicles/${record.vehicleId}`);

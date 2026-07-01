@@ -1,7 +1,7 @@
 import type { StatusType } from "@/components/shared/military/types";
 import { getMilitaryStats } from "@root/lib/data/military";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ReportRadar } from "@/components/shared/military/dashboard/reports/report-radar";
+import { ReportRadarWrapper as ReportRadar } from "@/components/shared/military/dashboard/reports/report-radar-wrapper";
 import { ReportRotationTable } from "@/components/shared/military/dashboard/reports/report-rotation-table";
 import { ReportQuickCards } from "@/components/shared/military/dashboard/reports/report-quick-cards";
 

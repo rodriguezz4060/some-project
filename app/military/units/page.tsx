@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { IconBuildingFortress } from "@tabler/icons-react";
+import { Landmark } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Підрозділи | 23 ОМБр",
@@ -19,7 +19,7 @@ export default function UnitsPage() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <div className="flex items-center gap-3">
-            <IconBuildingFortress className="h-8 w-8 text-muted-foreground" />
+            <Landmark className="h-8 w-8 text-muted-foreground" />
             <div>
               <CardTitle>Підрозділи</CardTitle>
               <CardDescription>

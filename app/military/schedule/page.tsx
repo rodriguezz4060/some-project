@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { IconCalendarClock } from "@tabler/icons-react";
+import { Calendar } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Графік чергувань | 23 ОМБр",
@@ -19,7 +19,7 @@ export default function SchedulePage() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <div className="flex items-center gap-3">
-            <IconCalendarClock className="h-8 w-8 text-muted-foreground" />
+            <Calendar className="h-8 w-8 text-muted-foreground" />
             <div>
               <CardTitle>Графік чергувань</CardTitle>
               <CardDescription>
