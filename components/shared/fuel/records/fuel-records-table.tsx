@@ -10,8 +10,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { FUEL_TYPE_LABELS, PURPOSE_LABELS } from "./constants";
-import type { FuelRecord } from "./types";
+import { FUEL_TYPE_LABELS, PURPOSE_LABELS } from "../constants";
+import type { FuelRecord } from "../types";
 
 interface Props {
   records: FuelRecord[];

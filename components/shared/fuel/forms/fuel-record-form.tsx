@@ -27,8 +27,8 @@ import { TextField, NumberField, SelectField } from "@/components/shared/ui/form
 import { toast } from "sonner";
 import { createFuelRecord, updateFuelRecord } from "@root/actions/fuel";
 import { createFuelRecordSchema } from "@root/lib/schemas/fuel";
-import { FUEL_TYPE_OPTIONS } from "./constants";
-import type { FuelRecord, Vehicle } from "./types";
+import { FUEL_TYPE_OPTIONS } from "../constants";
+import type { FuelRecord, Vehicle } from "../types";
 import type { CreateFuelRecordData } from "@root/lib/schemas/fuel";
 
 interface Props {

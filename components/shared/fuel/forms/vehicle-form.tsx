@@ -13,8 +13,8 @@ import { TextField, NumberField, SelectField, TextareaField } from "@/components
 import { toast } from "sonner";
 import { createVehicle, updateVehicle } from "@root/actions/fuel";
 import { createVehicleSchema } from "@root/lib/schemas/fuel";
-import { VEHICLE_TYPE_OPTIONS, FUEL_TYPE_OPTIONS } from "./constants";
-import type { Vehicle } from "./types";
+import { VEHICLE_TYPE_OPTIONS, FUEL_TYPE_OPTIONS } from "../constants";
+import type { Vehicle } from "../types";
 import type { CreateVehicleData } from "@root/lib/schemas/fuel";
 
 interface Props {

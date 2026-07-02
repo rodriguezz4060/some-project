@@ -5,9 +5,9 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@root/lib/utils";
-import { FUEL_TYPE_LABELS, VEHICLE_TYPE_LABELS, VEHICLE_STATUS_LABELS } from "./constants";
-import type { Vehicle } from "./types";
-import type { VehicleStatus } from "./constants";
+import { FUEL_TYPE_LABELS, VEHICLE_TYPE_LABELS, VEHICLE_STATUS_LABELS } from "../constants";
+import type { Vehicle } from "../types";
+import type { VehicleStatus } from "../constants";
 
 interface Props {
   vehicle: Vehicle;
