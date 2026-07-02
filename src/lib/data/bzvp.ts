@@ -25,10 +25,10 @@ function buildDateFilter(arrivalFrom: string, arrivalTo: string) {
     return { gte: arrivalFrom, lte: arrivalTo };
   }
   if (arrivalFrom) {
-    return { equals: arrivalFrom };
+    return { gte: arrivalFrom };
   }
   if (arrivalTo) {
-    return { equals: arrivalTo };
+    return { lte: arrivalTo };
   }
   return {};
 }
