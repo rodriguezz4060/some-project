@@ -5,6 +5,7 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@root/lib/utils";
 import { Calendar, MapPin, Tag, Timer, Phone } from "lucide-react";
@@ -122,15 +123,12 @@ export function BzvpCard({
       </CardContent>
 
       <CardFooter className="pt-2 pb-4">
-        <Link
-          href={`/bzvp/${id}`}
-          className="w-full group/btn flex items-center justify-between px-3 py-2 rounded-lg bg-secondary/50 hover:bg-primary/10 transition-colors text-base"
-        >
-          <span className="font-medium text-muted-foreground group-hover/btn:text-primary transition-colors">
+        <Button asChild variant="outline" className="w-full gap-1.5">
+          <Link href={`/bzvp/${id}`}>
             Детальніше
-          </span>
-          <ChevronRight className="h-4 w-4 text-muted-foreground group-hover/btn:text-primary group-hover/btn:translate-x-0.5 transition-all" />
-        </Link>
+            <ChevronRight className="size-4" />
+          </Link>
+        </Button>
       </CardFooter>
     </Card>
   );

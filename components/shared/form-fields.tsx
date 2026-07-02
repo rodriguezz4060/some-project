@@ -63,8 +63,8 @@ export function NumberField<T extends FieldValues>({ control, name, label, place
       <FormItem>
         <FormLabel>{label}</FormLabel>
         <FormControl>
-          <Input type="number" step={step} value={field.value ?? ""}
-            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+          <Input type="text" inputMode="numeric" step={step} value={field.value ?? ""}
+            onChange={(e) => field.onChange(e.target.value)}
             placeholder={placeholder}
             className={cn("placeholder:text-muted-foreground/40", fieldState.invalid && "border-destructive ring-3 ring-destructive/20")} />
         </FormControl>

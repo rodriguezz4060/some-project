@@ -1,7 +1,10 @@
 import { z } from "zod";
 
 const dbString = z.string().nullish().transform((v) => v || null);
-const optionalNum = z.number().optional();
+const optionalNum = z.preprocess(
+  (v) => (v === "" || v == null ? undefined : Number(v)),
+  z.number().optional(),
+);
 
 const statusEnum = z.enum(["active", "on-mission", "wounded", "vacation", "reserve"]);
 const rankEnum = z.enum(["старший лейтенант", "капітан", "сержант", "майор", "полковник", "лейтенант"]);
