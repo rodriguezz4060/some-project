@@ -4,6 +4,18 @@ import { PrismaClient } from "../generated/prisma/client";
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
 
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+function toDate(value: string | null | undefined): Date | null {
+  if (!value || value === "--") return null;
+  if (ISO_DATE.test(value)) return new Date(value);
+  const ddmmyyyy = value.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+  if (ddmmyyyy) return new Date(`${ddmmyyyy[3]}-${ddmmyyyy[2]}-${ddmmyyyy[1]}`);
+  const mmyyyy = value.match(/^(\d{2})\.(\d{4})$/);
+  if (mmyyyy) return new Date(`${mmyyyy[2]}-${mmyyyy[1]}-01`);
+  return null;
+}
+
 async function seedMilitary() {
   const { MOCK_PERSONNEL } = await import(
     "../components/shared/military/personnel-mock"
@@ -22,7 +34,7 @@ async function seedMilitary() {
         position: person.position,
         unit: person.unit,
         status: person.status,
-        birthDate: person.birthDate,
+        birthDate: toDate(person.birthDate)!,
         photo: person.photo,
         experience: person.experience,
         missions: person.missions,
@@ -33,7 +45,7 @@ async function seedMilitary() {
           ? {
               create: person.medicalRecords.map((r) => ({
                 condition: r.condition,
-                diagnosisDate: r.diagnosisDate,
+                diagnosisDate: toDate(r.diagnosisDate) ?? new Date(),
                 status: r.status,
                 notes: r.notes,
               })),
@@ -43,7 +55,7 @@ async function seedMilitary() {
           ? {
               create: person.achievements.map((a) => ({
                 name: a.name,
-                date: a.date,
+                date: toDate(a.date) ?? new Date(),
                 type: a.type,
                 description: a.description,
               })),
@@ -55,7 +67,7 @@ async function seedMilitary() {
                 name: e.name,
                 type: e.type,
                 serialNumber: e.serialNumber,
-                issuedDate: e.issuedDate,
+                issuedDate: toDate(e.issuedDate) ?? new Date(),
               })),
             }
           : undefined,
@@ -64,8 +76,8 @@ async function seedMilitary() {
               create: person.positionHistory.map((p) => ({
                 position: p.position,
                 unit: p.unit,
-                startDate: p.startDate,
-                endDate: p.endDate,
+                startDate: toDate(p.startDate) ?? new Date(),
+                endDate: toDate(p.endDate),
               })),
             }
           : undefined,
@@ -101,7 +113,7 @@ async function seedBzvp() {
         createdAt,
         fullName: person.fullName,
         rank: person.rank,
-        birthDate: person.birthDate,
+        birthDate: toDate(person.birthDate)!,
         birthPlace: person.birthPlace,
         photo: person.photo,
         passport: person.passport,
@@ -110,7 +122,7 @@ async function seedBzvp() {
         militaryId: person.militaryId,
         militaryIdIssued: person.militaryIdIssued,
         ubd: person.ubd,
-        ubdDate: person.ubdDate,
+        ubdDate: toDate(person.ubdDate),
         serviceUnit: person.serviceUnit,
         serviceYears: person.serviceYears,
         civilianJob: person.civilianJob,
@@ -132,7 +144,7 @@ async function seedBzvp() {
         shoeSize: person.shoeSize,
         notes: person.notes,
         status: person.status,
-        arrivalDate: person.arrivalDate,
+        arrivalDate: toDate(person.arrivalDate)!,
         trainingPeriod: person.trainingPeriod,
         specialization: person.specialization,
       },
@@ -227,7 +239,7 @@ async function seedFuel() {
       data: {
         createdAt,
         vehicleId: vehicleIdMap[r.vehicleId] ?? r.vehicleId,
-        date: r.date,
+        date: new Date(r.date),
         fuelType: r.fuelType,
         liters: r.liters,
         pricePerLiter: r.pricePerLiter,

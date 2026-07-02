@@ -20,6 +20,19 @@ function mapPersonnel(p: Record<string, unknown>): BzvpPersonnel {
   return { ...p, status: toBzvpStatus(p.status as string) } as BzvpPersonnel;
 }
 
+function buildDateFilter(arrivalFrom: string, arrivalTo: string) {
+  if (arrivalFrom && arrivalTo) {
+    return { gte: arrivalFrom, lte: arrivalTo };
+  }
+  if (arrivalFrom) {
+    return { equals: arrivalFrom };
+  }
+  if (arrivalTo) {
+    return { equals: arrivalTo };
+  }
+  return {};
+}
+
 export async function getFilteredBzvp(
   statuses: BzvpStatus[],
   query: string,
@@ -28,24 +41,26 @@ export async function getFilteredBzvp(
   page = 1,
   pageSize = 8,
 ): Promise<{ personnel: BzvpPersonnel[]; count: number }> {
-  const where: Prisma.BzvpPersonnelWhereInput = {};
+  const and: Prisma.BzvpPersonnelWhereInput[] = [];
 
   if (statuses.length > 0) {
-    where.status = { in: statuses };
+    and.push({ status: { in: statuses } });
   }
 
   if (query) {
-    where.OR = SEARCH_FIELDS.map((field) => ({
-      [field]: { contains: query, mode: "insensitive" },
-    })) as Prisma.BzvpPersonnelWhereInput[];
+    and.push({
+      OR: SEARCH_FIELDS.map((field) => ({
+        [field]: { contains: query, mode: "insensitive" },
+      })) as Prisma.BzvpPersonnelWhereInput[],
+    });
   }
 
   if (arrivalFrom || arrivalTo) {
-    const dateFilter: Prisma.StringFilter<"BzvpPersonnel"> = {};
-    if (arrivalFrom) dateFilter.gte = arrivalFrom;
-    if (arrivalTo) dateFilter.lte = arrivalTo;
-    where.arrivalDate = dateFilter;
+    const dateFilter = buildDateFilter(arrivalFrom, arrivalTo);
+    and.push({ arrivalDate: dateFilter });
   }
+
+  const where: Prisma.BzvpPersonnelWhereInput = and.length > 0 ? { AND: and } : {};
 
   const [personnel, count] = await prisma.$transaction([
     prisma.bzvpPersonnel.findMany({
@@ -71,24 +86,26 @@ export async function getBzvpPage(
   page: number,
   pageSize = 8,
 ): Promise<BzvpPersonnel[]> {
-  const where: Prisma.BzvpPersonnelWhereInput = {};
+  const and: Prisma.BzvpPersonnelWhereInput[] = [];
 
   if (statuses.length > 0) {
-    where.status = { in: statuses };
+    and.push({ status: { in: statuses } });
   }
 
   if (query) {
-    where.OR = SEARCH_FIELDS.map((field) => ({
-      [field]: { contains: query, mode: "insensitive" },
-    })) as Prisma.BzvpPersonnelWhereInput[];
+    and.push({
+      OR: SEARCH_FIELDS.map((field) => ({
+        [field]: { contains: query, mode: "insensitive" },
+      })) as Prisma.BzvpPersonnelWhereInput[],
+    });
   }
 
   if (arrivalFrom || arrivalTo) {
-    const dateFilter: Prisma.StringFilter<"BzvpPersonnel"> = {};
-    if (arrivalFrom) dateFilter.gte = arrivalFrom;
-    if (arrivalTo) dateFilter.lte = arrivalTo;
-    where.arrivalDate = dateFilter;
+    const dateFilter = buildDateFilter(arrivalFrom, arrivalTo);
+    and.push({ arrivalDate: dateFilter });
   }
+
+  const where: Prisma.BzvpPersonnelWhereInput = and.length > 0 ? { AND: and } : {};
 
   const personnel = await prisma.bzvpPersonnel.findMany({
     where,

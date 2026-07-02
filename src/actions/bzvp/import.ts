@@ -7,7 +7,7 @@ import { logCreate, logUpdate } from "@root/lib/audit";
 import { requireModerator } from "@root/lib/auth-guards";
 import { BzvpRowSchema } from "@root/lib/schemas/import-bzvp";
 import { FIELD_LABELS, type BzvpFieldKey } from "@/components/shared/bzvp/fields";
-import { today } from "@root/lib/utils/dates";
+import { normalizeDate, today } from "@root/lib/utils/dates";
 import { COLUMN_ALIASES, STATUS_ALIASES } from "./constants";
 import type { Prisma } from "@/generated/prisma/client";
 
@@ -16,6 +16,8 @@ function normalizeHeader(header: string): string {
   return h;
 }
 
+const DATE_FIELDS = new Set(["birthDate", "arrivalDate", "ubdDate"]);
+
 function mapRow(raw: Record<string, unknown>): Record<string, string> {
   const mapped: Record<string, string> = {};
   for (const [key, value] of Object.entries(raw)) {
@@ -23,7 +25,7 @@ function mapRow(raw: Record<string, unknown>): Record<string, string> {
     const field = COLUMN_ALIASES[normalized];
     if (field) {
       const str = value == null ? "" : String(value).trim();
-      if (str) mapped[field] = str;
+      if (str) mapped[field] = DATE_FIELDS.has(field) ? normalizeDate(str) : str;
     }
   }
   return mapped;

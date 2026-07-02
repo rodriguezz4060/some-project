@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { Shield, MapPin, Calendar, Activity } from "lucide-react";
+import { formatDate } from "@root/lib/utils/dates";
 
 interface InfoRowProps {
   icon: React.ReactNode;
@@ -29,7 +30,7 @@ export const MilitaryInfoGrid = memo(function MilitaryInfoGrid({ position, unit,
     <div className="grid grid-cols-1 gap-2">
       <InfoRow icon={<Shield className="h-4 w-4" />} label="Посада:" value={position} />
       <InfoRow icon={<MapPin className="h-4 w-4" />} label="Підрозділ:" value={unit} />
-      <InfoRow icon={<Calendar className="h-4 w-4" />} label="Дата нар.:" value={birthDate} />
+      <InfoRow icon={<Calendar className="h-4 w-4" />} label="Дата нар.:" value={formatDate(birthDate)} />
       <InfoRow icon={<Activity className="h-4 w-4" />} label="Досвід:" value={experience != null ? `${experience} років` : "—"} />
     </div>
   );

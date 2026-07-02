@@ -157,7 +157,7 @@ export function BzvpForm({ initialData }: Props) {
             <CardTitle>Служба, адреси, правовий статус та сім&apos;я</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-            <TextField control={form.control} name="arrivalDate" label="Дата прибуття" placeholder="ДД.ММ.РРРР" />
+            <TextField control={form.control} name="arrivalDate" label="Дата прибуття" type="date" />
             <TextField control={form.control} name="trainingPeriod" label="Період навчання" placeholder="01.03.2025 – 01.06.2025" />
             <TextField control={form.control} name="serviceUnit" label="Воєнна частина (В/ч)" placeholder="72 ОМБр" />
             <TextField control={form.control} name="serviceYears" label="Роки проходження служби" placeholder="2020-2024" />

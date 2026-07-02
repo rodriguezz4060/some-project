@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@root/lib/utils";
+import { formatDate } from "@root/lib/utils/dates";
 import { Calendar, MapPin, Tag, Timer, Phone } from "lucide-react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
@@ -94,12 +95,12 @@ export function BzvpCard({
           <div className="flex items-center gap-2 text-base">
             <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
             <span className="text-muted-foreground">Дата прибуття:</span>
-            <span className="font-medium">{arrivalDate}</span>
+            <span className="font-medium">{formatDate(arrivalDate)}</span>
           </div>
           <div className="flex items-center gap-2 text-base">
             <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
             <span className="text-muted-foreground">Дата нар.:</span>
-            <span className="font-medium">{birthDate}</span>
+            <span className="font-medium">{formatDate(birthDate)}</span>
           </div>
           {specialization && (
             <div className="flex items-center gap-2 text-base">

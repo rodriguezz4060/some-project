@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { ProfileClothingVisual } from "./profile-clothing-visual";
 import { ProfilePositionHistory } from "./profile-position-history";
+import { formatDate } from "@root/lib/utils/dates";
 import type { MilitaryPersonnel, Achievement, Equipment, MedicalRecord } from "../../types";
 
 interface Props {
@@ -191,7 +192,7 @@ export function ProfileTabs({ personnel }: Props) {
             <CardContent className="space-y-3">
               <InfoLine icon={<Shield className="size-4" />} label="Посада" value={position} />
               <InfoLine icon={<MapPin className="size-4" />} label="Підрозділ" value={unit} />
-              <InfoLine icon={<Calendar className="size-4" />} label="Дата народж." value={birthDate} />
+              <InfoLine icon={<Calendar className="size-4" />} label="Дата народж." value={formatDate(birthDate)} />
               <InfoLine icon={<Activity className="size-4" />} label="Досвід" value={experience ? `${experience} років` : undefined} />
             </CardContent>
           </Card>

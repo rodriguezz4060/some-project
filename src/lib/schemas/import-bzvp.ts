@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const UKR_DATE_REGEX = /^\d{2}[./-]\d{2}[./-]\d{4}$/;
+export const UKR_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
 export const BZVP_STATUS_VALUES = ["training", "graduated", "transferred", "failed"] as const;
 

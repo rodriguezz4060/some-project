@@ -4,6 +4,7 @@ import { ALL_SECTIONS } from "./profile-pdf-sections";
 import type { PdfSectionId } from "./profile-pdf-sections";
 import { styles } from "./pdf-styles";
 import { SectionTitle, InfoLine, HistoryEntry, AchievementRow, EquipmentRow, MedicalRow } from "./pdf-helpers";
+import { formatDate } from "@root/lib/utils/dates";
 
 Font.register({
   family: "Noto Sans",
@@ -64,7 +65,7 @@ export function ProfilePdfDocument({ personnel, sections = ALL_SECTIONS, generat
             <View style={styles.infoGrid}>
               <InfoLine label="Посада" value={personnel.position} />
               <InfoLine label="Підрозділ" value={personnel.unit} />
-              <InfoLine label="Дата народження" value={personnel.birthDate} />
+              <InfoLine label="Дата народження" value={formatDate(personnel.birthDate)} />
               <InfoLine label="Досвід" value={personnel.experience ? `${personnel.experience} років` : undefined} />
               <InfoLine label="Місії" value={personnel.missions?.toString()} />
               <InfoLine

@@ -11,7 +11,7 @@ model BzvpPersonnel {
   id                  Int      @id @default(autoincrement())
   fullName            String
   rank                String
-  birthDate           String
+  birthDate           DateTime @db.Date
   birthPlace          String?
   photo               String?
   passport            String?
@@ -20,7 +20,7 @@ model BzvpPersonnel {
   militaryId          String?
   militaryIdIssued    String?
   ubd                 String?
-  ubdDate             String?
+  ubdDate             DateTime? @db.Date
   serviceUnit         String?
   serviceYears        String?
   civilianJob         String?
@@ -42,7 +42,7 @@ model BzvpPersonnel {
   shoeSize            String?
   notes               String?
   status              String
-  arrivalDate         String
+  arrivalDate         DateTime @db.Date
   trainingPeriod      String
   specialization      String?
   createdAt           DateTime @default(now())
@@ -58,7 +58,7 @@ model MilitaryPersonnel {
   position       String
   unit           String
   status         String
-  birthDate      String
+  birthDate      DateTime @db.Date
   photo          String?
   experience     Int?
   missions       Int?
@@ -78,9 +78,9 @@ model MilitaryPersonnel {
 }
 
 model MedicalRecord {
-  id            Int     @id @default(autoincrement())
+  id            Int      @id @default(autoincrement())
   condition     String
-  diagnosisDate String
+  diagnosisDate DateTime @db.Date
   status        String
   notes         String?
   personnelId   Int
@@ -109,9 +109,9 @@ model User {
 }
 
 model Achievement {
-  id          Int     @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   name        String
-  date        String
+  date        DateTime @db.Date
   type        String
   description String?
   personnelId Int
@@ -121,11 +121,11 @@ model Achievement {
 }
 
 model Equipment {
-  id           Int     @id @default(autoincrement())
+  id           Int      @id @default(autoincrement())
   name         String
   type         String
   serialNumber String?
-  issuedDate   String
+  issuedDate   DateTime @db.Date
   personnelId  Int
   personnel    MilitaryPersonnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
 
@@ -133,11 +133,11 @@ model Equipment {
 }
 
 model PositionEntry {
-  id          Int     @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   position    String
   unit        String
-  startDate   String
-  endDate     String?
+  startDate   DateTime @db.Date
+  endDate     DateTime? @db.Date
   personnelId Int
   personnel   MilitaryPersonnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
 
@@ -207,7 +207,7 @@ model FuelRecord {
   id            Int      @id @default(autoincrement())
   vehicleId     Int
   vehicle       Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-  date          String
+  date          DateTime @db.Date
   fuelType      String
   liters        Float
   pricePerLiter Float?

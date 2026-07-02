@@ -8,6 +8,7 @@ import {
   Font,
 } from "@react-pdf/renderer";
 import type { BzvpPersonnel } from "../types";
+import { formatDate } from "@root/lib/utils/dates";
 
 Font.register({
   family: "Noto Sans",
@@ -138,7 +139,7 @@ export function BzvpPdfDocument({ personnel, generatedDate }: Props) {
             <Field label="ПІБ" value={personnel.fullName} />
             <Field
               label="Дата та місце народження"
-              value={[personnel.birthDate, personnel.birthPlace]
+              value={[formatDate(personnel.birthDate), personnel.birthPlace]
                 .filter(Boolean)
                 .join(", ")}
             />
