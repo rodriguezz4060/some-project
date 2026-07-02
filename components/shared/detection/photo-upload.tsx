@@ -84,7 +84,7 @@ export function PhotoUpload() {
       {preview && (
         <div className="relative max-w-md">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={preview} alt="Preview" className="w-full h-auto rounded-lg border" />
+          <img src={preview} alt="Попередній перегляд завантаженого фото" className="w-full h-auto rounded-lg border" />
           {loading && (
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-lg">
               <div className="flex items-center gap-2 text-white text-sm font-medium">

@@ -90,6 +90,7 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null;
   }
 
+  // Дані надходять тільки з коду (theme config), не з користувацького вводу.
   return (
     <style
       dangerouslySetInnerHTML={{

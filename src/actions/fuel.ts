@@ -42,7 +42,8 @@ export async function createVehicle(rawData: CreateVehicleData) {
 
     revalidatePath("/fuel");
     return { id: vehicle.id, brand: vehicle.brand, model: vehicle.model, licensePlate: vehicle.licensePlate };
-  } catch {
+  } catch (e) {
+    console.error("createVehicle failed:", e);
     throw new Error("Помилка при збереженні");
   }
 }
@@ -59,8 +60,8 @@ export async function updateVehicle(id: number, rawData: CreateVehicleData) {
 
     if (oldVehicle) {
       const changes = compareFields(
-        oldVehicle as Record<string, unknown>,
-        data as Record<string, unknown>,
+        oldVehicle,
+        data,
         ["brand", "model", "licensePlate", "type", "year", "vin", "fuelType", "tankCapacity", "unit", "notes"],
         fieldLabels,
       );
@@ -79,7 +80,8 @@ export async function updateVehicle(id: number, rawData: CreateVehicleData) {
     revalidatePath("/fuel");
     revalidatePath(`/fuel/vehicles/${id}`);
     return { id: vehicle.id, brand: vehicle.brand, model: vehicle.model, licensePlate: vehicle.licensePlate };
-  } catch {
+  } catch (e) {
+    console.error("updateVehicle failed:", e);
     throw new Error("Помилка при збереженні");
   }
 }
@@ -134,7 +136,8 @@ export async function createFuelRecord(rawData: CreateFuelRecordData) {
     revalidatePath(`/fuel/vehicles/${data.vehicleId}`);
     revalidatePath("/fuel/records");
     return { id: record.id };
-  } catch {
+  } catch (e) {
+    console.error("createFuelRecord failed:", e);
     throw new Error("Помилка при збереженні");
   }
 }
@@ -154,8 +157,8 @@ export async function updateFuelRecord(id: number, rawData: CreateFuelRecordData
 
     if (oldRecord) {
       const changes = compareFields(
-        oldRecord as Record<string, unknown>,
-        data as Record<string, unknown>,
+        oldRecord,
+        data,
         ["date", "fuelType", "liters", "pricePerLiter", "totalCost", "mileage", "driverName", "invoiceNumber", "supplier", "purpose"],
         fieldLabels,
         { purpose: PURPOSE_LABELS },
@@ -178,7 +181,8 @@ export async function updateFuelRecord(id: number, rawData: CreateFuelRecordData
     revalidatePath(`/fuel/vehicles/${data.vehicleId}`);
     revalidatePath("/fuel/records");
     return { id: record.id };
-  } catch {
+  } catch (e) {
+    console.error("updateFuelRecord failed:", e);
     throw new Error("Помилка при збереженні");
   }
 }
@@ -200,7 +204,8 @@ export async function deleteFuelRecord(id: number) {
     revalidatePath(`/fuel/vehicles/${record.vehicleId}`);
     revalidatePath("/fuel/records");
     return { id: record.id };
-  } catch {
+  } catch (e) {
+    console.error("deleteFuelRecord failed:", e);
     throw new Error("Помилка при видаленні");
   }
 }

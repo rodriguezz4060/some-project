@@ -124,6 +124,7 @@ export function UserMenu() {
 
         <DropdownMenuItem
           onClick={() => signOut()}
+          aria-label="Вийти з системи"
           className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
         >
           <LogOut className="size-4" />

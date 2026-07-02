@@ -8,7 +8,7 @@ export async function getVehicles(status?: string): Promise<Vehicle[]> {
     include: {
       fuelRecords: {
         orderBy: [{ date: "desc" }, { createdAt: "desc" }],
-        take: 20,
+        take: 5,
       },
     },
   });
@@ -41,7 +41,7 @@ export async function getVehicleById(id: number): Promise<Vehicle | null> {
     include: {
       fuelRecords: {
         orderBy: [{ date: "desc" }, { createdAt: "desc" }],
-        take: 100,
+        take: 20,
         include: {
           createdBy: { select: { id: true, name: true } },
         },

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import * as XLSX from "xlsx";
+import { auth } from "@root/lib/auth";
 
 const HEADERS = [
   "ПІБ",
@@ -41,6 +42,11 @@ const HEADERS = [
 ];
 
 export async function GET() {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.aoa_to_sheet([
     HEADERS,

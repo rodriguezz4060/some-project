@@ -117,17 +117,11 @@ export async function getMilitaryPersonnelById(id: number): Promise<MilitaryPers
   return toMilitaryPersonnel(p);
 }
 
+/** @deprecated Не використовується. Якщо потрібні всі записи з relation, додай пагінацію. */
 export async function getAllMilitary(): Promise<MilitaryPersonnel[]> {
   const all = await prisma.militaryPersonnel.findMany({
     orderBy: { createdAt: "desc" },
     take: MAX_FETCH,
-    include: {
-      medicalRecords: true,
-      achievements: true,
-      equipment: true,
-      positionHistory: { orderBy: { startDate: "desc" } },
-      clothingSizes: true,
-    },
   });
 
   return all.map(toMilitaryPersonnel);

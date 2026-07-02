@@ -17,7 +17,7 @@ const allFields = Object.keys(bzvpSchema.shape);
 function parseBzvp(rawData: BzvpData) {
   const parsed = bzvpSchema.safeParse(rawData);
   if (!parsed.success) {
-    throw new Error(Object.values(parsed.error.flatten().fieldErrors).flat().join("; "));
+    throw new Error(parsed.error.issues.map((i) => i.message).join("; "));
   }
   return parsed.data;
 }
@@ -48,7 +48,8 @@ export async function createBzvp(rawData: BzvpData) {
 
     revalidatePath("/bzvp");
     return { id: person.id, fullName: person.fullName };
-  } catch {
+  } catch (e) {
+    console.error("createBzvp failed:", e);
     throw new Error("Помилка при збереженні");
   }
 }
@@ -74,8 +75,8 @@ export async function updateBzvp(id: number, rawData: BzvpData) {
 
     if (oldPerson) {
       const changes = compareFields(
-        oldPerson as Record<string, unknown>,
-        data as Record<string, unknown>,
+        oldPerson,
+        data,
         allFields,
         fieldLabels,
       );
@@ -93,7 +94,8 @@ export async function updateBzvp(id: number, rawData: BzvpData) {
 
     revalidatePath("/bzvp");
     return { id: person.id, fullName: person.fullName };
-  } catch {
+  } catch (e) {
+    console.error("updateBzvp failed:", e);
     throw new Error("Помилка при збереженні");
   }
 }
@@ -114,7 +116,8 @@ export async function deleteBzvp(id: number) {
 
     revalidatePath("/bzvp");
     return { id: person.id, fullName: person.fullName };
-  } catch {
+  } catch (e) {
+    console.error("deleteBzvp failed:", e);
     throw new Error("Помилка при видаленні");
   }
 }

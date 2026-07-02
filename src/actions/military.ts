@@ -60,7 +60,8 @@ export async function createMilitary(rawData: CreateMilitaryData) {
 
     revalidatePath("/military");
     return { id: person.id, fullName: person.fullName };
-  } catch {
+  } catch (e) {
+    console.error("createMilitary failed:", e);
     throw new Error("Помилка при збереженні");
   }
 }
@@ -144,8 +145,8 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
 
     if (oldPerson) {
       const mainFieldChanges = compareFields(
-        oldPerson as Record<string, unknown>,
-        data as Record<string, unknown>,
+        oldPerson,
+        data,
         ["fullName", "rank", "position", "unit", "status", "birthDate", "phone", "email", "experience", "missions", "lastActiveDays"],
         fieldLabels,
       );
@@ -154,8 +155,8 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
 
       if (medicalRecords) {
         const result = compareItemArrays(
-          oldPerson.medicalRecords as Record<string, unknown>[],
-          medicalRecords as Record<string, unknown>[],
+          oldPerson.medicalRecords,
+          medicalRecords,
           "Медицина",
           fieldLabels,
         );
@@ -165,8 +166,8 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
 
       if (achievements) {
         const result = compareItemArrays(
-          oldPerson.achievements as Record<string, unknown>[],
-          achievements as Record<string, unknown>[],
+          oldPerson.achievements,
+          achievements,
           "Нагороди",
           fieldLabels,
         );
@@ -176,8 +177,8 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
 
       if (equipment) {
         const result = compareItemArrays(
-          oldPerson.equipment as Record<string, unknown>[],
-          equipment as Record<string, unknown>[],
+          oldPerson.equipment,
+          equipment,
           "Спорядження",
           fieldLabels,
         );
@@ -187,8 +188,8 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
 
       if (positionHistory) {
         const result = compareItemArrays(
-          oldPerson.positionHistory as Record<string, unknown>[],
-          positionHistory as Record<string, unknown>[],
+          oldPerson.positionHistory,
+          positionHistory,
           "Історія посад",
           fieldLabels,
         );
@@ -198,8 +199,8 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
 
       if (clothingSizes && oldPerson.clothingSizes) {
         const clothingChanges = compareFields(
-          oldPerson.clothingSizes as Record<string, unknown>,
-          clothingSizes as Record<string, unknown>,
+          oldPerson.clothingSizes,
+          clothingSizes,
           ["height", "chest", "waist", "shoes", "headgear", "uniform"],
           fieldLabels,
         );
@@ -223,7 +224,8 @@ export async function updateMilitary(id: number, rawData: CreateMilitaryData) {
     revalidatePath("/military");
     revalidatePath(`/military/${id}`);
     return { id: person.id, fullName: person.fullName };
-  } catch {
+  } catch (e) {
+    console.error("updateMilitary failed:", e);
     throw new Error("Помилка при збереженні");
   }
 }
@@ -244,7 +246,8 @@ export async function deleteMilitary(id: number) {
 
     revalidatePath("/military");
     return { id: person.id, fullName: person.fullName };
-  } catch {
+  } catch (e) {
+    console.error("deleteMilitary failed:", e);
     throw new Error("Помилка при видаленні");
   }
 }

@@ -9,9 +9,14 @@ import { logUpdate } from "@root/lib/audit";
 import { updateProfileSchema } from "@root/lib/schemas/profile";
 import type { UpdateProfileData } from "@root/lib/schemas/profile";
 
-export async function getProfile() {
+async function requireAuth() {
   const session = await auth();
   if (!session?.user) redirect("/");
+  return session;
+}
+
+export async function getProfile() {
+  const session = await requireAuth();
 
   const user = await prisma.user.findUnique({
     where: { id: Number(session.user.id) },
@@ -23,13 +28,12 @@ export async function getProfile() {
 }
 
 export async function updateProfile(rawData: UpdateProfileData) {
-  const session = await auth();
+  const session = await requireAuth();
   const parsed = updateProfileSchema.safeParse(rawData);
   if (!parsed.success) {
     throw new Error(parsed.error.issues.map((i) => i.message).join("; "));
   }
   const data = parsed.data;
-  if (!session?.user) redirect("/");
 
   const userId = Number(session.user.id);
   const changes: Record<string, { old: string | null; new: string | null }> = {};

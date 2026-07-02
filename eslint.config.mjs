@@ -15,6 +15,13 @@ const eslintConfig = defineConfig([
     // Python venv
     "detector/venv/**",
   ]),
+  {
+    rules: {
+      "jsx-a11y/alt-text": "error",
+      "jsx-a11y/aria-props": "warn",
+      "jsx-a11y/role-has-required-aria-props": "warn",
+    },
+  },
 ]);
 
 export default eslintConfig;

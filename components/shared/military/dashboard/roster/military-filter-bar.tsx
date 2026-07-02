@@ -24,7 +24,7 @@ const chipDotColor: Record<StatusType, string> = {
   "on-mission": "bg-amber-500",
   wounded: "bg-rose-500",
   vacation: "bg-sky-500",
-  reserve: "bg-gray-500",
+  reserve: "bg-neutral-500",
 };
 
 const STORAGE_KEY = "military:filtersCollapsed";

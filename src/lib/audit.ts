@@ -152,9 +152,8 @@ export async function getAuditLogs(
 }
 
 export async function getAllAuditUsers() {
-  const result = await prisma.auditLog.findMany({
-    select: { userId: true, user: { select: { name: true, email: true, id: true } } },
-    distinct: ["userId"],
+  return prisma.user.findMany({
+    select: { id: true, name: true, email: true },
+    orderBy: { email: "asc" },
   });
-  return result.map((r) => r.user);
 }

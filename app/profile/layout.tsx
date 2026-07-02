@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
-import { auth } from "@root/lib/auth";
 import { AppSidebar } from "@/components/shared/military/dashboard/layout/app-sidebar";
 import { SiteHeader } from "@/components/shared/military/dashboard/layout/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -9,9 +7,6 @@ export default async function ProfileLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
-  if (!session?.user) redirect("/");
-
   return (
     <SidebarProvider
       style={

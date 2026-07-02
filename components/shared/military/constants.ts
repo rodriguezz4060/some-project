@@ -14,7 +14,7 @@ export const STATUS_SELECTED_CLASSES: Record<StatusType, string> = {
   "on-mission": "bg-amber-500/20 text-amber-400 border-amber-500/50",
   wounded: "bg-rose-500/20 text-rose-400 border-rose-500/50",
   vacation: "bg-sky-500/20 text-sky-400 border-sky-500/50",
-  reserve: "bg-gray-500/20 text-gray-400 border-gray-500/50",
+  reserve: "bg-neutral-500/20 text-neutral-400 border-neutral-500/50",
 };
 
 export type StatusIconName = "Activity" | "Shield" | "Calendar";
@@ -47,7 +47,7 @@ export const statusConfig: Record<StatusType, StatusConfigEntry> = {
     iconName: "Calendar",
   },
   reserve: {
-    color: "bg-gray-500/15 text-gray-400 border-gray-500/30",
+    color: "bg-neutral-500/15 text-neutral-400 border-neutral-500/30",
     label: "Резерв",
     iconName: "Shield",
   },

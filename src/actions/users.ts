@@ -4,6 +4,7 @@ import { prisma } from "@root/lib/prisma";
 import { auth } from "@root/lib/auth";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
+import { logDelete } from "@root/lib/audit";
 import { createUserSchema, updateUserSchema } from "@root/lib/schemas/users";
 import type { CreateUserData, UpdateUserData } from "@root/lib/schemas/users";
 
@@ -114,10 +115,21 @@ export async function updateUser(
 
 export async function deleteUser(id: number) {
   const session = await requireAdmin();
+  const userId = Number(session.user.id);
 
-  if (Number(session.user.id) === id) {
+  if (userId === id) {
     throw new Error("Ви не можете видалити себе");
   }
 
+  const user = await prisma.user.findUnique({ where: { id }, select: { email: true } });
+  if (!user) throw new Error("Користувача не знайдено");
+
   await prisma.user.delete({ where: { id } });
+
+  logDelete(
+    "User",
+    id,
+    `Видалив користувача «${user.email}» (ID: ${id})`,
+    userId,
+  );
 }

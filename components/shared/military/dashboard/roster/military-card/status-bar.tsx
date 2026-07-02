@@ -7,7 +7,7 @@ const statusBarColors: Record<StatusType, string> = {
   "on-mission": "bg-amber-500",
   wounded: "bg-rose-500",
   vacation: "bg-sky-500",
-  reserve: "bg-gray-400",
+  reserve: "bg-neutral-400",
 };
 
 interface Props {

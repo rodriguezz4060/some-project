@@ -1,8 +1,8 @@
 export type Changes = Record<string, { old: string | null; new: string | null }>;
 
-export function compareFields<T extends Record<string, unknown>>(
-  oldData: T,
-  newData: T,
+export function compareFields(
+  oldData: Record<string, unknown>,
+  newData: Record<string, unknown>,
   fields: string[],
   fieldLabels: Record<string, string>,
   valueLabels?: Record<string, Record<string, string>>,
@@ -30,9 +30,9 @@ function itemKey(item: Record<string, unknown>): string {
   return item.id != null ? `id:${item.id}` : `idx:${Math.random()}`;
 }
 
-export function compareItemArrays<T extends Record<string, unknown>>(
-  oldItems: T[],
-  newItems: T[],
+export function compareItemArrays(
+  oldItems: Record<string, unknown>[],
+  newItems: Record<string, unknown>[],
   label: string,
   fieldLabels: Record<string, string>,
 ): { changes: Changes; descriptions: string[] } {
