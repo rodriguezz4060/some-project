@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { createZodResolver } from "@root/lib/utils";
+import { parseZodErrorMessages } from "@root/lib/form-utils";
 import { Save, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -77,8 +78,16 @@ export function BzvpForm({ initialData }: Props) {
   const ubdWatched = useWatch({ control: form.control, name: "ubd" });
 
   const handleServerError = (err: unknown) => {
-    const message = err instanceof Error ? err.message : "";
-    toast.error(message || "Помилка при збереженні");
+    const msgs = parseZodErrorMessages(err);
+    if (msgs) {
+      toast.error(
+        <div className="flex flex-col gap-0.5">
+          {msgs.map((m, i) => <span key={i}>{m}</span>)}
+        </div>,
+      );
+    } else {
+      toast.error("Помилка при збереженні");
+    }
   };
 
   async function onSubmit(data: FormValues) {

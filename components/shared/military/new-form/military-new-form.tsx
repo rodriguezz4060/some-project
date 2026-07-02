@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useFieldArray } from "react-hook-form";
 import { createZodResolver } from "@root/lib/utils";
+import { parseZodErrorMessages } from "@root/lib/form-utils";
 import { Save, Loader2 } from "lucide-react";
 import { ArraySection } from "@/components/shared/array-section";
 import { Button } from "@/components/ui/button";
@@ -85,20 +86,13 @@ export function MilitaryForm({ initialData }: Props) {
   const posField = useFieldArray({ control: form.control, name: "positionHistory" });
 
   const handleServerError = (err: unknown) => {
-    const message = err instanceof Error ? err.message : "";
-    if (message) {
-      const parts = message.split("; ");
-      const msgs = parts.map((p) => {
-        const colonIdx = p.indexOf(": ");
-        return colonIdx > 0 ? p.slice(colonIdx + 2) : p;
-      });
+    const msgs = parseZodErrorMessages(err);
+    if (msgs) {
       toast.error(
         <div className="flex flex-col gap-0.5">
           {msgs.map((m, i) => <span key={i}>{m}</span>)}
         </div>,
       );
-    } else {
-      toast.error("Помилка при збереженні");
     }
   };
 

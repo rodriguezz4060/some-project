@@ -10,6 +10,10 @@ export function fromDateInput(value: string): string {
   return `${String(d.getMonth() + 1).padStart(2, "0")}.${d.getFullYear()}`;
 }
 
+export function today(): string {
+  return new Date().toISOString().split("T")[0];
+}
+
 export function parseDate(dateStr: string): number {
   if (!dateStr) return 0;
   const iso = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);

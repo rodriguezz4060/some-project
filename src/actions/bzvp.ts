@@ -5,49 +5,12 @@ import { revalidatePath } from "next/cache";
 import { logCreate, logUpdate, logDelete } from "@root/lib/audit";
 import { requireModerator } from "@root/lib/auth-guards";
 import { compareFields } from "@root/lib/diff";
+import { fieldLabels } from "@root/lib/action-labels";
 import { buildChangeLines, formatDescription } from "@root/lib/audit-helpers";
+import { today } from "@root/lib/utils/dates";
 import { getBzvpPage as getBzvpPageData } from "@root/lib/data/bzvp";
 import { bzvpSchema, type BzvpData } from "@root/lib/schemas/bzvp";
 import type { BzvpStatus, BzvpPersonnel } from "@/components/shared/bzvp/types";
-
-const fieldLabels: Record<string, string> = {
-  fullName: "ПІБ",
-  rank: "Звання",
-  birthDate: "Дата народження",
-  birthPlace: "Місце народження",
-  photo: "Фото",
-  passport: "Паспорт",
-  passportIssued: "Паспорт видано",
-  tin: "РНОКПП",
-  militaryId: "Військовий квиток",
-  militaryIdIssued: "Військовий квиток видано",
-  ubd: "УБД",
-  ubdDate: "Дата УБД",
-  serviceUnit: "Частина",
-  serviceYears: "Роки служби",
-  civilianJob: "Цивільна спеціальність",
-  education: "Освіта",
-  actualAddress: "Фактична адреса",
-  registrationAddress: "Адреса реєстрації",
-  driverLicense: "Посвідчення водія",
-  criminalRecord: "Судимість",
-  policeRecords: "Облік в поліції",
-  family: "Склад сім'ї",
-  phone: "Телефон",
-  relativePhones: "Телефони рідних",
-  personalOrder: "Особиста справа №",
-  conscription: "Військкомат",
-  health: "Стан здоров'я",
-  healthComplaints: "Скарги на здоров'я",
-  moralState: "Моральний стан",
-  bloodType: "Група крові",
-  shoeSize: "Розмір взуття",
-  notes: "Примітки",
-  status: "Статус",
-  arrivalDate: "Дата прибуття",
-  trainingPeriod: "Період навчання",
-  specialization: "Спеціалізація",
-};
 
 const allFields = Object.keys(bzvpSchema.shape);
 
@@ -63,7 +26,7 @@ export async function createBzvp(rawData: BzvpData) {
   const session = await requireModerator();
   const userId = Number(session.user.id);
   const data = parseBzvp(rawData);
-  const today = new Date().toISOString().split("T")[0];
+  const todayDate = today();
   const { status, arrivalDate, trainingPeriod, ...rest } = data;
 
   try {
@@ -71,7 +34,7 @@ export async function createBzvp(rawData: BzvpData) {
       data: {
         ...rest,
         status: status ?? "training",
-        arrivalDate: arrivalDate ?? today,
+        arrivalDate: arrivalDate ?? todayDate,
         trainingPeriod: trainingPeriod ?? "",
       },
     });

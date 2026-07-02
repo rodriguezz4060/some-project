@@ -4,9 +4,10 @@ import * as XLSX from "xlsx";
 import { prisma } from "@root/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { logCreate, logUpdate } from "@root/lib/audit";
-import { z } from "zod";
 import { requireModerator } from "@root/lib/auth-guards";
+import { BzvpRowSchema } from "@root/lib/schemas/import-bzvp";
 import { FIELD_LABELS, type BzvpFieldKey } from "@/components/shared/bzvp/fields";
+import { today } from "@root/lib/utils/dates";
 import type { Prisma } from "@/generated/prisma/client";
 
 const COLUMN_ALIASES: Record<string, string> = {
@@ -78,10 +79,6 @@ const COLUMN_ALIASES: Record<string, string> = {
   "спеціальність": "specialization",
 };
 
-const UKR_DATE_REGEX = /^\d{2}[./-]\d{2}[./-]\d{4}$/;
-
-const BZVP_STATUS_VALUES = ["training", "graduated", "transferred", "failed"] as const;
-
 const STATUS_ALIASES: Record<string, string> = {
   "навчання": "training",
   "навчається": "training",
@@ -94,45 +91,6 @@ const STATUS_ALIASES: Record<string, string> = {
   "не склав": "failed",
   "failed": "failed",
 };
-
-const BzvpRowSchema = z.object({
-  fullName: z.string().min(1),
-  rank: z.string().min(1),
-  birthDate: z.string().regex(UKR_DATE_REGEX),
-  birthPlace: z.string().optional(),
-  photo: z.string().optional(),
-  passport: z.string().optional(),
-  passportIssued: z.string().optional(),
-  tin: z.string().optional(),
-  militaryId: z.string().optional(),
-  militaryIdIssued: z.string().optional(),
-  ubd: z.string().optional(),
-  ubdDate: z.string().regex(UKR_DATE_REGEX).optional(),
-  serviceUnit: z.string().optional(),
-  serviceYears: z.string().optional(),
-  civilianJob: z.string().optional(),
-  education: z.string().optional(),
-  actualAddress: z.string().optional(),
-  registrationAddress: z.string().optional(),
-  driverLicense: z.string().optional(),
-  criminalRecord: z.string().optional(),
-  policeRecords: z.string().optional(),
-  family: z.string().optional(),
-  phone: z.string().optional(),
-  relativePhones: z.string().optional(),
-  personalOrder: z.string().optional(),
-  conscription: z.string().optional(),
-  health: z.string().optional(),
-  healthComplaints: z.string().optional(),
-  moralState: z.string().optional(),
-  bloodType: z.string().optional(),
-  shoeSize: z.string().optional(),
-  notes: z.string().optional(),
-  status: z.enum(BZVP_STATUS_VALUES),
-  arrivalDate: z.string().regex(UKR_DATE_REGEX),
-  trainingPeriod: z.string().min(1),
-  specialization: z.string().optional(),
-});
 
 
 function normalizeHeader(header: string): string {
@@ -205,7 +163,7 @@ function buildPrismaData(data: Record<string, string>): Prisma.BzvpPersonnelCrea
     shoeSize: data.shoeSize || null,
     notes: data.notes || null,
     status: data.status ?? "training",
-    arrivalDate: data.arrivalDate ?? new Date().toISOString().split("T")[0],
+    arrivalDate: data.arrivalDate ?? today(),
     trainingPeriod: data.trainingPeriod ?? "",
     specialization: data.specialization || null,
   };

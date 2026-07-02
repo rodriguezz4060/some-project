@@ -3,7 +3,7 @@
 import { useActionState, useEffect } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { Loader2, Mail, User, Lock, ShieldCheck, Shield, Eye, EyeOff } from "lucide-react";
+import { Loader2, Mail, Lock, Eye, EyeOff, ShieldCheck, User } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { createUser, updateUser } from "@root/actions/users";
+import { ROLES, RoleBadge } from "@/components/shared/admin/role-constants";
 
 interface User {
   id: number;
@@ -65,42 +66,6 @@ async function updateAction(_prev: FormState, formData: FormData): Promise<FormS
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Невідома помилка" };
   }
-}
-
-const roleOptions = [
-  {
-    value: "admin",
-    label: "Адмін",
-    description: "Повний доступ, управління користувачами",
-    icon: ShieldCheck,
-    color: "text-amber-400",
-  },
-  {
-    value: "moderator",
-    label: "Модератор",
-    description: "Може створювати та редагувати анкети",
-    icon: Shield,
-    color: "text-blue-400",
-  },
-  {
-    value: "user",
-    label: "Користувач",
-    description: "Тільки перегляд даних",
-    icon: User,
-    color: "text-muted-foreground",
-  },
-];
-
-function RoleBadge({ role }: { role: string }) {
-  const opt = roleOptions.find((r) => r.value === role);
-  if (!opt) return null;
-  const Icon = opt.icon;
-  return (
-    <span className={`inline-flex items-center gap-1 text-xs font-medium ${opt.color}`}>
-      <Icon className="size-3.5" />
-      {opt.label}
-    </span>
-  );
 }
 
 function FormField({
@@ -261,7 +226,7 @@ export function UserFormDialog({ user, onClose }: Props) {
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    {roleOptions.map((opt) => {
+                    {ROLES.map((opt) => {
                       const Icon = opt.icon;
                       return (
                         <SelectItem key={opt.value} value={opt.value} className="py-3">
@@ -283,7 +248,7 @@ export function UserFormDialog({ user, onClose }: Props) {
                 {selectedRole && (
                   <div className="rounded-lg border bg-muted/30 px-3 py-2">
                     <p className="text-xs text-muted-foreground">
-                      {roleOptions.find((r) => r.value === selectedRole)?.description}
+                      {ROLES.find((r) => r.value === selectedRole)?.description}
                     </p>
                   </div>
                 )}

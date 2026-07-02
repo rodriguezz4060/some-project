@@ -1,7 +1,7 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, History } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { History } from "lucide-react";
+import { ClientPagination } from "@/components/shared/pagination";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -80,22 +80,13 @@ export function AuditLogTable({ logs, totalLogs, totalPages, currentPage, onPage
           )}
         </TableBody>
       </Table>
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between px-4 py-3 border-t">
-          <p className="text-xs text-muted-foreground">
-            {totalLogs} {totalLogs === 1 ? "запис" : totalLogs > 4 ? "записів" : "записи"}
-          </p>
-          <div className="flex items-center gap-1">
-            <Button variant="outline" size="sm" disabled={currentPage <= 1} onClick={() => onPageChange(currentPage - 1)}>
-              <ChevronLeft className="size-4" /><span className="hidden sm:inline ml-1">Попередня</span>
-            </Button>
-            <span className="px-3 text-xs text-muted-foreground tabular-nums">{currentPage} / {totalPages}</span>
-            <Button variant="outline" size="sm" disabled={currentPage >= totalPages} onClick={() => onPageChange(currentPage + 1)}>
-              <span className="hidden sm:inline mr-1">Наступна</span><ChevronRight className="size-4" />
-            </Button>
-          </div>
-        </div>
-      )}
+      <ClientPagination
+        page={currentPage}
+        totalPages={totalPages}
+        total={totalLogs}
+        label="записів"
+        onPageChange={onPageChange}
+      />
     </div>
   );
 }

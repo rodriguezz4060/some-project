@@ -8,8 +8,8 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Журнал дій | 23 ОМБр",
 };
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ChevronLeft } from "lucide-react";
+import { LinkPagination } from "@/components/shared/pagination";
 import {
   Table,
   TableBody,
@@ -207,31 +207,18 @@ export default async function AdminLogsPage({ searchParams }: PageProps) {
         </Table>
       </div>
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Сторінка {page} з {totalPages} (всього {total} записів)
-          </p>
-          <div className="flex items-center gap-2">
-            {page > 1 && (
-              <Button variant="outline" size="sm" asChild>
-                <Link href={`/admin/logs?page=${page - 1}${querySuffix ? `&${querySuffix}` : ""}`}>
-                  <ChevronLeft className="size-4" />
-                  Попередня
-                </Link>
-              </Button>
-            )}
-            {page < totalPages && (
-              <Button variant="outline" size="sm" asChild>
-                <Link href={`/admin/logs?page=${page + 1}${querySuffix ? `&${querySuffix}` : ""}`}>
-                  Наступна
-                  <ChevronRight className="size-4" />
-                </Link>
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
+      <LinkPagination
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        basePath="/admin/logs"
+        queryParams={
+          querySuffix
+            ? Object.fromEntries(new URLSearchParams(querySuffix))
+            : undefined
+        }
+        label="записів"
+      />
     </div>
   );
 }

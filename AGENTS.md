@@ -14,11 +14,16 @@ npm run db:studio  # prisma studio
 
 Run `lint` before committing. There is no test framework, typecheck script, or CI.
 
+## MCP Servers
+
+- **shadcn** — add/list/view UI components (`components/ui/`). Registries: `@shadcn`, `@acme`
+- **context7** — fetch current docs for any library (resolve library ID → query docs → answer)
+
 ## Tech stack
 
 - **Next.js 16.2.9** (App Router) + **React 19** + **TypeScript 5**
 - **Tailwind CSS 4** — uses `@import "tailwindcss"` (NOT old `@tailwind` directives)
-- **shadcn/ui** with `radix-nova` style — components use `data-slot` attributes and `function` declarations
+- **shadcn/ui** (v4, radix base) — components use `data-slot` attributes, `function` declarations, `radix-ui` meta-package
 - **Radix UI** primitives through the `radix-ui` meta-package
 - **Prisma 7** (`@prisma/adapter-pg` + `pg`) — PostgreSQL ORM
 - **NextAuth v5** (beta) — Credentials + JWT auth
@@ -44,7 +49,7 @@ For the `cn()` utility, prefer `@root/lib/utils` (the prevalent pattern).
 
 ## Key libraries
 
-`@dnd-kit` (drag & drop), `@tanstack/react-table`, `recharts`, `next-themes` (dark mode by default), `zod`, `sonner` (toasts), `lucide-react` + `@tabler/icons-react` (icons), `class-variance-authority` (variant props), `next-auth` (v5 beta, Credentials + JWT), `bcryptjs` (password hashing), `@prisma/adapter-pg` + `pg` (Postgres driver), `@react-pdf/renderer` (PDF), `xlsx` (Excel import/export), `photoswipe` (image gallery).
+`recharts` (charts), `next-themes` (dark mode by default), `zod` (validation), `sonner` (toasts), `lucide-react` + `@tabler/icons-react` (icons), `class-variance-authority` (variant props), `next-auth` (v5 beta, Credentials + JWT), `bcryptjs` (password hashing), `@prisma/adapter-pg` + `pg` (Postgres driver), `@react-pdf/renderer` (PDF), `xlsx` (Excel import/export), `photoswipe` (image gallery).
 
 ## Auth system
 

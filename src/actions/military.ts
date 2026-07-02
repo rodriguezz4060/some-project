@@ -5,45 +5,15 @@ import { revalidatePath } from "next/cache";
 import { logCreate, logUpdate, logDelete } from "@root/lib/audit";
 import { requireModerator } from "@root/lib/auth-guards";
 import { parseDate } from "@root/lib/utils/dates";
+import { syncItems } from "@root/lib/sync-items";
 import { compareFields, compareItemArrays, type Changes } from "@root/lib/diff";
 import { buildChangeLines, formatDescription } from "@root/lib/audit-helpers";
+import { fieldLabels } from "@root/lib/action-labels";
 import { getMilitaryPage as getMilitaryPageData } from "@root/lib/data/military";
 import { createMilitarySchema } from "@root/lib/schemas/military";
 import type { CreateMilitaryData } from "@root/lib/schemas/military";
 import type { StatusType } from "@/components/shared/military/types";
 import type { MilitaryPersonnel } from "@/components/shared/military/types";
-
-const fieldLabels: Record<string, string> = {
-  fullName: "ПІБ",
-  rank: "Звання",
-  position: "Посада",
-  unit: "Підрозділ",
-  status: "Статус",
-  birthDate: "Дата народження",
-  phone: "Телефон",
-  email: "Email",
-  experience: "Досвід (років)",
-  missions: "Кількість виходів",
-  lastActiveDays: "Остання активність (днів)",
-  photo: "Фото",
-  name: "Назва",
-  type: "Тип",
-  serialNumber: "Серійний номер",
-  issuedDate: "Дата видачі",
-  condition: "Діагноз",
-  diagnosisDate: "Дата діагнозу",
-  notes: "Примітки",
-  description: "Опис",
-  date: "Дата",
-  startDate: "Дата початку",
-  endDate: "Дата закінчення",
-  height: "Зріст",
-  chest: "Обхват грудей",
-  waist: "Обхват талії",
-  shoes: "Розмір взуття",
-  headgear: "Розмір головного убору",
-  uniform: "Розмір форми",
-};
 
 function parseMilitary(rawData: CreateMilitaryData) {
   const parsed = createMilitarySchema.safeParse(rawData);
@@ -60,33 +30,6 @@ function autoFillEndDates(history: { startDate: string; endDate?: string | null 
       entry.endDate = sorted[i + 1].startDate;
     }
   });
-}
-
-async function syncItems<TData extends Record<string, unknown>>(
-  deleteMany: (ids: number[]) => Promise<unknown>,
-  createMany: (data: TData[]) => Promise<unknown>,
-  update: (id: number, data: Partial<TData>) => Promise<unknown>,
-  oldItems: ({ id: number } & Record<string, unknown>)[],
-  newItems: TData[],
-) {
-  const newIds = new Set(newItems.map((item) => item.id).filter(Boolean) as number[]);
-  const toDelete = oldItems.filter((item) => !newIds.has(item.id)).map((item) => item.id);
-
-  if (toDelete.length > 0) {
-    await deleteMany(toDelete);
-  }
-
-  for (const item of newItems) {
-    const { id: itemId, ...fields } = item;
-    if (itemId && oldItems.some((o) => o.id === itemId)) {
-      await update(itemId as number, fields as Partial<TData>);
-    }
-  }
-
-  const toCreate = newItems.filter((item) => !item.id);
-  if (toCreate.length > 0) {
-    await createMany(toCreate);
-  }
 }
 
 export async function createMilitary(rawData: CreateMilitaryData) {

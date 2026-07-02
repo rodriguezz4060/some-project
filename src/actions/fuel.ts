@@ -5,32 +5,11 @@ import { revalidatePath } from "next/cache";
 import { logCreate, logUpdate, logDelete } from "@root/lib/audit";
 import { requireModerator } from "@root/lib/auth-guards";
 import { compareFields } from "@root/lib/diff";
+import { fieldLabels } from "@root/lib/action-labels";
 import { buildChangeLines, formatDescription } from "@root/lib/audit-helpers";
 import { PURPOSE_LABELS, VEHICLE_TYPE_LABELS, VEHICLE_STATUS_LABELS } from "@/components/shared/fuel/constants";
 import { createVehicleSchema, createFuelRecordSchema } from "@root/lib/schemas/fuel";
 import type { CreateVehicleData, CreateFuelRecordData } from "@root/lib/schemas/fuel";
-
-const fieldLabels: Record<string, string> = {
-  brand: "Марка",
-  model: "Модель",
-  licensePlate: "Держномер",
-  type: "Тип",
-  year: "Рік випуску",
-  vin: "VIN-код",
-  fuelType: "Тип пального",
-  tankCapacity: "Об'єм баку",
-  unit: "Підрозділ",
-  notes: "Примітки",
-  date: "Дата",
-  liters: "Літри",
-  pricePerLiter: "Ціна за літр",
-  totalCost: "Загальна вартість",
-  mileage: "Пробіг",
-  driverName: "Водій",
-  invoiceNumber: "Номер накладної",
-  supplier: "Постачальник",
-  purpose: "Призначення",
-};
 
 function parseVehicle(rawData: CreateVehicleData) {
   const parsed = createVehicleSchema.safeParse(rawData);

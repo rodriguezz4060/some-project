@@ -6,16 +6,12 @@ import {
   Pencil,
   Trash2,
   Plus,
-  Shield,
-  ShieldCheck,
-  User,
   Search,
   X,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { ClientPagination } from "@/components/shared/pagination";
 import {
   Table,
   TableBody,
@@ -25,6 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { UserFormDialog } from "./user-form-dialog";
+import { RoleBadge } from "@/components/shared/admin/role-constants";
 import { UserDeleteDialog } from "./user-delete-dialog";
 
 interface User {
@@ -43,23 +40,6 @@ interface Props {
   totalPages: number;
   currentPage: number;
   currentQuery: string;
-}
-
-const roleConfig: Record<string, { label: string; icon: typeof Shield; className: string }> = {
-  admin: { label: "Адмін", icon: ShieldCheck, className: "text-amber-400" },
-  moderator: { label: "Модератор", icon: Shield, className: "text-blue-400" },
-  user: { label: "Користувач", icon: User, className: "text-muted-foreground" },
-};
-
-function formatRole(role: string) {
-  const cfg = roleConfig[role] ?? roleConfig.user;
-  const Icon = cfg.icon;
-  return (
-    <span className={`inline-flex items-center gap-1 text-xs font-medium ${cfg.className}`}>
-      <Icon className="size-3.5" />
-      {cfg.label}
-    </span>
-  );
 }
 
 export function UsersTableClient({
@@ -181,7 +161,7 @@ export function UsersTableClient({
                   </TableCell>
                   <TableCell className="text-sm">{user.email}</TableCell>
                   <TableCell className="text-sm">{user.name ?? "—"}</TableCell>
-                  <TableCell>{formatRole(user.role)}</TableCell>
+                  <TableCell><RoleBadge role={user.role} /></TableCell>
                   <TableCell className="text-xs text-muted-foreground hidden md:table-cell tabular-nums">
                     {new Date(user.createdAt).toLocaleDateString("uk-UA")}
                   </TableCell>
@@ -212,41 +192,13 @@ export function UsersTableClient({
         </Table>
       </div>
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm">
-          <p className="text-muted-foreground">
-            {total} {total === 1 ? "користувач" : total > 4 ? "користувачів" : "користувача"}
-          </p>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={currentPage <= 1}
-              onClick={() => navigate({ page: String(currentPage - 1) })}
-            >
-              <ChevronLeft className="size-4" />
-              <span className="hidden sm:inline ml-1">Попередня</span>
-            </Button>
-            <span className="px-3 text-muted-foreground tabular-nums">
-              {currentPage} / {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={currentPage >= totalPages}
-              onClick={() => navigate({ page: String(currentPage + 1) })}
-            >
-              <span className="hidden sm:inline mr-1">Наступна</span>
-              <ChevronRight className="size-4" />
-            </Button>
-          </div>
-        </div>
-      )}
-      {totalPages <= 1 && total > 0 && (
-        <p className="text-sm text-muted-foreground">
-          {total} {total === 1 ? "користувач" : total > 4 ? "користувачів" : "користувача"}
-        </p>
-      )}
+      <ClientPagination
+        page={currentPage}
+        totalPages={totalPages}
+        total={total}
+        label="користувачів"
+        onPageChange={(p) => navigate({ page: String(p) })}
+      />
 
       {/* Create dialog */}
       {showCreate && (
