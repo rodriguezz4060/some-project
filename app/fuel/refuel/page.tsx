@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { FuelRecordForm } from "@/components/shared/fuel/fuel-record-form";
+import { FuelRecordForm } from "@/components/shared/fuel/forms/fuel-record-form";
 import { getVehicles } from "@root/lib/data/fuel";
 
 export default async function RefuelPage({

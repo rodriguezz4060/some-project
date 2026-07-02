@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FormProvider } from "@/components/ui/form";
-import { TextField, TextareaField, SelectField } from "@/components/shared/form-fields";
+import { TextField, TextareaField, SelectField } from "@/components/shared/ui/form-fields";
 import { toast } from "sonner";
 import { createBzvp, updateBzvp } from "@root/actions/bzvp";
 import { bzvpSchema } from "@root/lib/schemas/bzvp";

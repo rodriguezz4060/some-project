@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { Plus, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { FuelRecordsTable } from "@/components/shared/fuel/fuel-records-table";
-import { FuelDateFilter } from "@/components/shared/fuel/fuel-date-filter";
+import { FuelRecordsTable } from "@/components/shared/fuel/records/fuel-records-table";
+import { FuelDateFilter } from "@/components/shared/fuel/records/fuel-date-filter";
 import { getFuelRecords } from "@root/lib/data/fuel";
 import { auth } from "@root/lib/auth";
 

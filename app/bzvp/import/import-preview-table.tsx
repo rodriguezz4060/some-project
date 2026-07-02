@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@root/lib/utils";
 import { STATUS_BADGE, STATUS_LABEL, type Decision } from "./import-constants";
-import type { ParsedRow } from "@root/actions/import-bzvp";
+import type { ParsedRow } from "@root/actions/bzvp/import";
 
 interface Props {
   rows: ParsedRow[];

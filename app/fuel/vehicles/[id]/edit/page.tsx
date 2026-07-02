@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { VehicleForm } from "@/components/shared/fuel/vehicle-form";
+import { VehicleForm } from "@/components/shared/fuel/forms/vehicle-form";
 import { getVehicleById } from "@root/lib/data/fuel";
 
 export default async function VehicleEditPage({

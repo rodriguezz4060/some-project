@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { VehicleForm } from "@/components/shared/fuel/vehicle-form";
+import { VehicleForm } from "@/components/shared/fuel/forms/vehicle-form";
 
 export default function VehicleNewPage() {
   return (

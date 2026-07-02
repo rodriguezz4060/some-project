@@ -1,7 +1,7 @@
 "use client";
 
 import { History } from "lucide-react";
-import { ClientPagination } from "@/components/shared/pagination";
+import { ClientPagination } from "@/components/shared/ui/pagination";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 

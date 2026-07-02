@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ClientPagination } from "@/components/shared/pagination";
+import { ClientPagination } from "@/components/shared/ui/pagination";
 import {
   Table,
   TableBody,

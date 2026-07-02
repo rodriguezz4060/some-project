@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { VehicleListClient } from "@/components/shared/fuel/vehicle-list-client";
+import { VehicleListClient } from "@/components/shared/fuel/roster/vehicle-list-client";
 import { getVehicles, getVehicleStats } from "@root/lib/data/fuel";
 import { auth } from "@root/lib/auth";
 

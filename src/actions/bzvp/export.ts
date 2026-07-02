@@ -2,17 +2,7 @@
 
 import { prisma } from "@root/lib/prisma";
 import { requireModerator } from "@root/lib/auth-guards";
-
-const ALLOWED_FIELDS = new Set([
-  "fullName", "rank", "birthDate", "birthPlace", "photo",
-  "passport", "passportIssued", "tin", "militaryId", "militaryIdIssued",
-  "ubd", "ubdDate", "serviceUnit", "serviceYears", "civilianJob",
-  "education", "actualAddress", "registrationAddress", "driverLicense",
-  "criminalRecord", "policeRecords", "family", "phone", "relativePhones",
-  "personalOrder", "conscription", "health", "healthComplaints",
-  "moralState", "bloodType", "shoeSize", "notes", "status",
-  "arrivalDate", "trainingPeriod", "specialization",
-]);
+import { ALLOWED_FIELDS } from "./constants";
 
 export async function exportBzvpData(
   fields: string[],

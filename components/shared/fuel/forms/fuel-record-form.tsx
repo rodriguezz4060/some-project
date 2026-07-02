@@ -23,7 +23,7 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import { TextField, NumberField, SelectField } from "@/components/shared/form-fields";
+import { TextField, NumberField, SelectField } from "@/components/shared/ui/form-fields";
 import { toast } from "sonner";
 import { createFuelRecord, updateFuelRecord } from "@root/actions/fuel";
 import { createFuelRecordSchema } from "@root/lib/schemas/fuel";

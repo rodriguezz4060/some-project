@@ -11,7 +11,7 @@ import { ProfileHero } from "@/components/shared/military/dashboard/profile/prof
 import { ProfileTabs } from "@/components/shared/military/dashboard/profile/profile-tabs";
 import { ProfilePdfWrapper } from "@/components/shared/military/dashboard/profile/profile-pdf-wrapper";
 import { statusConfig } from "@/components/shared/military/constants";
-import { DeletePersonnelDialog } from "@/components/shared/delete-personnel-dialog";
+import { DeletePersonnelDialog } from "@/components/shared/ui/delete-personnel-dialog";
 import { deleteMilitary } from "@root/actions/military";
 import type { Metadata } from "next";
 

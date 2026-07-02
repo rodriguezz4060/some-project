@@ -11,7 +11,7 @@ import { cn } from "@root/lib/utils";
 import { AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
 import { STATUS_BADGE, STATUS_LABEL, type Decision } from "./import-constants";
 import { FIELD_LABELS, SECTIONS } from "@/components/shared/bzvp/fields";
-import type { ParsedRow } from "@root/actions/import-bzvp";
+import type { ParsedRow } from "@root/actions/bzvp/import";
 
 interface Props {
   row: ParsedRow;

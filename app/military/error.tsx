@@ -1,3 +1,3 @@
 "use client";
 
-export { default } from "@/components/shared/page-error";
+export { default } from "@/components/shared/ui/page-error";

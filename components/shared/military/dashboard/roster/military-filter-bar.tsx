@@ -8,7 +8,7 @@ import { cn } from "@root/lib/utils";
 import { useCollapsed } from "@/hooks/use-collapsed";
 import { statusConfig, STATUS_SELECTED_CLASSES } from "../../constants";
 import type { StatusType } from "../../types";
-import { SearchInput } from "@/components/shared/search-input";
+import { SearchInput } from "@/components/shared/ui/search-input";
 import { Button } from "@/components/ui/button";
 
 const ALL_STATUSES: StatusType[] = [

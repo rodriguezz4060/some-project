@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { FormProvider, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { TextField, NumberField, SelectField, TextareaField } from "@/components/shared/form-fields";
+import { TextField, NumberField, SelectField, TextareaField } from "@/components/shared/ui/form-fields";
 import { toast } from "sonner";
 import { createVehicle, updateVehicle } from "@root/actions/fuel";
 import { createVehicleSchema } from "@root/lib/schemas/fuel";

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Search, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { VehicleCard } from "@/components/shared/fuel/vehicle-card";
+import { VehicleCard } from "@/components/shared/fuel/roster/vehicle-card";
 import { setVehicleStatus } from "@root/actions/fuel";
 import { VEHICLE_STATUS_LABELS } from "@/components/shared/fuel/constants";
 import type { Vehicle } from "@/components/shared/fuel/types";

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: "Журнал дій | 23 ОМБр",
 };
 import { ChevronLeft } from "lucide-react";
-import { LinkPagination } from "@/components/shared/pagination";
+import { LinkPagination } from "@/components/shared/ui/pagination";
 import {
   Table,
   TableBody,

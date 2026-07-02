@@ -55,7 +55,7 @@ export function BzvpExportModal() {
     if (createdFrom && createdTo && createdFrom > createdTo) { toast.error("Дата «Від» не може бути пізніше «До»"); return; }
     setExporting(true);
     try {
-      const { exportBzvpData } = await import("@root/actions/export-bzvp");
+      const { exportBzvpData } = await import("@root/actions/bzvp/export");
       const data = await exportBzvpData([...selectedFields], createdFrom || undefined, createdTo || undefined);
       if (data.length === 0) { toast.error("Немає даних для експорту"); setExporting(false); return; }
       const XLSX = await import("xlsx");

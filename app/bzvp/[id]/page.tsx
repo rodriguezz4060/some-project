@@ -10,7 +10,7 @@ import { BzvpPdfWrapper } from "@/components/shared/bzvp/pdf/bzvp-pdf-wrapper";
 import { getBzvpPersonnelById } from "@root/lib/data/bzvp";
 import { BZVP_STATUS_CONFIG } from "@/components/shared/bzvp/constants";
 import { cn } from "@root/lib/utils";
-import { DeletePersonnelDialog } from "@/components/shared/delete-personnel-dialog";
+import { DeletePersonnelDialog } from "@/components/shared/ui/delete-personnel-dialog";
 import { deleteBzvp } from "@root/actions/bzvp";
 import type { Metadata } from "next";
 

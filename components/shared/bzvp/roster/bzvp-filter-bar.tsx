@@ -14,7 +14,7 @@ import {
   STATUS_SELECTED_CLASSES,
 } from "../constants";
 import type { BzvpStatus } from "../types";
-import { SearchInput } from "@/components/shared/search-input";
+import { SearchInput } from "@/components/shared/ui/search-input";
 import { BzvpDateFilter } from "./bzvp-date-filter";
 
 const STORAGE_KEY = "bzvp:filtersCollapsed";
